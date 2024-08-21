@@ -10,5 +10,5 @@ class Highway extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['code', 'product_entry_id', 'quantity', 'pdf_file', 'exit_date'];
+    protected $fillable = ['code', 'product_entry_id', 'quantity', 'pdf_file', 'entry_date'];
 }

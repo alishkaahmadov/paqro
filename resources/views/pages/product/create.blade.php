@@ -17,7 +17,7 @@
                 </div>
                 <div>
                     <label class="text-gray-700" for="subcategory_id">Subanbar</label>
-                    <select id="countries" name="subcategory_id" class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                    <select id="subcategory_id" name="subcategory_id" class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                         <option selected>Subanbar seçin</option>
                         @foreach ($subcategories as $subcategory)
                             <option value="{{ $subcategory->id }}">{{ $subcategory->name }}</option>

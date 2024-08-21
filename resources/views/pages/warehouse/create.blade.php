@@ -8,8 +8,12 @@
             @csrf
             <div class="grid grid-cols-1 mt-4">
                 <div>
-                    <label class="text-gray-700" for="name">Abarın adı</label>
+                    <label class="text-gray-700" for="name">Anbarın adı</label>
                     <input name="name" class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" type="text">
+                </div>
+                <div class="flex items-center mt-2">
+                    <label class="text-gray-700" for="is_main">Əsas anbar?</label>
+                    <input type="checkbox" name="is_main" class="ml-2">
                 </div>
             </div>
 

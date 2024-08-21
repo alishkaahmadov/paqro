@@ -25,8 +25,4 @@ class ProductEntry extends Model
     {
         return $this->belongsTo(Warehouse::class);
     }
-    public function warehouse_logs(): HasMany
-    {
-        return $this->hasMany(WarehouseLog::class, 'product_entry_id');
-    }
 }

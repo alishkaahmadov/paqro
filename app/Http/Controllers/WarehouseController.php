@@ -13,7 +13,7 @@ class WarehouseController extends Controller
      */
     public function index()
     {
-        $warehouses = Warehouse::orderBy('id', 'desc')->paginate(10);
+        $warehouses = Warehouse::orderBy('is_main', 'desc')->paginate(10);
         return view('pages.warehouse.index', ['warehouses' => $warehouses]);
     }
 
@@ -31,10 +31,10 @@ class WarehouseController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string',
+            'name' => 'required|string'
         ]);
         try {
-            Warehouse::create(['name' => $request->name]);
+            Warehouse::create(['name' => $request->name, 'is_main' => $request->is_main ? true : false]);
             return redirect()->route('warehouses.index')
                 ->with('success', 'Anbar uğurla yaradıldı.');
         } catch (Throwable $th) {

@@ -46,7 +46,6 @@ class ProductController extends Controller
             return redirect()->route('products.index')
                 ->with('success', 'Məhsul uğurla yaradıldı.');
         } catch (Throwable $th) {
-            dd($th->getMessage());
             return redirect()->route('products.index')
                 ->with('error', 'Xəta baş verdi.');
         }

@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('highways', function (Blueprint $table) {
             $table->id();
             $table->string('code');
-            $table->foreignId('product__entry_id')->constrained('product_entries')->onDelete('cascade');
+            $table->foreignId('product_entry_id')->constrained('product_entries')->onDelete('cascade');
             $table->integer('quantity');
-            $table->string('pdf_file');
+            $table->string('pdf_file')->nullable();
             $table->timestamp('entry_date');
             $table->timestamps();
         });

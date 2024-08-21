@@ -12,6 +12,12 @@ class Warehouse extends Model
 
     protected $fillable = ['name', 'is_main'];
 
+
+    public static function getMainWarehouse()
+    {
+        return self::where('is_main', 1)->first();
+    }
+
     public function product_entries(): HasMany
     {
         return $this->hasMany(ProductEntry::class, 'warehouse_id');
