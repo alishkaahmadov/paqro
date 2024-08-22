@@ -22,6 +22,7 @@ class DashboardController extends Controller
     {
         $products = Product::all();
         $warehouses = Warehouse::all();
+        $categories = Subcategory::all();
 
         $query = ProductEntry::query();
 
@@ -33,11 +34,16 @@ class DashboardController extends Controller
         }
 
         if ($request->product_id) {
-            $query->where('product_id', $request->product_id);
+            $query->where('product_entries.product_id', $request->product_id);
+        }
+
+        if ($request->category_id) {
+            $query->where('p.subcategory_id', $request->category_id);
         }
 
         $groupedEntries = $query->select('product_id', 'warehouse_id', 'quantity')
-            ->where('warehouse_id', $warehouseId)
+            ->leftJoin('products as p', 'p.id', '=', 'product_entries.product_id')
+            ->where('product_entries.warehouse_id', $warehouseId)
             ->paginate(10);
             
         return view('pages.dashboard.index', [
@@ -45,7 +51,9 @@ class DashboardController extends Controller
             'products' => $products,
             'warehouses' => $warehouses,
             'warehouse_id' => $request->warehouse_id ?? null,
-            'product_id' => $request->product_id ?? null
+            'product_id' => $request->product_id ?? null,
+            'categories' => $categories,
+            'category_id' => $request->category_id ?? null,
         ]);
     }
 
@@ -147,6 +155,7 @@ class DashboardController extends Controller
                 "p.name as product_name",
                 "sc.name as subcategory_name",
                 "warehouse_logs.quantity",
+                "h.code as highway_code",
                 "warehouse_logs.entry_date as exit_date"
             )
             ->leftJoin('products as p', 'p.id', '=', 'warehouse_logs.product_id')
@@ -155,7 +164,6 @@ class DashboardController extends Controller
             ->where('warehouse_logs.from_warehouse_id', $warehouseId)
             ->orderBy('warehouse_logs.entry_date', 'desc')
             ->paginate(10);
-
         return view('pages.dashboard.exits', [
             'productExits' => $warehouseLogs,
             'products' => $products,

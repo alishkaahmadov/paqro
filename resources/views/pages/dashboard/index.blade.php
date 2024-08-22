@@ -32,7 +32,7 @@
         <div class="-my-2 py-2 overflow-x-auto sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
             <div>
                 <form action="{{ route('dashboard.index') }}" method="get">
-                    <div class="grid grid-cols-3 mt-4 gap-3 mb-4">
+                    <div class="grid grid-cols-2 mt-4 gap-3 mb-4">
                         <div>
                             <label class="text-gray-700" for="warehouse">Anbar</label>
                             <select id="warehouse" name="warehouse_id"
@@ -52,6 +52,17 @@
                                 @foreach ($products as $product)
                                     <option {{ $product_id && $product_id == $product->id ? 'selected' : '' }}
                                         value="{{ $product->id }}">{{ $product->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-gray-700" for="category">Subanbar</label>
+                            <select id="category" name="category_id"
+                                class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                                <option value="" selected>Subanbar seçin</option>
+                                @foreach ($categories as $category)
+                                    <option {{ $category_id && $category_id == $category->id ? 'selected' : '' }}
+                                        value="{{ $category->id }}">{{ $category->name }}</option>
                                 @endforeach
                             </select>
                         </div>

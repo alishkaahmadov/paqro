@@ -16,7 +16,7 @@
         <div class="-my-2 py-2 overflow-x-auto sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
             <div>
                 <form action="{{ route('highways.index') }}" method="get">
-                    <div class="grid grid-cols-4 mt-4 gap-3 mb-4">
+                    <div class="grid grid-cols-2 mt-4 gap-3 mb-4">
                         <div>
                             <label class="text-gray-700" for="warehouse">Şosse nömrəsi</label>
                             <input value="{{ $highway_code ? $highway_code : '' }}" name="highway_code" id="highway_code" class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" type="text">
@@ -25,7 +25,7 @@
                             <label class="text-gray-700" for="from_warehouse">Anbardan</label>
                             <select id="from_warehouse" name="from_warehouse_id"
                                 class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                                <option selected>Anbar seçin</option>
+                                <option selected value="">Anbar seçin</option>
                                 @foreach ($warehouses as $warehouse)
                                     <option value="{{ $warehouse->id }}">{{ $warehouse->name }}</option>
                                 @endforeach

@@ -92,7 +92,7 @@ class HighwayController extends Controller
                     $filePath = $request->pdf->storeAs('uploads', $fileName, 'public');
                 }
                 // create
-                Highway::create([
+                $highway = Highway::create([
                     'code' => $request->code,
                     'product_entry_id' => $warehouse->id,
                     'pdf_file' => $filePath ?? null,
@@ -104,7 +104,8 @@ class HighwayController extends Controller
                     'quantity' => $request->quantity,
                     'entry_date' => $request->date,
                     'product_id' => $request->product_id,
-                    'company_id' => $warehouse->company_id
+                    'company_id' => $warehouse->company_id,
+                    'highway_id' => $highway->id
                 ]);
                 return redirect()->route('highways.index')
                     ->with('success', 'Şosse əlavə olundu.');

@@ -7,6 +7,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SubcategoryController;
 use App\Http\Controllers\WarehouseController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,7 +20,18 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+
+Route::get('/', function () {
+    if (Auth::check()) {
+        return redirect()->route('dashboard.index');
+    } else {
+        return view('pages.login');
+        // return redirect()->route('login');
+    }
+});
+
 Route::get('/login', function () {
+    // create login controller
     return view('pages.login');
 });
 

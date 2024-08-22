@@ -5,12 +5,16 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: app
-    restart: unless-stopped
+    restart: always
+    depends_on:
+      - webserver
     tty: true
     environment:
       SERVICE_NAME: app
       SERVICE_TAGS: dev
     working_dir: /var/www
+    ports:
+      - "5173:5173"
     volumes:
       - ./:/var/www
       - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini
@@ -21,11 +25,10 @@ services:
     platform: linux/x86_64
     image: nginx:alpine
     container_name: webserver
-    restart: unless-stopped
+    restart: always
     tty: true
     ports:
       - "8989:80"
-      - "5173:5173"
     volumes:
       - ./:/var/www
       - ./nginx/:/etc/nginx/conf.d/
@@ -36,7 +39,7 @@ services:
   db:
     image: postgres:latest
     container_name: db
-    restart: unless-stopped
+    restart: always
     tty: true
     ports:
       - "5432:5432"
