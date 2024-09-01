@@ -35,12 +35,16 @@ class ProductController extends Controller
         $request->validate([
             'name' => 'required|string',
             'description' => 'required|string',
+            'code' => 'string|nullable',
+            'dnn' => 'string|nullable',
             'subcategory_id' => 'required|exists:subcategories,id',
         ]);
         try {
             Product::create([
                 'name' => $request->name,
                 'description' => $request->description,
+                'code' => $request->code ?? null,
+                'dnn' => $request->dnn ?? null,
                 'subcategory_id' => $request->subcategory_id
             ]);
             return redirect()->route('products.index')

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Highway;
+use App\Models\Dnn;
 use App\Models\Product;
 use App\Models\ProductEntry;
 use App\Models\Warehouse;
@@ -10,7 +10,7 @@ use App\Models\WarehouseLog;
 use Illuminate\Http\Request;
 use Throwable;
 
-class HighwayController extends Controller
+class DnnController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -21,7 +21,7 @@ class HighwayController extends Controller
         $products = Product::all();
         $warehouses = Warehouse::all();
 
-        $query = Highway::query();
+        $query = Dnn::query();
 
         if ($request->product_id) {
             $query->where('pe.product_id', $request->product_id);
@@ -31,30 +31,30 @@ class HighwayController extends Controller
             $query->where('pe.warehouse_id', $request->from_warehouse_id);
         }
 
-        if ($request->highway_code) {
-            $query->where('highways.code', $request->highway_code);
+        if ($request->dnn_code) {
+            $query->where('dnns.code', $request->dnn_code);
         }
 
-        $highways = $query->select(
+        $dnns = $query->select(
             "p.name as product_name",
             "p.code as product_code",
             "w.name as warehouse_name",
-            "highways.code",
-            "highways.quantity",
-            "highways.entry_date",
-            "highways.pdf_file"
+            "dnns.code",
+            "dnns.quantity",
+            "dnns.entry_date",
+            "dnns.pdf_file"
         )
-            ->leftJoin('product_entries as pe', 'pe.id', '=', 'highways.product_entry_id')
+            ->leftJoin('product_entries as pe', 'pe.id', '=', 'dnns.product_entry_id')
             ->leftJoin('products as p', 'p.id', '=', 'pe.product_id')
             ->leftJoin('warehouses as w', 'w.id', '=', 'pe.warehouse_id')
-            ->orderBy('highways.id', 'desc')
+            ->orderBy('dnns.id', 'desc')
             ->paginate(10);
-            return view('pages.highway.index', [
-            'highways' => $highways,
+            return view('pages.dnn.index', [
+            'dnns' => $dnns,
             'products' => $products,
             'warehouses' => $warehouses,
             'from_warehouse_id' => $request->from_warehouse_id ?? null,
-            'highway_code' => $request->highway_code ?? null,
+            'dnn_code' => $request->dnn_code ?? null,
             'product_id' => $request->product_id ?? null
         ]);
     }
@@ -65,7 +65,7 @@ class HighwayController extends Controller
     public function create()
     {
         $warehouses = Warehouse::all();
-        return view('pages.highway.create', [
+        return view('pages.dnn.create', [
             'warehouses' => $warehouses,
         ]);
     }
@@ -93,7 +93,7 @@ class HighwayController extends Controller
                     $filePath = $request->pdf->storeAs('uploads', $fileName, 'public');
                 }
                 // create
-                $highway = Highway::create([
+                $dnn = Dnn::create([
                     'code' => $request->code,
                     'product_entry_id' => $warehouse->id,
                     'pdf_file' => $filePath ?? null,
@@ -106,9 +106,9 @@ class HighwayController extends Controller
                     'entry_date' => $request->date,
                     'product_id' => $request->product_id,
                     'company_id' => $warehouse->company_id,
-                    'highway_id' => $highway->id
+                    'dnn_id' => $dnn->id
                 ]);
-                return redirect()->route('highways.index')
+                return redirect()->route('dnns.index')
                     ->with('success', 'Şassi əlavə olundu.');
             } else {
                 return redirect()->route('dashboard.index')

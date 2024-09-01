@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Product extends Model
 {
     use HasFactory;
-    protected $fillable = ['name', 'description', 'subcategory_id'];
+    protected $fillable = ['name', 'description', 'code', 'dnn', 'subcategory_id'];
 
     public function subcategory() :BelongsTo
     {

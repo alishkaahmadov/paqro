@@ -16,6 +16,14 @@
                     <input name="description" class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" type="text">
                 </div>
                 <div>
+                    <label class="text-gray-700" for="code">Məhsulun kodu</label>
+                    <input name="code" class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" type="text">
+                </div>
+                <div>
+                    <label class="text-gray-700" for="dnn"> DNN/Şassi nömrəsi</label>
+                    <input name="dnn" class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" type="text">
+                </div>
+                <div>
                     <label class="text-gray-700" for="subcategory_id">Subanbar</label>
                     <select id="subcategory_id" name="subcategory_id" class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                         <option selected>Subanbar seçin</option>

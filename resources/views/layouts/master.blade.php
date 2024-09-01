@@ -16,6 +16,34 @@
     <title>P-Aqro</title>
     @vite('resources/css/app.css')
     @vite('resources/js/app.js')
+
+    <style>
+        .process-type-entry {
+            background-color: #38a169;
+            /* Green background */
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            /* Rounded corners */
+            font-weight: bold;
+            text-align: center;
+            display: inline-block;
+            /* Keeps the span within the td width */
+        }
+
+        .process-type-exit {
+            background-color: #e53e3e;
+            /* Red background */
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            /* Rounded corners */
+            font-weight: bold;
+            text-align: center;
+            display: inline-block;
+            /* Keeps the span within the td width */
+        }
+    </style>
 </head>
 
 <body>
@@ -42,6 +70,31 @@
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.1.1/cdn.js"
     integrity="sha512-KbpTFJv+iXvSHG3l6ixXFeVLbxD0XKJw1zhlqA/nVm9TCufeAPBVbG53uxx6z6pjDdmaa3BXQMkpNeTCgtVySQ=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var datetimeInput = document.querySelectorAll('[data-datetime-local="true"]');
+        if (datetimeInput.length) {
+            var now = new Date().toLocaleString("en-US", {
+                timeZone: "Asia/Baku"
+            });
+            var timezoneDate = new Date(now);
+            // Format the date to YYYY-MM-DDTHH:MM
+            var formattedDateTime = timezoneDate.getFullYear() + '-' +
+                String(timezoneDate.getMonth() + 1).padStart(2, '0') + '-' +
+                String(timezoneDate.getDate()).padStart(2, '0') + 'T' +
+                String(timezoneDate.getHours()).padStart(2, '0') + ':' +
+                String(timezoneDate.getMinutes()).padStart(2, '0');
+
+            // Set the default value
+            for (let i = 0; i < datetimeInput.length; i++) {
+                datetimeInput[i].value = formattedDateTime;
+            }
+        }
+    });
+</script>
+
 @yield('script')
 
 </html>

@@ -23,9 +23,13 @@
             Girişlər
         </a>
         <a href="{{ route('dashboard.exits') }}"
-            class="w-full px-4 py-2 rounded-md focus:outline-none {{ request()->routeIs('dashboard.exits') ? 'bg-gradient-to-r from-green-500 to-green-700 text-white shadow-lg border-b-4 border-green-800' : 'bg-green-500 text-white hover:bg-green-600 hover:shadow-md' }}">
+            class="w-full mr-2 px-4 py-2 rounded-md focus:outline-none {{ request()->routeIs('dashboard.exits') ? 'bg-gradient-to-r from-green-500 to-green-700 text-white shadow-lg border-b-4 border-green-800' : 'bg-green-500 text-white hover:bg-green-600 hover:shadow-md' }}">
 
             Çıxışlar
+        </a>
+        <a href="{{ route('dashboard.overall') }}"
+            class="w-full px-4 py-2 rounded-md focus:outline-none {{ request()->routeIs('dashboard.overall') ? 'bg-gradient-to-r from-purple-500 to-purple-700 text-white shadow-lg border-b-4 border-purple-800' : 'bg-purple-500 text-white hover:bg-purple-600 hover:shadow-md' }}">
+            Ümumi
         </a>
     </div>
     <div class="flex flex-col">
@@ -51,7 +55,7 @@
                                 <option value="" selected>Məhsul seçin</option>
                                 @foreach ($products as $product)
                                     <option {{ $product_id && $product_id == $product->id ? 'selected' : '' }}
-                                        value="{{ $product->id }}">{{ $product->name }}</option>
+                                        value="{{ $product->id }}">{{ $product->name }} {{ $product->code ? '- ' . $product->code : '' }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -136,7 +140,7 @@
                                 </td>
                                 <td
                                     class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
-                                    {{ $product->product_name }}
+                                    {{ $product->product_name }} {{ $product->product_code ? '- ' . $product->product_code : '' }}
                                 </td>
                                 <td
                                     class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
@@ -162,12 +166,44 @@
                         @endforeach
                     </tbody>
                 </table>
+                <div class="grid my-2">
+                    <form class="flex w-1/3 justify-self-end" id="exportForm">
+                        <input type="hidden" name="export_type" value="all" id="export_type">
+                        <button
+                            class="mr-2 w-full px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-md shadow-lg hover:from-blue-600 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            type="button" onclick="setExportType(event, 'current')">Səhifəni çap et</button>
+                        <button
+                            class="w-full px-4 py-2 bg-green-500 border-2 border-green-500 text-white rounded-md hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-green-400"
+                            type="button" onclick="setExportType(event, 'all')">Çap et</button>
+                    </form>
+                </div>
                 <div class="flex items-center justify-center my-2">
                     @include('components.pagination', ['paginator' => $productEntries])
                 </div>
             </div>
         </div>
     </div>
+@endsection
+
+@section('script')
+    <script>
+        function setExportType(event, type) {
+            event.preventDefault(); // Prevent the default form submission
+
+            // Set the export type in the hidden input
+            document.getElementById('export_type').value = type;
+
+            // Construct the URL with query parameters
+            const params = new URLSearchParams(window.location.search);
+            params.set('export_type', type); // Update or add the export_type parameter
+
+            // Create the full URL with parameters
+            const actionUrl = `{{ route('export.entryProducts') }}?${params.toString()}`;
+
+            // Redirect to the constructed URL to trigger the form submission
+            window.location.href = actionUrl;
+        }
+    </script>
 @endsection
 
 @if (session('success'))

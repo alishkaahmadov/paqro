@@ -23,16 +23,20 @@
             Girişlər
         </a>
         <a href="{{ route('dashboard.exits') }}"
-            class="w-full px-4 py-2 rounded-md focus:outline-none {{ request()->routeIs('dashboard.exits') ? 'bg-gradient-to-r from-green-500 to-green-700 text-white shadow-lg border-b-4 border-green-800' : 'bg-green-500 text-white hover:bg-green-600 hover:shadow-md' }}">
+            class="w-full mr-2 px-4 py-2 rounded-md focus:outline-none {{ request()->routeIs('dashboard.exits') ? 'bg-gradient-to-r from-green-500 to-green-700 text-white shadow-lg border-b-4 border-green-800' : 'bg-green-500 text-white hover:bg-green-600 hover:shadow-md' }}">
 
             Çıxışlar
+        </a>
+        <a href="{{ route('dashboard.overall') }}"
+            class="w-full px-4 py-2 rounded-md focus:outline-none {{ request()->routeIs('dashboard.overall') ? 'bg-gradient-to-r from-purple-500 to-purple-700 text-white shadow-lg border-b-4 border-purple-800' : 'bg-purple-500 text-white hover:bg-purple-600 hover:shadow-md' }}">
+            Ümumi
         </a>
     </div>
     <div class="flex flex-col">
         <div class="-my-2 py-2 overflow-x-auto sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
             <div>
                 <form action="{{ route('dashboard.exits') }}" method="get">
-                    <div class="grid grid-cols-3 mt-4 gap-3 mb-4">
+                    <div class="grid grid-cols-4 mt-4 gap-3 mb-4">
                         <div>
                             <label class="text-gray-700" for="warehouse">Anbar</label>
                             <select id="warehouse" name="warehouse_id"
@@ -51,7 +55,7 @@
                                 <option value="" selected>Məhsul seçin</option>
                                 @foreach ($products as $product)
                                     <option {{ $product_id && $product_id == $product->id ? 'selected' : '' }}
-                                        value="{{ $product->id }}">{{ $product->name }}</option>
+                                        value="{{ $product->id }}">{{ $product->name }} {{ $product->code ? '- ' . $product->code : '' }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -67,8 +71,12 @@
                             </select>
                         </div>
                         <div>
-                            <label class="text-gray-700" for="highway_code">Şosse nömrəsi</label>
+                            <label class="text-gray-700" for="highway_code">Şassi nömrəsi</label>
                             <input value="{{ $highway_code ? $highway_code : '' }}" name="highway_code" id="highway_code" class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" type="text">
+                        </div>
+                        <div>
+                            <label class="text-gray-700" for="highway_code">DNN nömrəsi</label>
+                            <input value="{{ $dnn_code ? $dnn_code : '' }}" name="dnn_code" id="dnn_code" class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" type="text">
                         </div>
                         <div>
                             <label class="text-gray-700" for="start_date">Çıxış tarixindən</label>
@@ -78,10 +86,10 @@
                             <label class="text-gray-700" for="end_date">Çıxış tarixinədək</label>
                             <input value="{{ $end_date ? $end_date : '' }}" name="end_date" id="end_date" class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" type="datetime-local">
                         </div>
-                    </div>
-                    <div class="flex justify-end mb-4">
-                        <button type="submit"
-                            class="px-4 py-2 bg-gray-800 text-gray-200 rounded-md hover:bg-gray-700 focus:outline-none focus:bg-gray-700">Axtar</button>
+                        <div class="self-end">
+                            <button type="submit"
+                                class="w-full px-4 py-2 bg-gray-800 text-gray-200 rounded-md hover:bg-gray-700 focus:outline-none focus:bg-gray-700">Axtar</button>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -111,7 +119,11 @@
                             </th>
                             <th
                                 class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                                Şosse nömrəsi
+                                Şassi nömrəsi
+                            </th>
+                            <th
+                                class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                DNN nömrəsi
                             </th>
                             <th
                                 class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
@@ -129,7 +141,7 @@
                                 </td>
                                 <td
                                     class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
-                                    {{ $product->product_name }}
+                                    {{ $product->product_name }} {{ $product->product_code ? '- ' . $product->product_code : '' }}
                                 </td>
                                 <td
                                     class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
@@ -149,18 +161,54 @@
                                 </td>
                                 <td
                                     class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
+                                    {{ $product->dnn_code ? $product->dnn_code : '-' }}
+                                </td>
+                                <td
+                                    class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
                                     {{ $product->exit_date }}
                                 </td>
                             </tr>
                         @endforeach
                     </tbody>
                 </table>
+                <div class="grid my-2">
+                    <form class="flex w-1/3 justify-self-end" id="exportForm">
+                        <input type="hidden" name="export_type" value="all" id="export_type">
+                        <button
+                            class="mr-2 w-full px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-md shadow-lg hover:from-blue-600 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            type="button" onclick="setExportType(event, 'current')">Səhifəni çap et</button>
+                        <button
+                            class="w-full px-4 py-2 bg-green-500 border-2 border-green-500 text-white rounded-md hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-green-400"
+                            type="button" onclick="setExportType(event, 'all')">Çap et</button>
+                    </form>
+                </div>
                 <div class="flex items-center justify-center my-2">
                     @include('components.pagination', ['paginator' => $productExits])
                 </div>
             </div>
         </div>
     </div>
+@endsection
+
+@section('script')
+    <script>
+        function setExportType(event, type) {
+            event.preventDefault(); // Prevent the default form submission
+
+            // Set the export type in the hidden input
+            document.getElementById('export_type').value = type;
+
+            // Construct the URL with query parameters
+            const params = new URLSearchParams(window.location.search);
+            params.set('export_type', type); // Update or add the export_type parameter
+
+            // Create the full URL with parameters
+            const actionUrl = `{{ route('export.exitProducts') }}?${params.toString()}`;
+
+            // Redirect to the constructed URL to trigger the form submission
+            window.location.href = actionUrl;
+        }
+    </script>
 @endsection
 
 @if (session('success'))

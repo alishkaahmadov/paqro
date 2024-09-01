@@ -46,7 +46,7 @@
                 </div>
                 <div>
                     <label class="text-gray-700" for="transfer_date">Transfer tarixi</label>
-                    <input name="transfer_date"
+                    <input name="transfer_date" data-datetime-local="true"
                         class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                         type="datetime-local">
                 </div>
@@ -70,18 +70,18 @@
                     .then(response => response.json())
                     .then(data => {
                         var productsSelect = document.getElementById('products');
-                        productsSelect.innerHTML = '<option selected>Məhsul seçin</option>'; // Reset options
+                        productsSelect.innerHTML = '<option selected value="">Məhsul seçin</option>'; // Reset options
 
                         data.forEach(function(product) {
                             var option = document.createElement('option');
                             option.value = product.product_id;
-                            option.textContent = `${product.product_name} (${product.quantity})`;
+                            option.textContent = `${product.product_name} ${product.product_code ? `- ${product.product_code}` : ''} (${product.quantity})`;
                             productsSelect.appendChild(option);
                         });
                     })
                     .catch(error => console.error('Error fetching products:', error));
             } else {
-                document.getElementById('products').innerHTML = '<option selected>Məhsul seçin</option>';
+                document.getElementById('products').innerHTML = '<option selected value="">Məhsul seçin</option>';
             }
         });
     </script>
