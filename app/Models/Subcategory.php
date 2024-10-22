@@ -12,8 +12,8 @@ class Subcategory extends Model
 
     protected $fillable = ['name'];
 
-    public function products(): HasMany
+    public function product_entries(): HasMany
     {
-        return $this->hasMany(Product::class, 'subcategory_id');
+        return $this->hasMany(ProductEntry::class, 'subcategory_id');
     }
 }

@@ -7,6 +7,7 @@ use App\Http\Controllers\HighwayController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SubcategoryController;
 use App\Http\Controllers\WarehouseController;
+use App\Models\Warehouse;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -20,6 +21,15 @@ use Illuminate\Support\Facades\Auth;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+
+// Route::get('/alishka', function () {
+//     // create login controller
+//     $test = Warehouse::create([
+//         'name' => 'Şirvan anbarı',
+//         'is_main' => true
+//     ]);
+//     return $test;
+// });
 
 
 Route::get('/', function () {
@@ -49,9 +59,9 @@ Route::get('/export-exit-products', [DashboardController::class, 'exportExitProd
 Route::get('/export-overall-products', [DashboardController::class, 'exportOverallProducts'])->name('export.overallProducts');
 
 Route::resource('dashboard', DashboardController::class)->names('dashboard');
-Route::resource('companies', CompanyController::class)->names('companies');
-Route::resource('categories', SubcategoryController::class)->names('categories');
-Route::resource('products', ProductController::class)->names('products');
-Route::resource('warehouses', WarehouseController::class)->names('warehouses');
 Route::resource('highways', HighwayController::class)->names('highways');
-Route::resource('dnns', DnnController::class)->names('dnns');
+// Route::resource('companies', CompanyController::class)->names('companies');
+// Route::resource('categories', SubcategoryController::class)->names('categories');
+// Route::resource('products', ProductController::class)->names('products');
+// Route::resource('warehouses', WarehouseController::class)->names('warehouses');
+// Route::resource('dnns', DnnController::class)->names('dnns');

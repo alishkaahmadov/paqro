@@ -10,12 +10,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Product extends Model
 {
     use HasFactory;
-    protected $fillable = ['name', 'description', 'code', 'dnn', 'subcategory_id'];
+    protected $fillable = ['name', 'code'];
 
-    public function subcategory() :BelongsTo
-    {
-        return $this->belongsTo(Subcategory::class);
-    }
     public function product_entries(): HasMany
     {
         return $this->hasMany(ProductEntry::class, 'product_id');

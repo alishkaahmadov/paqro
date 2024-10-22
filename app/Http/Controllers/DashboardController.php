@@ -39,14 +39,12 @@ class DashboardController extends Controller
         }
 
         if ($request->category_id) {
-            $query->where('p.subcategory_id', $request->category_id);
+            $query->where('product_entries.subcategory_id', $request->category_id);
         }
 
-        $groupedEntries = $query->select('product_id', 'warehouse_id', 'quantity')
-            ->leftJoin('products as p', 'p.id', '=', 'product_entries.product_id')
+        $groupedEntries = $query->select('product_id', 'subcategory_id', 'warehouse_id', 'quantity')
             ->where('product_entries.warehouse_id', $warehouseId)
             ->paginate(10);
-
         return view('pages.dashboard.index', [
             'productEntries' => $groupedEntries,
             'products' => $products,
@@ -81,7 +79,7 @@ class DashboardController extends Controller
             $query->where('company_id', $request->company_id);
         }
         if ($request->category_id) {
-            $query->where('p.subcategory_id', $request->category_id);
+            $query->where('subcategory_id', $request->category_id);
         }
         if ($request->start_date && $request->end_date) {
             $query->whereBetween('warehouse_logs.entry_date', [$request->start_date, $request->end_date]);
@@ -100,7 +98,7 @@ class DashboardController extends Controller
                 "warehouse_logs.entry_date as entry_date"
             )
             ->leftJoin('products as p', 'p.id', '=', 'warehouse_logs.product_id')
-            ->leftJoin('subcategories as sc', 'sc.id', '=', 'p.subcategory_id')
+            ->leftJoin('subcategories as sc', 'sc.id', '=', 'warehouse_logs.subcategory_id')
             ->leftJoin('companies as c', 'c.id', '=', 'warehouse_logs.company_id')
             ->where('warehouse_logs.to_warehouse_id', $warehouseId)
             ->orderBy('warehouse_logs.entry_date', 'desc')
@@ -142,9 +140,9 @@ class DashboardController extends Controller
         if ($request->highway_code) {
             $query->where('h.code', $request->highway_code);
         }
-        if ($request->dnn_code) {
-            $query->where('d.code', $request->dnn_code);
-        }
+        // if ($request->dnn_code) {
+        //     $query->where('d.code', $request->dnn_code);
+        // }
         if ($request->category_id) {
             $query->where('p.subcategory_id', $request->category_id);
         }
@@ -162,12 +160,12 @@ class DashboardController extends Controller
                 "sc.name as subcategory_name",
                 "warehouse_logs.quantity",
                 "h.code as highway_code",
-                "d.code as dnn_code",
+                // "d.code as dnn_code",
                 "warehouse_logs.entry_date as exit_date"
             )
             ->leftJoin('products as p', 'p.id', '=', 'warehouse_logs.product_id')
             ->leftJoin('subcategories as sc', 'sc.id', '=', 'p.subcategory_id')
-            ->leftJoin('dnns as d', 'd.id', '=', 'warehouse_logs.dnn_id')
+            // ->leftJoin('dnns as d', 'd.id', '=', 'warehouse_logs.dnn_id')
             ->leftJoin('highways as h', 'h.id', '=', 'warehouse_logs.highway_id')
             ->where('warehouse_logs.from_warehouse_id', $warehouseId)
             ->orderBy('warehouse_logs.entry_date', 'desc')
@@ -180,7 +178,7 @@ class DashboardController extends Controller
             'warehouse_id' => $request->warehouse_id ?? null,
             'product_id' => $request->product_id ?? null,
             'highway_code' => $request->highway_code ?? null,
-            'dnn_code' => $request->dnn_code ?? null,
+            // 'dnn_code' => $request->dnn_code ?? null,
             'category_id' => $request->category_id ?? null,
             'start_date' => $request->start_date ?? null,
             'end_date' => $request->end_date ?? null
@@ -215,9 +213,9 @@ class DashboardController extends Controller
         if ($request->highway_code) {
             $query->where('h.code', $request->highway_code);
         }
-        if ($request->dnn_code) {
-            $query->where('d.code', $request->dnn_code);
-        }
+        // if ($request->dnn_code) {
+        //     $query->where('d.code', $request->dnn_code);
+        // }
         if ($request->category_id) {
             $query->where('p.subcategory_id', $request->category_id);
         }
@@ -233,7 +231,8 @@ class DashboardController extends Controller
                 "p.name as product_name",
                 "p.code as product_code",
                 "h.code as highway_code",
-                "d.code as dnn_code",
+                "c.name as company_name",
+                // "d.code as dnn_code",
                 "sc.name as subcategory_name",
                 "warehouse_logs.quantity",
                 "warehouse_logs.to_warehouse_id",
@@ -241,8 +240,9 @@ class DashboardController extends Controller
             )
             ->leftJoin('products as p', 'p.id', '=', 'warehouse_logs.product_id')
             ->leftJoin('subcategories as sc', 'sc.id', '=', 'p.subcategory_id')
-            ->leftJoin('dnns as d', 'd.id', '=', 'warehouse_logs.dnn_id')
+            // ->leftJoin('dnns as d', 'd.id', '=', 'warehouse_logs.dnn_id')
             ->leftJoin('highways as h', 'h.id', '=', 'warehouse_logs.highway_id')
+            ->leftJoin('companies as c', 'c.id', '=', 'warehouse_logs.company_id')
             ->where('warehouse_logs.to_warehouse_id', $warehouseId)
             ->orWhere('warehouse_logs.from_warehouse_id', $warehouseId)
             ->orderBy('warehouse_logs.entry_date', 'desc')
@@ -257,7 +257,7 @@ class DashboardController extends Controller
             'categories' => $categories,
             'companies' => $companies,
             'highway_code' => $request->highway_code ?? null,
-            'dnn_code' => $request->dnn_code ?? null,
+            // 'dnn_code' => $request->dnn_code ?? null,
             'warehouse_id' => $request->warehouse_id ?? null,
             'product_id' => $request->product_id ?? null,
             'company_id' => $request->company_id ?? null,
@@ -540,9 +540,9 @@ class DashboardController extends Controller
         if ($request->highway_code) {
             $query->where('h.code', $request->highway_code);
         }
-        if ($request->dnn_code) {
-            $query->where('d.code', $request->dnn_code);
-        }
+        // if ($request->dnn_code) {
+        //     $query->where('d.code', $request->dnn_code);
+        // }
         if ($request->category_id) {
             $query->where('p.subcategory_id', $request->category_id);
         }
@@ -560,12 +560,12 @@ class DashboardController extends Controller
                     "sc.name as subcategory_name",
                     "warehouse_logs.quantity",
                     "h.code as highway_code",
-                    "d.code as dnn_code",
+                    // "d.code as dnn_code",
                     "warehouse_logs.entry_date as exit_date"
                 )
                 ->leftJoin('products as p', 'p.id', '=', 'warehouse_logs.product_id')
                 ->leftJoin('subcategories as sc', 'sc.id', '=', 'p.subcategory_id')
-                ->leftJoin('dnns as d', 'd.id', '=', 'warehouse_logs.dnn_id')
+                // ->leftJoin('dnns as d', 'd.id', '=', 'warehouse_logs.dnn_id')
                 ->leftJoin('highways as h', 'h.id', '=', 'warehouse_logs.highway_id')
                 ->where('warehouse_logs.from_warehouse_id', $warehouseId)
                 ->orderBy('warehouse_logs.entry_date', 'desc')
@@ -583,12 +583,12 @@ class DashboardController extends Controller
                     "sc.name as subcategory_name",
                     "warehouse_logs.quantity",
                     "h.code as highway_code",
-                    "d.code as dnn_code",
+                    // "d.code as dnn_code",
                     "warehouse_logs.entry_date as exit_date"
                 )
                 ->leftJoin('products as p', 'p.id', '=', 'warehouse_logs.product_id')
                 ->leftJoin('subcategories as sc', 'sc.id', '=', 'p.subcategory_id')
-                ->leftJoin('dnns as d', 'd.id', '=', 'warehouse_logs.dnn_id')
+                // ->leftJoin('dnns as d', 'd.id', '=', 'warehouse_logs.dnn_id')
                 ->leftJoin('highways as h', 'h.id', '=', 'warehouse_logs.highway_id')
                 ->where('warehouse_logs.from_warehouse_id', $warehouseId)
                 ->orderBy('warehouse_logs.entry_date', 'desc')
@@ -634,9 +634,9 @@ class DashboardController extends Controller
         if ($request->highway_code) {
             $query->where('h.code', $request->highway_code);
         }
-        if ($request->dnn_code) {
-            $query->where('d.code', $request->dnn_code);
-        }
+        // if ($request->dnn_code) {
+        //     $query->where('d.code', $request->dnn_code);
+        // }
         if ($request->category_id) {
             $query->where('p.subcategory_id', $request->category_id);
         }
@@ -653,7 +653,7 @@ class DashboardController extends Controller
                     "p.name as product_name",
                     "p.code as product_code",
                     "h.code as highway_code",
-                    "d.code as dnn_code",
+                    // "d.code as dnn_code",
                     "sc.name as subcategory_name",
                     "warehouse_logs.quantity",
                     "warehouse_logs.to_warehouse_id",
@@ -661,7 +661,7 @@ class DashboardController extends Controller
                 )
                 ->leftJoin('products as p', 'p.id', '=', 'warehouse_logs.product_id')
                 ->leftJoin('subcategories as sc', 'sc.id', '=', 'p.subcategory_id')
-                ->leftJoin('dnns as d', 'd.id', '=', 'warehouse_logs.dnn_id')
+                // ->leftJoin('dnns as d', 'd.id', '=', 'warehouse_logs.dnn_id')
                 ->leftJoin('highways as h', 'h.id', '=', 'warehouse_logs.highway_id')
                 ->where('warehouse_logs.to_warehouse_id', $warehouseId)
                 ->orWhere('warehouse_logs.from_warehouse_id', $warehouseId)
@@ -678,7 +678,7 @@ class DashboardController extends Controller
                     "p.name as product_name",
                     "p.code as product_code",
                     "h.code as highway_code",
-                    "d.code as dnn_code",
+                    // "d.code as dnn_code",
                     "sc.name as subcategory_name",
                     "warehouse_logs.quantity",
                     "warehouse_logs.to_warehouse_id",
@@ -686,7 +686,7 @@ class DashboardController extends Controller
                 )
                 ->leftJoin('products as p', 'p.id', '=', 'warehouse_logs.product_id')
                 ->leftJoin('subcategories as sc', 'sc.id', '=', 'p.subcategory_id')
-                ->leftJoin('dnns as d', 'd.id', '=', 'warehouse_logs.dnn_id')
+                // ->leftJoin('dnns as d', 'd.id', '=', 'warehouse_logs.dnn_id')
                 ->leftJoin('highways as h', 'h.id', '=', 'warehouse_logs.highway_id')
                 ->where('warehouse_logs.to_warehouse_id', $warehouseId)
                 ->orWhere('warehouse_logs.from_warehouse_id', $warehouseId)

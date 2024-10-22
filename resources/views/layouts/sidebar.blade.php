@@ -30,7 +30,7 @@
             </svg>
             <span class="mx-3">Əsas səhifə</span>
         </a>
-        <a class="flex items-center px-6 py-2 mt-4 text-gray-100 bg-opacity-25 {{ Route::current()->uri() == 'products' ? 'bg-gray-700' : '' }}"
+        {{-- <a class="flex items-center px-6 py-2 mt-4 text-gray-100 bg-opacity-25 {{ Route::current()->uri() == 'products' ? 'bg-gray-700' : '' }}"
             href="/products">
             <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -72,7 +72,7 @@
             </svg>
 
             <span class="mx-3">Şirkətlər</span>
-        </a>
+        </a> --}}
         <a class="flex items-center px-6 py-2 mt-4 text-gray-100 bg-opacity-25 {{ Route::current()->uri() == 'highways' ? 'bg-gray-700' : '' }}"
             href="/highways">
             <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
@@ -83,7 +83,7 @@
             </svg>
             <span class="mx-3">Şassilər</span>
         </a>
-        <a class="flex items-center px-6 py-2 mt-4 text-gray-100 bg-opacity-25 {{ Route::current()->uri() == 'dnns' ? 'bg-gray-700' : '' }}"
+        {{-- <a class="flex items-center px-6 py-2 mt-4 text-gray-100 bg-opacity-25 {{ Route::current()->uri() == 'dnns' ? 'bg-gray-700' : '' }}"
             href="/dnns">
             <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -93,7 +93,7 @@
                 <line x1="13" y1="14" x2="17" y2="14"></line>
             </svg>
             <span class="mx-3">DNN</span>
-        </a>
+        </a> --}}
         <a class="flex items-center px-6 py-2 mt-4 text-gray-100 bg-opacity-25 {{ Route::current()->uri() == 'dnns' ? 'bg-gray-700' : '' }}"
             href="/visual-table">
             <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"

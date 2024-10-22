@@ -8,13 +8,34 @@
             @csrf
             <div class="grid grid-cols-1 mt-4">
                 <div>
+                    <label class="text-gray-700" for="company">Şirkət</label>
+                    <input list="companies" id="company" name="company_id" class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" type="text" autocomplete="off">
+                    <datalist id="companies">
+                        @foreach($companies as $company)
+                            <option value="{{ $company->name }}"></option>
+                        @endforeach
+                    </datalist>
+                    {{-- <select id="company" name="company_id" class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        <option selected value="">Şirkət seçin</option>
+                        @foreach ($companies as $company)
+                            <option value="{{ $company->id }}">{{ $company->name }}</option>
+                        @endforeach
+                    </select> --}}
+                </div>
+                <div>
                     <label class="text-gray-700" for="warehouse">Anbar</label>
-                    <select id="warehouse" name="warehouse_id" class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                    <input list="warehouses" id="warehouse" name="warehouse_id" class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" type="text" autocomplete="off">
+                    <datalist id="warehouses">
+                        @foreach($warehouses as $warehouse)
+                            <option value="{{ $warehouse->name }}"></option>
+                        @endforeach
+                    </datalist>
+                    {{-- <select id="warehouse" name="warehouse_id" class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                         <option selected>Anbar seçin</option>
                         @foreach ($warehouses as $warehouse)
                             <option value="{{ $warehouse->id }}">{{ $warehouse->name }}</option>
                         @endforeach
-                    </select>
+                    </select> --}}
                 </div>
                 <div>
                     <label class="text-gray-700" for="product">Məhsul</label>
@@ -22,15 +43,6 @@
                         <option selected value="">Məhsul seçin</option>
                         @foreach ($products as $product)
                             <option value="{{ $product->id }}">{{ $product->name }} {{ $product->code ? '- ' . $product->code : '' }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="text-gray-700" for="company">Şirkət</label>
-                    <select id="company" name="company_id" class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                        <option selected value="">Şirkət seçin</option>
-                        @foreach ($companies as $company)
-                            <option value="{{ $company->id }}">{{ $company->name }}</option>
                         @endforeach
                     </select>
                 </div>

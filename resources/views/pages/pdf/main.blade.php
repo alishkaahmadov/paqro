@@ -112,7 +112,7 @@
                 <td>{{ $product->warehouse->name }}</td>
                 <td>{{ $product->product->name }} {{ $product->product->code ? '- ' . $product->product->code : '' }}</td>
                 <td>{{ $product->quantity }}</td>
-                <td>{{ $product->product->subcategory->name }}</td>
+                <td>{{ $product->subcategory->name }}</td>
             </tr>
             @endforeach
         </tbody>

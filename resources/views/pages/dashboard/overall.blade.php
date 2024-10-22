@@ -22,7 +22,7 @@
             Ümumi
         </a>
     </div>
-    <div class="flex flex-col">
+    <div class="flex flex-col mt-3">
         <div class="-my-2 py-2 overflow-x-auto sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
             <div>
                 <form action="{{ route('dashboard.overall') }}" method="get">
@@ -75,10 +75,10 @@
                             <label class="text-gray-700" for="highway_code">Şassi nömrəsi</label>
                             <input value="{{ $highway_code ? $highway_code : '' }}" name="highway_code" id="highway_code" class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" type="text">
                         </div>
-                        <div>
+                        {{-- <div>
                             <label class="text-gray-700" for="highway_code">DNN nömrəsi</label>
                             <input value="{{ $dnn_code ? $dnn_code : '' }}" name="dnn_code" id="dnn_code" class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" type="text">
-                        </div>
+                        </div> --}}
                         <div>
                             <label class="text-gray-700" for="start_date">Tarixdən</label>
                             <input value="{{ $start_date ? $start_date : '' }}" name="start_date" id="start_date" class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" type="datetime-local">
@@ -130,10 +130,10 @@
                                 class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
                                 Şassi nömrəsi
                             </th>
-                            <th
+                            {{-- <th
                                 class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
                                 DNN nömrəsi
-                            </th>
+                            </th> --}}
                             <th
                                 class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
                                 Tip
@@ -180,10 +180,10 @@
                                     class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
                                     {{ $product->highway_code ? $product->highway_code : '-' }}
                                 </td>
-                                <td
+                                {{-- <td
                                     class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
                                     {{ $product->dnn_code ? $product->dnn_code : '-' }}
-                                </td>
+                                </td> --}}
                                 <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
                                     <span class="{{ $warehouseId == $product->to_warehouse_id ? 'process-type-entry' : 'process-type-exit' }}">{{ $warehouseId == $product->to_warehouse_id ? 'Giriş' : 'Çıxış' }}</span>
                                 </td>

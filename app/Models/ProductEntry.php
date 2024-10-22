@@ -11,11 +11,15 @@ class ProductEntry extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['product_id', 'company_id', 'warehouse_id', 'quantity', 'entry_date'];
+    protected $fillable = ['product_id', 'subcategory_id', 'company_id', 'warehouse_id', 'quantity', 'entry_date'];
 
     public function product() :BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+    public function subcategory() :BelongsTo
+    {
+        return $this->belongsTo(Subcategory::class, 'subcategory_id', 'id');
     }
     public function company() :BelongsTo
     {

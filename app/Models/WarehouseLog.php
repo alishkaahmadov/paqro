@@ -10,7 +10,7 @@ class WarehouseLog extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['from_warehouse_id', 'to_warehouse_id', 'product_id', 'quantity', 'entry_date', 'company_id', 'highway_id', 'dnn_id'];
+    protected $fillable = ['from_warehouse_id', 'to_warehouse_id', 'product_id', 'subcategory_id', 'quantity', 'entry_date', 'company_id', 'highway_id'];
 
     public function fromWarehouse() :BelongsTo
     {
@@ -23,6 +23,10 @@ class WarehouseLog extends Model
     public function product() :BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+    public function subcategory() :BelongsTo
+    {
+        return $this->belongsTo(Subcategory::class);
     }
     public function company() :BelongsTo
     {

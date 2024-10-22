@@ -168,7 +168,7 @@
                     <td>{{ $product->to_warehouse ? $product->to_warehouse : '-' }}</td>
                     <td>{{ $product->subcategory_name }}</td>
                     <td>{{ $product->highway_code ? $product->highway_code : '-' }}</td>
-                    <td>{{ $product->dnn_code ? $product->dnn_code : '-' }}</td>
+                    {{-- <td>{{ $product->dnn_code ? $product->dnn_code : '-' }}</td> --}}
                     <td><span
                             class="{{ $warehouseId == $product->to_warehouse_id ? 'process-type-entry' : 'process-type-exit' }}">{{ $warehouseId == $product->to_warehouse_id ? 'Giriş' : 'Çıxış' }}</span>
                     </td>
