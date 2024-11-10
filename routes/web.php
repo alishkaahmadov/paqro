@@ -8,8 +8,10 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SubcategoryController;
 use App\Http\Controllers\WarehouseController;
 use App\Models\Warehouse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 /*
 |--------------------------------------------------------------------------
@@ -57,6 +59,46 @@ Route::get('/export-main-products', [DashboardController::class, 'exportMainProd
 Route::get('/export-entry-products', [DashboardController::class, 'exportEntryProducts'])->name('export.entryProducts');
 Route::get('/export-exit-products', [DashboardController::class, 'exportExitProducts'])->name('export.exitProducts');
 Route::get('/export-overall-products', [DashboardController::class, 'exportOverallProducts'])->name('export.overallProducts');
+Route::get('/download-pdf', function (Request $request) {
+    $fileName = $request->query('file');
+    $filePath = "public/{$fileName}";
+    // Trigger the download if the file exists
+    if (Storage::exists($filePath)) {
+        return Storage::download($filePath);
+    }
+
+    abort(404);
+})->name('download.pdf');
+
+Route::get('/dashboard-test', function(){
+    return view('pages.pdf.warehouse_exit', [
+        'to' => "Sabirabad filialının Direktoru Məmmədov Xalid Əlioğlan oğlu",
+        'products' => [
+            "Tomoil Engine Oil M10DM 20l kanistr",
+            "Tomoil Engine Oil M10DM 20l kanistr",
+            "Tomoil Engine Oil M10DM 20l kanistr"
+        ],
+        'quantities' => [
+            10,20,30
+        ],
+        'categories' => [
+            "Pambıq",
+            "Traktor",
+            "Kanistr",
+        ],
+        'notes' => [
+            "litr",
+            "ədəd",
+            "litr",
+        ],
+        'codes' => [
+            "80x",
+            "",
+            "1221x",
+        ],
+        'transfer_date' => "05.10.2024",
+    ]);
+});
 
 Route::resource('dashboard', DashboardController::class)->names('dashboard');
 Route::resource('highways', HighwayController::class)->names('highways');

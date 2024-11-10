@@ -48,7 +48,7 @@ class HighwayController extends Controller
             ->leftJoin('products as p', 'p.id', '=', 'pe.product_id')
             ->leftJoin('warehouses as w', 'w.id', '=', 'pe.warehouse_id')
             ->orderBy('highways.id', 'desc')
-            ->paginate(10);
+            ->paginate(10)->appends($request->query());
             return view('pages.highway.index', [
             'highways' => $highways,
             'products' => $products,
@@ -106,6 +106,7 @@ class HighwayController extends Controller
                     'entry_date' => $request->date,
                     'product_id' => $request->product_id,
                     'company_id' => $warehouse->company_id,
+                    'subcategory_id' => $warehouse->subcategory_id,
                     'highway_id' => $highway->id
                 ]);
                 return redirect()->route('highways.index')
