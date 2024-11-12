@@ -20,15 +20,18 @@
                     <span class="text-gray-700 font-semibold text-2xl">P-Aqro MMC</span>
                 </div>
 
-                <form class="mt-4" action="/" method="GET">
+
+
+                <form class="mt-4" method="POST" action="{{ route('login') }}">
+                    @csrf
                     <label class="block">
                         <span class="text-gray-700 text-sm">Email</span>
-                        <input type="email" class="form-input mt-1 block w-full rounded-md focus:border-indigo-600">
+                        <input type="email" name="email" class="form-input mt-1 block w-full rounded-md focus:border-indigo-600">
                     </label>
 
                     <label class="block mt-3">
                         <span class="text-gray-700 text-sm">Şifrə</span>
-                        <input type="password" class="form-input mt-1 block w-full rounded-md focus:border-indigo-600">
+                        <input type="password" name="password" class="form-input mt-1 block w-full rounded-md focus:border-indigo-600">
                     </label>
 
                     <div class="mt-6">
@@ -37,6 +40,16 @@
                         </button>
                     </div>
                 </form>
+
+                @if ($errors->any())
+                    <div style="color: red;">
+                        <ul>
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
             </div>
         </div>
     </body>

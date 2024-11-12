@@ -103,7 +103,7 @@
                 <th>Anbar</th>
                 <th>Məshul</th>
                 <th>Sayı</th>
-                <th>Subanbar</th>
+                <th>Kateqoriya</th>
             </tr>
         </thead>
         <tbody>
@@ -112,7 +112,7 @@
                 <td>{{ $product->warehouse->name }}</td>
                 <td>{{ $product->product->name }} {{ $product->product->code ? '- ' . $product->product->code : '' }}</td>
                 <td>{{ $product->quantity }}</td>
-                <td>{{ $product->subcategory->name }}</td>
+                <td>{{ $product->subcategory_name }}</td>
             </tr>
             @endforeach
         </tbody>

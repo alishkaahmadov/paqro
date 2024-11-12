@@ -119,9 +119,8 @@
                 <th>Məshul</th>
                 <th>Sayı</th>
                 <th>Anbara</th>
-                <th>Subanbar</th>
+                <th>Kateqoriya</th>
                 <th>Şassi nömrəsi</th>
-                <th>DNN nömrəsi</th>
                 <th>Çıxış tarixi</th>
             </tr>
         </thead>
@@ -135,7 +134,6 @@
                     <td>{{ $product->to_warehouse ? $product->to_warehouse : '-' }}</td>
                     <td>{{ $product->subcategory_name }}</td>
                     <td>{{ $product->highway_code ? $product->highway_code : '-' }}</td>
-                    {{-- <td>{{ $product->dnn_code ? $product->dnn_code : '-' }}</td> --}}
                     <td>{{ $product->exit_date }}</td>
                 </tr>
             @endforeach

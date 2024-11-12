@@ -104,7 +104,7 @@
                 <th>Sayı</th>
                 <th>Şirkət</th>
                 <th>Anbardan</th>
-                <th>Subanbar</th>
+                <th>Kateqoriya</th>
                 <th>Giriş tarixi</th>
             </tr>
         </thead>

@@ -149,9 +149,8 @@
                 <th>Şirkət</th>
                 <th>Anbardan</th>
                 <th>Anbara</th>
-                <th>Subanbar</th>
+                <th>Kateqoriya</th>
                 <th>Şassi nömrəsi</th>
-                <th>DNN nömrəsi</th>
                 <th>Tip</th>
                 <th>Tarix</th>
             </tr>
@@ -168,7 +167,6 @@
                     <td>{{ $product->to_warehouse ? $product->to_warehouse : '-' }}</td>
                     <td>{{ $product->subcategory_name }}</td>
                     <td>{{ $product->highway_code ? $product->highway_code : '-' }}</td>
-                    {{-- <td>{{ $product->dnn_code ? $product->dnn_code : '-' }}</td> --}}
                     <td><span
                             class="{{ $warehouseId == $product->to_warehouse_id ? 'process-type-entry' : 'process-type-exit' }}">{{ $warehouseId == $product->to_warehouse_id ? 'Giriş' : 'Çıxış' }}</span>
                     </td>

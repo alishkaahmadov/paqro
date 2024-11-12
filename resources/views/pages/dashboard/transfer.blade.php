@@ -56,6 +56,13 @@
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                             type="number">
                     </div>
+
+                    <div class="md:w-2/5">
+                        <label class="text-gray-700">Qeyd</label>
+                        <input name="notes[]" required
+                            class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                            type="text" placeholder="litr/ədəd">
+                    </div>
     
                     <div class="md:w-2/5">
                         <label class="text-gray-700" for="transfer_date">Transfer tarixi</label>
@@ -109,6 +116,13 @@
                         <input name="quantities[]" required
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                             type="number">
+                    </div>
+
+                    <div class="md:w-2/5">
+                        <label class="text-gray-700">Qeyd</label>
+                        <input name="notes[]" required
+                            class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                            type="text" placeholder="litr/ədəd">
                     </div>
     
                     <div class="md:w-2/5">
