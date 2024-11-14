@@ -9,7 +9,7 @@
                 height="14">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" />
             </svg>
-            Yeni transfer əlavə et
+            Məxaric
         </a>
     </div>
     <div class="w-full mt-4">
@@ -48,6 +48,16 @@
                                 @endforeach
                             </select>
                         </div>
+                        {{-- <div>
+                            <label class="text-gray-700" for="warehouse">Anbara</label>
+                            <select id="warehouse" name="to_warehouse_id"
+                                class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                                @foreach ($warehouses as $warehouse)
+                                    <option
+                                        value="{{ $warehouse->id }}">{{ $warehouse->name }}</option>
+                                @endforeach
+                            </select>
+                        </div> --}}
                         <div>
                             <label class="text-gray-700" for="product">Məhsul</label>
                             <select id="product" name="product_id"
@@ -99,7 +109,11 @@
                         <tr>
                             <th
                                 class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                                Anbar
+                                №
+                            </th>
+                            <th
+                                class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                Kod
                             </th>
                             <th
                                 class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
@@ -137,11 +151,15 @@
                             <tr>
                                 <td
                                     class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
-                                    {{ $product->from_warehouse }}
+                                    {{ $loop->index + 1 }}
                                 </td>
                                 <td
                                     class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
-                                    {{ $product->product_name }} {{ $product->product_code ? '- ' . $product->product_code : '' }}
+                                    {{ $product->product_code ?? '' }}
+                                </td>
+                                <td
+                                    class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
+                                    {{ $product->product_name }}
                                 </td>
                                 <td
                                     class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">

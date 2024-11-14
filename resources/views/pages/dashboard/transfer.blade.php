@@ -11,9 +11,8 @@
                     <label class="text-gray-700" for="from_warehouse">Anbardan</label>
                     <select id="from_warehouse" name="from_warehouse"
                         class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                        <option disabled selected>Anbar seçin</option>
                         @foreach ($warehouses as $warehouse)
-                            <option value="{{ $warehouse->id }}">{{ $warehouse->name }}</option>
+                            <option {{ $mainWarehouseId && $mainWarehouseId == $warehouse->id ? 'selected' : ($warehouse->id == 1 ? 'selected' : '') }} value="{{ $warehouse->id }}">{{ $warehouse->name }}</option>
                         @endforeach
                     </select>
                 </div>

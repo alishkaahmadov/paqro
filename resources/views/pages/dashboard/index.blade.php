@@ -84,7 +84,11 @@
                         <tr>
                             <th
                                 class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                                Anbar
+                                №
+                            </th>
+                            <th
+                                class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                Kod
                             </th>
                             <th
                                 class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
@@ -106,12 +110,15 @@
                             <tr>
                                 <td
                                     class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
-                                    {{ $product->warehouse->name }}
+                                    {{ $loop->index + 1 }}
+                                </td>
+                                <td
+                                    class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
+                                    {{ $product->product->code ? $product->product->code : '' }}
                                 </td>
                                 <td
                                     class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
                                     {{ $product->product->name }}
-                                    {{ $product->product->code ? '- ' . $product->product->code : '' }}
                                 </td>
                                 <td
                                     class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
@@ -142,9 +149,9 @@
                             type="button" onclick="setExportType(event, 'all')">Çap et</button>
                     </form>
                 </div>
-                <div class="flex items-center justify-center my-2">
+                {{-- <div class="flex items-center justify-center my-2">
                     @include('components.pagination', ['paginator' => $productEntries])
-                </div>
+                </div> --}}
             </div>
         </div>
     </div>

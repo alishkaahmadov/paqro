@@ -46,7 +46,7 @@ class DashboardController extends Controller
 
         $groupedEntries = $query->select('product_id', 'subcategory_id', 'warehouse_id', 'quantity')
             ->where('product_entries.warehouse_id', $warehouseId)
-            ->paginate(10)->appends($request->query());
+            ->get();
         return view('pages.dashboard.index', [
             'productEntries' => $groupedEntries,
             'products' => $products,
@@ -136,6 +136,9 @@ class DashboardController extends Controller
             $warehouseId = $mainWarehouse->id;
         }
 
+        if ($request->to_warehouse_id) {
+            $query->where('to_warehouse_id', $request->to_warehouse_id);
+        }
         if ($request->product_id) {
             $query->where('product_id', $request->product_id);
         }
@@ -187,6 +190,7 @@ class DashboardController extends Controller
             'warehouses' => $warehouses,
             'categories' => $categories,
             'warehouse_id' => $request->warehouse_id ?? null,
+            'to_warehouse_id' => $request->to_warehouse_id ?? null,
             'product_id' => $request->product_id ?? null,
             'highway_code' => $request->highway_code ?? null,
             // 'dnn_code' => $request->dnn_code ?? null,
@@ -318,9 +322,11 @@ class DashboardController extends Controller
     public function transferPage()
     {
         $warehouses = Warehouse::all();
-
+        $mainWarehouse = Warehouse::getMainWarehouse();
+        $warehouseId = $mainWarehouse->id;
         return view('pages.dashboard.transfer', [
-            'warehouses' => $warehouses
+            'warehouses' => $warehouses,
+            'mainWarehouseId' => $warehouseId
         ]);
     }
 
@@ -440,16 +446,16 @@ class DashboardController extends Controller
                 'company_name' => 'required|string',
 
                 'products' => 'required|array|min:1',
-                'products.*' => 'required|string',
+                'products.*' => 'nullable|string',
 
                 'product_codes' => 'required|array|min:1',
                 'product_codes.*' => 'nullable|string',
 
                 'quantities' => 'required|array|min:1',
-                'quantities.*' => 'required|integer',
+                'quantities.*' => 'nullable|integer',
 
                 'categories' => 'required|array|min:1',
-                'categories.*' => 'required|string',
+                'categories.*' => 'nullable|string',
 
                 'entry_dates' => 'required|array|min:1',
                 'entry_dates.*' => 'required|date',
@@ -472,6 +478,9 @@ class DashboardController extends Controller
             // loop through all arrays 
             $loopLength = count($request->products);
             for ($i = 0; $i < $loopLength; $i++) {
+                if(!($request->products[$i] && $request->quantities[$i] && $request->categories[$i])){
+                    continue;
+                }
                 // check if category exits else create new one
                 $currentCategory = $request->categories[$i];
                 if ($categoryExits = Subcategory::where(['name' => $currentCategory])->first()) {

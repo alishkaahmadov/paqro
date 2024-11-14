@@ -33,24 +33,20 @@ use Illuminate\Support\Facades\Storage;
 //         'name' => 'Şirvan anbarı',
 //         'is_main' => true
 //     ]);
+//     $user = User::create([
+//         'name' => 'Şirvan',
+//         'email' => 'paqrommc@gmail.com',
+//         'password' => Hash::make('Paqro2@24!'),
+//     ]);
 //     return $test;
 // });
-
-// Route::get('/alishka', function(){
-//     $user = User::create([
-//         'name' => 'alishka',
-//         'email' => 'alishka@gmail.com',
-//         'password' => Hash::make('alishka254'),
-//     ]);
-// });
-
 Route::get('/login', [AuthController::class, 'loginView'])->name('login-view');
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 
 Route::group(['middleware' => 'auth'], function(){
-    Route::get('/', [DashboardController::class, 'indexPage'])->name('dashboard.indexPage');
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard.indexPage');
     Route::get('/visual-table', [DashboardController::class, 'visualTable'])->name('visual-table');
     Route::get('/dashboard/overall', [DashboardController::class, 'overall'])->name('dashboard.overall');
     Route::get('/dashboard/entries', [DashboardController::class, 'entries'])->name('dashboard.entries');
@@ -77,8 +73,8 @@ Route::group(['middleware' => 'auth'], function(){
 });
 
 
-// Route::resource('companies', CompanyController::class)->names('companies');
+//Route::resource('companies', CompanyController::class)->names('companies');
 // Route::resource('categories', SubcategoryController::class)->names('categories');
 // Route::resource('products', ProductController::class)->names('products');
-// Route::resource('warehouses', WarehouseController::class)->names('warehouses');
+Route::resource('warehouses', WarehouseController::class)->names('warehouses');
 // Route::resource('dnns', DnnController::class)->names('dnns');

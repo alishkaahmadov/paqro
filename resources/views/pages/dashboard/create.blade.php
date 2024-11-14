@@ -42,7 +42,7 @@
                     </button>
                     <div class="md:w-2/5">
                         <label class="text-gray-700" for="product">Məhsul</label>
-                        <input list="products" id="product" name="products[]" required
+                        <input list="products" id="product" name="products[]"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                             type="text" autocomplete="off">
                         <datalist id="products">
@@ -55,19 +55,19 @@
                     </div>
                     <div class="md:w-2/5">
                         <label class="text-gray-700" for="product_code">Məhsulun kodu</label>
-                        <input id="product_code" name="product_codes[]" required
+                        <input id="product_code" name="product_codes[]"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                             type="text" autocomplete="off">
                     </div>
                     <div class="md:w-2/5">
                         <label class="text-gray-700" for="quantity">Sayı</label>
-                        <input name="quantities[]" required
+                        <input name="quantities[]"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                             type="number">
                     </div>
                     <div class="md:w-2/5">
                         <label class="text-gray-700" for="category">Kateqoriya</label>
-                        <input list="categories" id="category" name="categories[]" required
+                        <input list="categories" id="category" name="categories[]"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                             type="text" autocomplete="off">
                         <datalist id="categories">
@@ -169,7 +169,7 @@
                 <div class="relative flex justify-between flex-col md:flex-row mt-2 pt-8">
                     <div class="md:w-2/5">
                         <label class="text-gray-700" for="product">Məhsul</label>
-                        <input list="products" id="product" name="products[]" required
+                        <input list="products" id="product" name="products[]"
                             class="product-input mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                             type="text" autocomplete="off">
                         <datalist id="products">
@@ -182,19 +182,19 @@
                     </div>
                     <div class="md:w-2/5">
                         <label class="text-gray-700" for="product_code">Məhsulun kodu</label>
-                        <input id="product_code" name="product_codes[]" required
+                        <input id="product_code" name="product_codes[]"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                             type="text" autocomplete="off">
                     </div>
                     <div class="md:w-2/5">
                         <label class="text-gray-700" for="quantity">Sayı</label>
-                        <input name="quantities[]" required
+                        <input name="quantities[]"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                             type="number">
                     </div>
                     <div class="md:w-2/5">
                         <label class="text-gray-700" for="category">Kateqoriya</label>
-                        <input list="categories" id="category" name="categories[]" required
+                        <input list="categories" id="category" name="categories[]"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                             type="text" autocomplete="off">
                         <datalist id="categories">

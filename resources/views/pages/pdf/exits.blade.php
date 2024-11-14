@@ -115,7 +115,8 @@
     <table>
         <thead>
             <tr>
-                <th>Anbar</th>
+                <th>№</th>
+                <th>Kod</th>
                 <th>Məshul</th>
                 <th>Sayı</th>
                 <th>Anbara</th>
@@ -127,9 +128,9 @@
         <tbody>
             @foreach ($products as $product)
                 <tr>
-                    <td>{{ $product->from_warehouse }}</td>
-                    <td>{{ $product->product_name }} {{ $product->product_code ? '- ' . $product->product_code : '' }}
-                    </td>
+                    <td>{{ $loop->index + 1 }}</td>
+                    <td>{{ $product->product->code ?? '' }}</td>
+                    <td>{{ $product->product_name }}</td>
                     <td>{{ $product->quantity }}</td>
                     <td>{{ $product->to_warehouse ? $product->to_warehouse : '-' }}</td>
                     <td>{{ $product->subcategory_name }}</td>
