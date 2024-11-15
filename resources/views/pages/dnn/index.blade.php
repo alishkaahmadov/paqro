@@ -44,7 +44,7 @@
                         </div>
                         <div class="self-end">
                             <button type="submit"
-                                class="w-full px-4 py-2 bg-gray-800 text-gray-200 rounded-md hover:bg-gray-700 focus:outline-none focus:bg-gray-700">Axtar</button>
+                                class="w-full px-4 py-2 bg-green-500 border-2 border-green-500 text-white rounded-md hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-green-400">Axtar</button>
                         </div>
                     </div>
                 </form>

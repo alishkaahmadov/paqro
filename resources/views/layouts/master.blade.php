@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.css"
         integrity="sha512-6S2HWzVFxruDlZxI3sXOZZ4/eJ8AcxkQH1+JjSe/ONCEqR9L4Ysq5JdT5ipqtzU7WHalNwzwBv+iE51gNHJNqQ=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
     <title>P-Aqro</title>
     @vite('resources/css/app.css')
     @vite('resources/js/app.js')
@@ -43,6 +44,9 @@
             display: inline-block;
             /* Keeps the span within the td width */
         }
+        .select2-container{
+            margin-top: 8px;
+        }
     </style>
 </head>
 
@@ -70,7 +74,7 @@
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.1.1/cdn.js"
     integrity="sha512-KbpTFJv+iXvSHG3l6ixXFeVLbxD0XKJw1zhlqA/nVm9TCufeAPBVbG53uxx6z6pjDdmaa3BXQMkpNeTCgtVySQ=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {

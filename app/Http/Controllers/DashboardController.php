@@ -36,8 +36,8 @@ class DashboardController extends Controller
             $warehouseId = $mainWarehouse->id;
         }
 
-        if ($request->product_id) {
-            $query->where('product_entries.product_id', $request->product_id);
+        if ($request->product_ids && count($request->product_ids) > 0) {
+            $query->whereIn('product_entries.product_id', $request->product_ids);
         }
 
         if ($request->category_id) {
@@ -52,7 +52,7 @@ class DashboardController extends Controller
             'products' => $products,
             'warehouses' => $warehouses,
             'warehouse_id' => $request->warehouse_id ?? null,
-            'product_id' => $request->product_id ?? null,
+            'product_ids' => $request->product_ids ?? null,
             'categories' => $categories,
             'category_id' => $request->category_id ?? null,
         ]);
@@ -60,6 +60,14 @@ class DashboardController extends Controller
 
     public function entries(Request $request)
     {
+        $startDate = $request->start_date ?? null;
+        $endDate = $request->end_date ?? null;
+        if($startDate && !$endDate){
+            $currentStartDate = Carbon::parse($startDate);
+            $startDate = $currentStartDate->startOfDay()->addMinute()->toDateTimeString();
+            $endDate = $currentStartDate->endOfDay()->subMinute()->toDateTimeString();
+        }
+
         $warehouses = Warehouse::all();
         $products = Product::all();
         $categories = Subcategory::all();
@@ -74,8 +82,31 @@ class DashboardController extends Controller
             $warehouseId = $mainWarehouse->id;
         }
 
-        if ($request->product_id) {
-            $query->where('product_id', $request->product_id);
+        if ($request->from_warehouse_id) {
+            $query->where('from_warehouse_id', $request->from_warehouse_id);
+        }
+        if ($request->product_ids && count($request->product_ids) > 0) {
+            $query->whereIn('product_id', $request->product_ids);
+
+            if(count($request->product_ids) == 1){
+                // Məhsulun ümumi girish sayı
+                $query2 = WarehouseLog::query();
+                $query2->where(['to_warehouse_id' => $warehouseId, 'product_id' => $request->product_ids[0]]);
+                if($request->from_warehouse_id){
+                    $query2->where('from_warehouse_id', $request->from_warehouse_id);
+                }
+                if ($request->category_id) {
+                    $query2->where('subcategory_id', $request->category_id);
+                }
+                if ($request->company_id) {
+                    $query->where('company_id', $request->company_id);
+                }
+                if ($startDate && $endDate) {
+                    $query2->whereBetween('warehouse_logs.entry_date', [$startDate, $endDate]);
+                }
+                $query2->leftJoin('companies as c', 'c.id', '=', 'warehouse_logs.company_id');
+                $totalEntryCount = $query2->sum('warehouse_logs.quantity');
+            }
         }
         if ($request->company_id) {
             $query->where('company_id', $request->company_id);
@@ -83,8 +114,8 @@ class DashboardController extends Controller
         if ($request->category_id) {
             $query->where('subcategory_id', $request->category_id);
         }
-        if ($request->start_date && $request->end_date) {
-            $query->whereBetween('warehouse_logs.entry_date', [$request->start_date, $request->end_date]);
+        if ($startDate && $endDate) {
+            $query->whereBetween('warehouse_logs.entry_date', [$startDate, $endDate]);
         }
 
         // warehouse_logs 
@@ -104,25 +135,35 @@ class DashboardController extends Controller
             ->leftJoin('companies as c', 'c.id', '=', 'warehouse_logs.company_id')
             ->where('warehouse_logs.to_warehouse_id', $warehouseId)
             ->orderBy('warehouse_logs.entry_date', 'desc')
-            ->paginate(10)->appends($request->query());
+            ->paginate(20)->appends($request->query());
 
         return view('pages.dashboard.entries', [
             'productEntries' => $warehouseLogs,
+            'totalEntryCount' => $totalEntryCount ?? 0,
             'products' => $products,
             'warehouses' => $warehouses,
             'categories' => $categories,
             'companies' => $companies,
             'warehouse_id' => $request->warehouse_id ?? null,
-            'product_id' => $request->product_id ?? null,
+            'from_warehouse_id' => $request->from_warehouse_id ?? null,
+            'product_ids' => $request->product_ids ?? null,
             'company_id' => $request->company_id ?? null,
             'category_id' => $request->category_id ?? null,
-            'start_date' => $request->start_date ?? null,
-            'end_date' => $request->end_date ?? null
+            'start_date' => $startDate ?? null,
+            'end_date' => $endDate ?? null
         ]);
     }
 
     public function exits(Request $request)
     {
+        $startDate = $request->start_date ?? null;
+        $endDate = $request->end_date ?? null;
+        if($startDate && !$endDate){
+            $currentStartDate = Carbon::parse($startDate);
+            $startDate = $currentStartDate->startOfDay()->addMinute()->toDateTimeString();
+            $endDate = $currentStartDate->endOfDay()->subMinute()->toDateTimeString();
+        }
+
         $warehouses = Warehouse::all();
         $products = Product::all();
         $categories = Subcategory::all();
@@ -139,20 +180,36 @@ class DashboardController extends Controller
         if ($request->to_warehouse_id) {
             $query->where('to_warehouse_id', $request->to_warehouse_id);
         }
-        if ($request->product_id) {
-            $query->where('product_id', $request->product_id);
+        if ($request->product_ids && count($request->product_ids) > 0) {
+            $query->whereIn('product_id', $request->product_ids);
+            if(count($request->product_ids) == 1){
+                // Məhsulun ümumi çıxış sayı
+                $query2 = WarehouseLog::query();
+                $query2->where(['from_warehouse_id' => $warehouseId, 'product_id' => $request->product_ids[0]]);
+                if($request->to_warehouse_id){
+                    $query2->where('to_warehouse_id', $request->to_warehouse_id);
+                }
+                if ($request->category_id) {
+                    $query2->where('subcategory_id', $request->category_id);
+                }
+                if ($request->highway_code) {
+                    $query2->where('h.code', $request->highway_code);
+                }
+                if ($startDate && $endDate) {
+                    $query2->whereBetween('warehouse_logs.entry_date', [$startDate, $endDate]);
+                }
+                $query2->leftJoin('highways as h', 'h.id', '=', 'warehouse_logs.highway_id');
+                $totalExitCount = $query2->sum('warehouse_logs.quantity');
+            }
         }
         if ($request->highway_code) {
             $query->where('h.code', $request->highway_code);
         }
-        // if ($request->dnn_code) {
-        //     $query->where('d.code', $request->dnn_code);
-        // }
         if ($request->category_id) {
             $query->where('subcategory_id', $request->category_id);
         }
-        if ($request->start_date && $request->end_date) {
-            $query->whereBetween('warehouse_logs.entry_date', [$request->start_date, $request->end_date]);
+        if ($startDate && $endDate) {
+            $query->whereBetween('warehouse_logs.entry_date', [$startDate, $endDate]);
         }
 
         // warehouse_logs 
@@ -174,14 +231,7 @@ class DashboardController extends Controller
             ->leftJoin('highways as h', 'h.id', '=', 'warehouse_logs.highway_id')
             ->where('warehouse_logs.from_warehouse_id', $warehouseId)
             ->orderBy('warehouse_logs.entry_date', 'desc')
-            ->paginate(10)->appends($request->query());
-
-
-            if($request->product_id && $request->start_date && $request->end_date){
-                // Məhsulun ümumi çıxış sayı
-                $totalExitCount = WarehouseLog::where(['from_warehouse_id' => $warehouseId, 'product_id' => $request->product_id])->whereBetween('entry_date', [$request->start_date, $request->end_date])->sum('quantity');
-            }
-            // $totalExitCount = $warehouseLogs->sum('quantity');
+            ->paginate(20)->appends($request->query());
 
         return view('pages.dashboard.exits', [
             'productExits' => $warehouseLogs,
@@ -191,17 +241,25 @@ class DashboardController extends Controller
             'categories' => $categories,
             'warehouse_id' => $request->warehouse_id ?? null,
             'to_warehouse_id' => $request->to_warehouse_id ?? null,
-            'product_id' => $request->product_id ?? null,
+            'product_ids' => $request->product_ids ?? null,
             'highway_code' => $request->highway_code ?? null,
             // 'dnn_code' => $request->dnn_code ?? null,
             'category_id' => $request->category_id ?? null,
-            'start_date' => $request->start_date ?? null,
-            'end_date' => $request->end_date ?? null
+            'start_date' => $startDate ?? null,
+            'end_date' => $endDate ?? null
         ]);
     }
 
     public function overall(Request $request)
     {
+        $startDate = $request->start_date ?? null;
+        $endDate = $request->end_date ?? null;
+        if($startDate && !$endDate){
+            $currentStartDate = Carbon::parse($startDate);
+            $startDate = $currentStartDate->startOfDay()->addMinute()->toDateTimeString();
+            $endDate = $currentStartDate->endOfDay()->subMinute()->toDateTimeString();
+        }
+
         $warehouses = Warehouse::all();
         $products = Product::all();
         $categories = Subcategory::all();
@@ -219,8 +277,27 @@ class DashboardController extends Controller
             $warehouseName = $mainWarehouse->name;
         }
 
-        if ($request->product_id) {
-            $query->where('product_id', $request->product_id);
+        if($request->to_warehouse_id){
+            $query->where('warehouse_logs.to_warehouse_id', $request->to_warehouse_id)->where('warehouse_logs.from_warehouse_id', $warehouseId);
+        }else if($request->from_warehouse_id){
+            $query->where('warehouse_logs.from_warehouse_id', $request->from_warehouse_id)->where('warehouse_logs.to_warehouse_id', $warehouseId);
+        }else{
+            if(!$request->type_id){
+                $query->where(function($query) use($warehouseId) {
+                    $query->where('warehouse_logs.to_warehouse_id', $warehouseId)
+                          ->orWhere('warehouse_logs.from_warehouse_id', $warehouseId);
+                });
+            }else{
+                if($request->type_id == 1){
+                    $query->where('warehouse_logs.to_warehouse_id', $warehouseId);
+                }else{
+                    $query->where('warehouse_logs.from_warehouse_id', $warehouseId);
+                }
+            }
+        }
+
+        if ($request->product_ids && count($request->product_ids) > 0) {
+            $query->whereIn('product_id', $request->product_ids);
         }
         if ($request->company_id) {
             $query->where('company_id', $request->company_id);
@@ -228,14 +305,11 @@ class DashboardController extends Controller
         if ($request->highway_code) {
             $query->where('h.code', $request->highway_code);
         }
-        // if ($request->dnn_code) {
-        //     $query->where('d.code', $request->dnn_code);
-        // }
         if ($request->category_id) {
             $query->where('subcategory_id', $request->category_id);
         }
-        if ($request->start_date && $request->end_date) {
-            $query->whereBetween('warehouse_logs.entry_date', [$request->start_date, $request->end_date]);
+        if ($startDate && $endDate) {
+            $query->whereBetween('warehouse_logs.entry_date', [$startDate, $endDate]);
         }
 
         // warehouse_logs 
@@ -248,7 +322,6 @@ class DashboardController extends Controller
                 "p.code as product_code",
                 "h.code as highway_code",
                 "c.name as company_name",
-                // "d.code as dnn_code",
                 "sc.name as subcategory_name",
                 "warehouse_logs.quantity",
                 "warehouse_logs.to_warehouse_id",
@@ -256,15 +329,14 @@ class DashboardController extends Controller
             )
             ->leftJoin('products as p', 'p.id', '=', 'warehouse_logs.product_id')
             ->leftJoin('subcategories as sc', 'sc.id', '=', 'warehouse_logs.subcategory_id')
-            // ->leftJoin('dnns as d', 'd.id', '=', 'warehouse_logs.dnn_id')
             ->leftJoin('highways as h', 'h.id', '=', 'warehouse_logs.highway_id')
             ->leftJoin('companies as c', 'c.id', '=', 'warehouse_logs.company_id')
-            ->where(function($query) use($warehouseId) {
-                $query->where('warehouse_logs.to_warehouse_id', $warehouseId)
-                      ->orWhere('warehouse_logs.from_warehouse_id', $warehouseId);
-            })
+            // ->where(function($query) use($warehouseId) {
+            //     $query->where('warehouse_logs.to_warehouse_id', $warehouseId)
+            //           ->orWhere('warehouse_logs.from_warehouse_id', $warehouseId);
+            // })
             ->orderBy('warehouse_logs.entry_date', 'desc')
-            ->paginate(10)->appends($request->query());
+            ->paginate(20)->appends($request->query());
 
         return view('pages.dashboard.overall', [
             'productEntries' => $warehouseLogs,
@@ -275,13 +347,15 @@ class DashboardController extends Controller
             'categories' => $categories,
             'companies' => $companies,
             'highway_code' => $request->highway_code ?? null,
-            // 'dnn_code' => $request->dnn_code ?? null,
             'warehouse_id' => $request->warehouse_id ?? null,
-            'product_id' => $request->product_id ?? null,
+            'to_warehouse_id' => $request->to_warehouse_id ?? null,
+            'from_warehouse_id' => $request->from_warehouse_id ?? null,
+            'product_ids' => $request->product_ids ?? null,
+            'type_id' => $request->type_id ?? null,
             'company_id' => $request->company_id ?? null,
             'category_id' => $request->category_id ?? null,
-            'start_date' => $request->start_date ?? null,
-            'end_date' => $request->end_date ?? null
+            'start_date' => $startDate ?? null,
+            'end_date' => $endDate ?? null
         ]);
     }
     /**
@@ -339,13 +413,13 @@ class DashboardController extends Controller
                 'to_warehouse' => 'required|exists:warehouses,id',
 
                 'products' => 'required|array|min:1',
-                'products.*' => 'required',
+                'products.*' => 'nullable',
 
                 'quantities' => 'required|array|min:1',
-                'quantities.*' => 'required|integer',
+                'quantities.*' => 'nullable|integer',
 
                 'notes' => 'required|array|min:1',
-                'notes.*' => 'required|string',
+                'notes.*' => 'nullable|string',
 
                 'transfer_dates' => 'required|array|min:1',
                 'transfer_dates.*' => 'required|date',
@@ -357,12 +431,17 @@ class DashboardController extends Controller
             $productCodes = [];
             $categories = [];
             for ($i = 0; $i < $loopLength; $i++) {
+                if(!($request->products[$i] && $request->quantities[$i] && $request->notes[$i])){
+                    $productNames[] = '';
+                    $productCodes[] = '';
+                    $categories[] = '';
+                    continue;
+                }
                 $currentProduct = $request->products[$i];
-                $currentQuantity = $request->quantities[$i];
+                $currentQuantity = (int)$request->quantities[$i];
                 $currentEntryDate = $request->transfer_dates[$i];
                 $fromWarehouse = ProductEntry::where(['warehouse_id' => $request->from_warehouse, 'product_id' => $currentProduct])->first();
                 if ($fromWarehouse->quantity >= $currentQuantity) {
-
                     $currentProductData = Product::where('id', $currentProduct)->first();
                     $productNames[] = $currentProductData->name ?? '';
                     $productCodes[] = $currentProductData->code ?? '';
@@ -554,7 +633,7 @@ class DashboardController extends Controller
                 ->get();
         } else {
             $page = $request->input('page', 1);
-            $perPage = 10;
+            $perPage = 20;
             $products = $query->select('product_id', 'warehouse_id', 'quantity', 's.name as subcategory_name')
                 ->leftJoin('products as p', 'p.id', '=', 'product_entries.product_id')
                 ->leftJoin('subcategories as s', 's.id', '=', 'product_entries.subcategory_id')
@@ -588,7 +667,9 @@ class DashboardController extends Controller
             $mainWarehouse = Warehouse::getMainWarehouse();
             $warehouseId = $mainWarehouse->id;
         }
-
+        if ($request->from_warehouse_id) {
+            $query->where('from_warehouse_id', $request->from_warehouse_id);
+        }
         if ($request->product_id) {
             $query->where('product_id', $request->product_id);
         }
@@ -622,7 +703,7 @@ class DashboardController extends Controller
                 ->get();
         } else {
             $page = $request->input('page', 1);
-            $perPage = 10;
+            $perPage = 20;
             $products = $query
                 ->select(
                     DB::raw("(select name from warehouses where warehouses.id = warehouse_logs.from_warehouse_id) as from_warehouse"),
@@ -669,7 +750,9 @@ class DashboardController extends Controller
             $mainWarehouse = Warehouse::getMainWarehouse();
             $warehouseId = $mainWarehouse->id;
         }
-
+        if ($request->to_warehouse_id) {
+            $query->where('to_warehouse_id', $request->to_warehouse_id);
+        }
         if ($request->product_id) {
             $query->where('product_id', $request->product_id);
         }
@@ -703,7 +786,7 @@ class DashboardController extends Controller
                 ->get();
         } else {
             $page = $request->input('page', 1);
-            $perPage = 10;
+            $perPage = 20;
 
             $products = $query
                 ->select(
@@ -793,7 +876,7 @@ class DashboardController extends Controller
                 ->get();
         } else {
             $page = $request->input('page', 1);
-            $perPage = 10;
+            $perPage = 20;
 
             $products = $query
                 ->select(

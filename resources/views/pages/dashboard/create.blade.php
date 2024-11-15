@@ -113,43 +113,7 @@
             }
         })
 
-        document.getElementById('warehouse').addEventListener('input', function() {
-            // Get the list of options from the datalist
-            const options = document.getElementById('warehouses').options;
-            const warehouseInput = document.getElementById('warehouse');
-            const hiddenWarehouseId = document.getElementById('warehouse_id');
-
-            // Loop through options to find the selected warehouse name and get its ID
-            for (let i = 0; i < options.length; i++) {
-                if (options[i].value === warehouseInput.value) {
-                    // Set the hidden input field with the corresponding warehouse ID
-                    hiddenWarehouseId.value = options[i].getAttribute('data-id');
-                    break;
-                } else {
-                    // Clear the hidden input if no match is found
-                    hiddenWarehouseId.value = '';
-                }
-            }
-        });
-
-        document.getElementById('company').addEventListener('input', function() {
-            // Get the list of options from the datalist
-            const options = document.getElementById('companies').options;
-            const companyInput = document.getElementById('company');
-            const hiddenCompanyId = document.getElementById('company_id');
-
-            for (let i = 0; i < options.length; i++) {
-                if (options[i].value === companyInput.value) {
-                    hiddenCompanyId.value = options[i].getAttribute('data-id');
-                    break;
-                } else {
-                    hiddenCompanyId.value = '';
-                }
-            }
-        });
-
-        document.getElementById('addMore').addEventListener('click', function(event) {
-            event.preventDefault();
+        function addNewElements(number){
             var now = new Date().toLocaleString("en-US", {
                 timeZone: "Asia/Baku"
             });
@@ -160,9 +124,7 @@
                 String(timezoneDate.getDate()).padStart(2, '0') + 'T' +
                 String(timezoneDate.getHours()).padStart(2, '0') + ':' +
                 String(timezoneDate.getMinutes()).padStart(2, '0');
-            // Create a new container div for the set of elements
-            const newSet = document.createElement('div');
-            newSet.className = 'space-y-4';
+            
 
             // Define the HTML for the elements to be added
             const newElementsHTML = `
@@ -212,6 +174,141 @@
                 </div>
             `;
 
+            const mainDiv = document.getElementById('mainDiv');
+
+            for (let i = 0; i < number; i++) {
+                const newSet = document.createElement('div');
+                newSet.className = 'space-y-4';
+                newSet.innerHTML = newElementsHTML;
+                mainDiv.appendChild(newSet);
+            }
+
+            const productInputs = [...document.querySelectorAll('.product-input')];
+
+            productInputs.forEach(productInput => {
+                productInput.addEventListener('input', function(event){
+                    const selectedProduct = event.target.value;
+                    let foundCode = '';
+                    productOptions.forEach(option => {
+                        if (option.value === selectedProduct) {
+                            foundCode = option.getAttribute('data-code');
+                        }
+                    });
+    
+                    const productCodeInput = event.target.parentNode.nextElementSibling.querySelector('#product_code');
+                    if (productCodeInput) {
+                        productCodeInput.value = foundCode || '';
+                    }
+                })
+            })
+        }
+
+        document.getElementById('warehouse').addEventListener('input', function() {
+            // Get the list of options from the datalist
+            const options = document.getElementById('warehouses').options;
+            const warehouseInput = document.getElementById('warehouse');
+            const hiddenWarehouseId = document.getElementById('warehouse_id');
+
+            // Loop through options to find the selected warehouse name and get its ID
+            for (let i = 0; i < options.length; i++) {
+                if (options[i].value === warehouseInput.value) {
+                    // Set the hidden input field with the corresponding warehouse ID
+                    hiddenWarehouseId.value = options[i].getAttribute('data-id');
+                    break;
+                } else {
+                    // Clear the hidden input if no match is found
+                    hiddenWarehouseId.value = '';
+                }
+            }
+        });
+
+        document.getElementById('company').addEventListener('input', function() {
+            // Get the list of options from the datalist
+            const options = document.getElementById('companies').options;
+            const companyInput = document.getElementById('company');
+            const hiddenCompanyId = document.getElementById('company_id');
+
+            for (let i = 0; i < options.length; i++) {
+                if (options[i].value === companyInput.value) {
+                    hiddenCompanyId.value = options[i].getAttribute('data-id');
+                    break;
+                } else {
+                    hiddenCompanyId.value = '';
+                }
+            }
+        });
+
+        document.getElementById('addMore').addEventListener('click', function(event) {
+            event.preventDefault();
+            var now = new Date().toLocaleString("en-US", {
+                timeZone: "Asia/Baku"
+            });
+            var timezoneDate = new Date(now);
+            // Format the date to YYYY-MM-DDTHH:MM
+            var formattedDateTime = timezoneDate.getFullYear() + '-' +
+                String(timezoneDate.getMonth() + 1).padStart(2, '0') + '-' +
+                String(timezoneDate.getDate()).padStart(2, '0') + 'T' +
+                String(timezoneDate.getHours()).padStart(2, '0') + ':' +
+                String(timezoneDate.getMinutes()).padStart(2, '0');
+
+            // Define the HTML for the elements to be added
+            const newElementsHTML = `
+                <div class="relative flex justify-between flex-col md:flex-row mt-2 pt-8">
+                    <div class="md:w-2/5">
+                        <label class="text-gray-700" for="product">Məhsul</label>
+                        <input list="products" id="product" name="products[]"
+                            class="product-input mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                            type="text" autocomplete="off">
+                        <datalist id="products">
+                            @foreach ($products as $product)
+                                <option data-code="{{ $product->code }}" value="{{ $product->name }}">
+                                    {{ $product->name }} {{ $product->code ? '- ' . $product->code : '' }}
+                                </option>
+                            @endforeach
+                        </datalist>
+                    </div>
+                    <div class="md:w-2/5">
+                        <label class="text-gray-700" for="product_code">Məhsulun kodu</label>
+                        <input id="product_code" name="product_codes[]"
+                            class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                            type="text" autocomplete="off">
+                    </div>
+                    <div class="md:w-2/5">
+                        <label class="text-gray-700" for="quantity">Sayı</label>
+                        <input name="quantities[]"
+                            class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                            type="number">
+                    </div>
+                    <div class="md:w-2/5">
+                        <label class="text-gray-700" for="category">Kateqoriya</label>
+                        <input list="categories" id="category" name="categories[]"
+                            class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                            type="text" autocomplete="off">
+                        <datalist id="categories">
+                            @foreach ($categories as $category)
+                                <option value="{{ $category->name }}"></option>
+                            @endforeach
+                        </datalist>
+                    </div>
+                    <div class="md:w-2/5">
+                        <label class="text-gray-700" for="entry_date">Giriş tarixi</label>
+                        <input name="entry_dates[]" data-datetime-local="true"
+                            class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                            type="datetime-local" value="${formattedDateTime}">
+                    </div>
+                </div>
+            `;
+
+
+            const mainDiv = document.getElementById('mainDiv');
+
+            for (let i = 0; i < 30; i++) {
+                const newSet = document.createElement('div');
+                newSet.className = 'space-y-4';
+                newSet.innerHTML = newElementsHTML;
+                mainDiv.appendChild(newSet);
+            }
+
             // Set the inner HTML of the container div
             newSet.innerHTML = newElementsHTML;
 
@@ -238,5 +335,7 @@
             })
 
         });
+
+        addNewElements(30)
     </script>
 @endsection

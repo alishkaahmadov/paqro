@@ -112,14 +112,16 @@
         </thead>
         <tbody>
             @for ($i = 0; $i < count($products); $i++)
-                <tr>
-                    <td>{{+$i + 1}}</td>
-                    <td>{{ $codes[$i] }}</td>
-                    <td>{{ $products[$i] }}</td>
-                    <td>{{ $notes[$i] }}</td>
-                    <td>{{ $quantities[$i] }}</td>
-                    <td>{{ $categories[$i] }}</td>
-                </tr>
+                @if (!!($codes[$i] && $products[$i] && $quantities[$i]))
+                    <tr>
+                        <td>{{+$i + 1}}</td>
+                        <td>{{ $codes[$i] }}</td>
+                        <td>{{ $products[$i] }}</td>
+                        <td>{{ $notes[$i] }}</td>
+                        <td>{{ $quantities[$i] }}</td>
+                        <td>{{ $categories[$i] }}</td>
+                    </tr>
+                @endif
             @endfor
         </tbody>
     </table>

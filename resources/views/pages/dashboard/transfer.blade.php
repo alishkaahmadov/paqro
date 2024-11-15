@@ -39,7 +39,7 @@
 
                     <div class="md:w-2/5">
                         <label class="text-gray-700" for="products">Məhsul</label>
-                        <select id="products" name="products[]" required
+                        <select id="products" name="products[]"
                             class="product-input mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                             @isset($products)
                                 @foreach ($products as $product)
@@ -51,14 +51,14 @@
     
                     <div class="md:w-2/5">
                         <label class="text-gray-700" for="quantity">Sayı</label>
-                        <input name="quantities[]" required
+                        <input name="quantities[]"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                             type="number">
                     </div>
 
                     <div class="md:w-2/5">
                         <label class="text-gray-700">Qeyd</label>
-                        <input name="notes[]" required
+                        <input name="notes[]"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                             type="text" placeholder="litr/ədəd">
                     </div>
@@ -83,8 +83,8 @@
 
 @section('script')
     <script>
-        document.getElementById('addMore').addEventListener('click', function(event) {
-            event.preventDefault();
+        let html = '<option selected value="">Məhsul seçin</option>';
+        function addNewElements(number = 30) {
             var now = new Date().toLocaleString("en-US", {
                 timeZone: "Asia/Baku"
             });
@@ -95,16 +95,13 @@
                 String(timezoneDate.getDate()).padStart(2, '0') + 'T' +
                 String(timezoneDate.getHours()).padStart(2, '0') + ':' +
                 String(timezoneDate.getMinutes()).padStart(2, '0');
-            // Create a new container div for the set of elements
-            const newSet = document.createElement('div');
-            newSet.className = 'space-y-4';
 
             // Define the HTML for the elements to be added
             const newElementsHTML = `
             <div class="relative flex justify-between flex-col md:flex-row mt-2 pt-8">
                     <div class="md:w-2/5">
                         <label class="text-gray-700" for="products">Məhsul</label>
-                        <select id="products" name="products[]" required
+                        <select id="products" name="products[]"
                             class="product-input mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                             ${html}
                         </select>
@@ -112,14 +109,14 @@
     
                     <div class="md:w-2/5">
                         <label class="text-gray-700" for="quantity">Sayı</label>
-                        <input name="quantities[]" required
+                        <input name="quantities[]"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                             type="number">
                     </div>
 
                     <div class="md:w-2/5">
                         <label class="text-gray-700">Qeyd</label>
-                        <input name="notes[]" required
+                        <input name="notes[]"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                             type="text" placeholder="litr/ədəd">
                     </div>
@@ -133,14 +130,100 @@
                 </div>
             `;
 
-            // Set the inner HTML of the container div
-            newSet.innerHTML = newElementsHTML;
+            const mainDiv = document.getElementById('mainDiv');
 
-            // Append the new set of elements to the main container
-            document.getElementById('mainDiv').appendChild(newSet);
+            for (let i = 0; i < number; i++) {
+                const newSet = document.createElement('div');
+                newSet.className = 'space-y-4';
+                newSet.innerHTML = newElementsHTML;
+                mainDiv.appendChild(newSet);
+            }
+        }
+
+        function setDefaultWarehouse(){
+            const mainWarehouseId = {{$mainWarehouseId}}
+
+            if(mainWarehouseId){
+                fetch(`/get-products/${mainWarehouseId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            var productsSelect = [...document.querySelectorAll('.product-input')];
+                            productsSelect.forEach(products => {
+                                products.innerHTML = '<option selected value="">Məhsul seçin</option>'; // Reset options
+                                html = '<option selected value="">Məhsul seçin</option>';
+                                data.forEach(function(product) {
+                                    html += `<option value="${product.product_id}">${product.product_name} ${product.product_code ? `- ${product.product_code}` : ''} - ${product.category_name} (${product.quantity})</option>`
+                                    var option = document.createElement('option');
+                                    option.value = product.product_id;
+                                    option.textContent = `${product.product_name} ${product.product_code ? `- ${product.product_code}` : ''} - ${product.category_name} (${product.quantity})`;
+                                    products.appendChild(option);
+                                });
+                            })
+
+                        })
+                        .catch(error => console.error('Error fetching products:', error));
+            }else{
+                document.getElementById('products').innerHTML = '<option selected value="">Məhsul seçin</option>';
+                html = '<option selected value="">Məhsul seçin</option>';
+            }
+        }
+
+        document.getElementById('addMore').addEventListener('click', function(event) {
+            event.preventDefault();
+            var now = new Date().toLocaleString("en-US", {
+                timeZone: "Asia/Baku"
+            });
+            var timezoneDate = new Date(now);
+            // Format the date to YYYY-MM-DDTHH:MM
+            var formattedDateTime = timezoneDate.getFullYear() + '-' +
+                String(timezoneDate.getMonth() + 1).padStart(2, '0') + '-' +
+                String(timezoneDate.getDate()).padStart(2, '0') + 'T' +
+                String(timezoneDate.getHours()).padStart(2, '0') + ':' +
+                String(timezoneDate.getMinutes()).padStart(2, '0');
+
+            // Define the HTML for the elements to be added
+            const newElementsHTML = `
+            <div class="relative flex justify-between flex-col md:flex-row mt-2 pt-8">
+                    <div class="md:w-2/5">
+                        <label class="text-gray-700" for="products">Məhsul</label>
+                        <select id="products" name="products[]"
+                            class="product-input mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                            ${html}
+                        </select>
+                    </div>
+    
+                    <div class="md:w-2/5">
+                        <label class="text-gray-700" for="quantity">Sayı</label>
+                        <input name="quantities[]"
+                            class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                            type="number">
+                    </div>
+
+                    <div class="md:w-2/5">
+                        <label class="text-gray-700">Qeyd</label>
+                        <input name="notes[]"
+                            class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                            type="text" placeholder="litr/ədəd">
+                    </div>
+    
+                    <div class="md:w-2/5">
+                        <label class="text-gray-700" for="transfer_date">Transfer tarixi</label>
+                        <input name="transfer_dates[]" data-datetime-local="true"
+                            class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                            type="datetime-local" value="${formattedDateTime}">
+                    </div>
+                </div>
+            `;
+
+            const mainDiv = document.getElementById('mainDiv');
+
+            for (let i = 0; i < 30; i++) {
+                const newSet = document.createElement('div');
+                newSet.className = 'space-y-4';
+                newSet.innerHTML = newElementsHTML;
+                mainDiv.appendChild(newSet);
+            }
         });
-
-        let html = '<option selected value="">Məhsul seçin</option>'
 
         document.getElementById('from_warehouse').addEventListener('change', function() {
             var warehouseId = this.value;
@@ -169,5 +252,8 @@
                 html = '<option selected value="">Məhsul seçin</option>';
             }
         });
+
+        addNewElements(30);
+        setDefaultWarehouse();
     </script>
 @endsection
