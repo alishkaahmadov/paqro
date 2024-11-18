@@ -83,7 +83,9 @@
 
 @section('script')
     <script>
-        let html = '<option selected value="">Məhsul seçin</option>';
+        let addingLoop = 0;
+        $('#products').select2();
+        let html = '';
         function addNewElements(number = 30) {
             var now = new Date().toLocaleString("en-US", {
                 timeZone: "Asia/Baku"
@@ -101,7 +103,7 @@
             <div class="relative flex justify-between flex-col md:flex-row mt-2 pt-8">
                     <div class="md:w-2/5">
                         <label class="text-gray-700" for="products">Məhsul</label>
-                        <select id="products" name="products[]"
+                        <select name="products[]"
                             class="product-input mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                             ${html}
                         </select>
@@ -137,6 +139,8 @@
                 newSet.className = 'space-y-4';
                 newSet.innerHTML = newElementsHTML;
                 mainDiv.appendChild(newSet);
+                newSet.children[0].children[0].children[1].id = `alishka-${i + addingLoop}`
+                $(`#alishka-${i + addingLoop}`).select2();
             }
         }
 
@@ -149,8 +153,8 @@
                         .then(data => {
                             var productsSelect = [...document.querySelectorAll('.product-input')];
                             productsSelect.forEach(products => {
-                                products.innerHTML = '<option selected value="">Məhsul seçin</option>'; // Reset options
-                                html = '<option selected value="">Məhsul seçin</option>';
+                                products.innerHTML = '';
+                                html = '';
                                 data.forEach(function(product) {
                                     html += `<option value="${product.product_id}">${product.product_name} ${product.product_code ? `- ${product.product_code}` : ''} - ${product.category_name} (${product.quantity})</option>`
                                     var option = document.createElement('option');
@@ -159,17 +163,17 @@
                                     products.appendChild(option);
                                 });
                             })
-
                         })
                         .catch(error => console.error('Error fetching products:', error));
             }else{
-                document.getElementById('products').innerHTML = '<option selected value="">Məhsul seçin</option>';
-                html = '<option selected value="">Məhsul seçin</option>';
+                document.getElementById('products').innerHTML = '';
+                html = '';
             }
         }
 
         document.getElementById('addMore').addEventListener('click', function(event) {
             event.preventDefault();
+            addingLoop += 30;
             var now = new Date().toLocaleString("en-US", {
                 timeZone: "Asia/Baku"
             });
@@ -186,7 +190,7 @@
             <div class="relative flex justify-between flex-col md:flex-row mt-2 pt-8">
                     <div class="md:w-2/5">
                         <label class="text-gray-700" for="products">Məhsul</label>
-                        <select id="products" name="products[]"
+                        <select name="products[]"
                             class="product-input mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                             ${html}
                         </select>
@@ -222,6 +226,8 @@
                 newSet.className = 'space-y-4';
                 newSet.innerHTML = newElementsHTML;
                 mainDiv.appendChild(newSet);
+                newSet.children[0].children[0].children[1].id = `alishka-${i + addingLoop}`
+                $(`#alishka-${i + addingLoop}`).select2();
             }
         });
 
@@ -234,8 +240,8 @@
                     .then(data => {
                         var productsSelect = [...document.querySelectorAll('.product-input')];
                         productsSelect.forEach(products => {
-                            products.innerHTML = '<option selected value="">Məhsul seçin</option>'; // Reset options
-                            html = '<option selected value="">Məhsul seçin</option>';
+                            products.innerHTML = '';
+                            html = '';
                             data.forEach(function(product) {
                                 html += `<option value="${product.product_id}">${product.product_name} ${product.product_code ? `- ${product.product_code}` : ''} - ${product.category_name} (${product.quantity})</option>`
                                 var option = document.createElement('option');
@@ -248,8 +254,8 @@
                     })
                     .catch(error => console.error('Error fetching products:', error));
             } else {
-                document.getElementById('products').innerHTML = '<option selected value="">Məhsul seçin</option>';
-                html = '<option selected value="">Məhsul seçin</option>';
+                document.getElementById('products').innerHTML = '';
+                html = '';
             }
         });
 

@@ -10,11 +10,11 @@
             </a>
             <a href="{{ route('dashboard.create') }}"
                 class="w-full px-4 py-2 bg-green-500 text-white rounded-md mr-2">
-                Mədaxil
+                Giriş daxil et
             </a>
             <a href="{{ route('dashboard.transferPage') }}"
                 class="w-full px-4 py-2 bg-orange-500 text-white rounded-md">
-                Məxaric
+                Çıxış daxil et
             </a>
         </div>
         <div>

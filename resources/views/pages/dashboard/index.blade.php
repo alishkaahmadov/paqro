@@ -13,11 +13,11 @@
             </a>
             <a href="{{ route('dashboard.create') }}"
                 class="w-full px-4 py-2 bg-green-500 text-white rounded-md mr-2">
-                Mədaxil
+                Giriş daxil et
             </a>
             <a href="{{ route('dashboard.transferPage') }}"
                 class="w-full px-4 py-2 bg-orange-500 text-white rounded-md">
-                Məxaric
+                Çıxış daxil et
             </a>
         </div>
         <div>
@@ -39,7 +39,7 @@
         <div class="-my-2 py-2 overflow-x-auto sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
             <div>
                 <form action="{{ route('dashboard.index') }}" method="get">
-                    <div class="grid grid-cols-2 mt-4 gap-3 mb-4">
+                    <div class="grid grid-cols-3 mt-4 gap-3 mb-4">
                         <div>
                             <label class="text-gray-700" for="warehouse">Anbar</label>
                             <select id="warehouse" name="warehouse_id"
@@ -73,6 +73,14 @@
                                 @endforeach
                             </select>
                         </div>
+                        <div>
+                            <label class="text-gray-700" for="start_date">Giriş tarixindən</label>
+                            <input value="{{ $start_date ? $start_date : '' }}" name="start_date" id="start_date" class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" type="datetime-local">
+                        </div>
+                        <div>
+                            <label class="text-gray-700" for="end_date">Giriş tarixinədək</label>
+                            <input value="{{ $end_date ? $end_date : '' }}" name="end_date" id="end_date" class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" type="datetime-local">
+                        </div>
                         <div class="self-end">
                             <button type="submit"
                                 class="w-full px-4 py-2 bg-green-500 border-2 border-green-500 text-white rounded-md hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-green-400">Axtar</button>
@@ -98,7 +106,15 @@
                             </th>
                             <th
                                 class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                                Sayı
+                                Giriş
+                            </th>
+                            <th
+                                class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                Çıxış
+                            </th>
+                            <th
+                                class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                Qalıq
                             </th>
                             <th
                                 class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
@@ -121,6 +137,14 @@
                                 <td
                                     class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
                                     {{ $product->product->name }}
+                                </td>
+                                <td
+                                    class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
+                                    {{ $product->entry_total ?? 0 }}
+                                </td>
+                                <td
+                                    class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
+                                    {{ $product->exit_total ?? 0 }}
                                 </td>
                                 <td
                                     class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">

@@ -23,6 +23,14 @@ class DashboardController extends Controller
      */
     public function index(Request $request)
     {
+        $startDate = $request->start_date ?? null;
+        $endDate = $request->end_date ?? null;
+        if($startDate && !$endDate){
+            $currentStartDate = Carbon::parse($startDate);
+            $startDate = $currentStartDate->startOfDay()->addMinute()->toDateTimeString();
+            $endDate = $currentStartDate->endOfDay()->subMinute()->toDateTimeString();
+        }
+
         $products = Product::all();
         $warehouses = Warehouse::all();
         $categories = Subcategory::all();
@@ -44,7 +52,14 @@ class DashboardController extends Controller
             $query->where('product_entries.subcategory_id', $request->category_id);
         }
 
-        $groupedEntries = $query->select('product_id', 'subcategory_id', 'warehouse_id', 'quantity')
+        $groupedEntries = $query->select(
+                    DB::raw('(select sum(warehouse_logs.quantity) from warehouse_logs where warehouse_logs.to_warehouse_id = ? and product_id = product_entries.product_id and entry_date between ? and ? group by warehouse_logs.to_warehouse_id) as entry_total'),
+                    DB::raw('(select sum(warehouse_logs.quantity) from warehouse_logs where warehouse_logs.from_warehouse_id = ? and product_id = product_entries.product_id and entry_date between ? and ? group by warehouse_logs.from_warehouse_id) as exit_total'),
+                    'product_entries.product_id',
+                    'product_entries.subcategory_id', 
+                    'product_entries.warehouse_id', 
+                    'product_entries.quantity')
+            ->addBinding([$warehouseId, $startDate ?? "2020-01-01 00:00:00", $endDate ?? "2030-01-01 00:00:00", $warehouseId, $startDate ?? "2020-01-01 00:00:00", $endDate ?? "2030-01-01 00:00:00"], 'select')
             ->where('product_entries.warehouse_id', $warehouseId)
             ->get();
         return view('pages.dashboard.index', [
@@ -55,6 +70,8 @@ class DashboardController extends Controller
             'product_ids' => $request->product_ids ?? null,
             'categories' => $categories,
             'category_id' => $request->category_id ?? null,
+            'start_date' => $startDate ?? null,
+            'end_date' => $endDate ?? null
         ]);
     }
 
