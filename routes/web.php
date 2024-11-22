@@ -50,7 +50,13 @@ Route::group(['middleware' => 'auth'], function(){
     Route::get('/visual-table', [DashboardController::class, 'visualTable'])->name('visual-table');
     Route::get('/dashboard/overall', [DashboardController::class, 'overall'])->name('dashboard.overall');
     Route::get('/dashboard/entries', [DashboardController::class, 'entries'])->name('dashboard.entries');
+    Route::get('/dashboardEntry/{entry}/edit', [DashboardController::class, 'entryPage'])->name('dashboard.entries.edit');
+    Route::put('/dashboardEntry/{entry}', [DashboardController::class, 'updateEntryPage'])->name('dashboard.entries.update');
+    Route::delete('/dashboardEntry/{entry}', [DashboardController::class, 'deleteEntry'])->name('dashboard.entries.delete');
     Route::get('/dashboard/exits', [DashboardController::class, 'exits'])->name('dashboard.exits');
+    Route::get('/dashboardExit/{exit}/edit', [DashboardController::class, 'exitPage'])->name('dashboard.exits.edit');
+    Route::put('/dashboardExit/{exit}', [DashboardController::class, 'updateExitPage'])->name('dashboard.exits.update');
+    Route::delete('/dashboardExit/{exit}', [DashboardController::class, 'deleteExit'])->name('dashboard.exits.delete');
     Route::get('/dashboard/transfer', [DashboardController::class, 'transferPage'])->name('dashboard.transferPage');
     Route::post('/dashboard/transfer', [DashboardController::class, 'transfer'])->name('dashboard.transfer');
     Route::get('/get-products/{warehouseId}', [DashboardController::class, 'getProducts']);

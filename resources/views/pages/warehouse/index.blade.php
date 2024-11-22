@@ -20,25 +20,49 @@
                         <tr>
                             <th
                                 class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                                Adı</th>
+                                Adı
+                            </th>
                             <th
                                 class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                                Əsas anbar</th>
-                                <th
+                                Əsas anbar
+                            </th>
+                            <th
                                 class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                                Yaranma tarixi</th>
+                                Yaranma tarixi
+                            </th>
+                            <th
+                                class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                Tənzimlə / Sil
+                            </th>
                         </tr>
                     </thead>
-
+    
                     <tbody class="bg-white">
                         @foreach ($warehouses as $warehouse)
                             <tr>
                                 <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
-                                    {{$warehouse->name}}</td>
+                                    {{$warehouse->name}}
+                                </td>
                                 <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
-                                    {{$warehouse->is_main ? "Bəli" : "Xeyr"}}</td>
-                                    <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
-                                        {{$warehouse->created_at}}</td>
+                                    {{$warehouse->is_main ? "Bəli" : "Xeyr"}}
+                                </td>
+                                <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
+                                    {{$warehouse->created_at}}
+                                </td>
+                                <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5">
+                                    <a href="{{ route('warehouses.edit', $warehouse->id) }}"
+                                        class="text-blue-500 hover:text-blue-700 mr-2">
+                                        Düzəliş et
+                                     </a>
+                                     <form action="{{ route('warehouses.destroy', $warehouse->id) }}" method="POST" class="inline-block">
+                                         @csrf
+                                         @method('DELETE')
+                                         <button type="submit" onclick="return confirm('Silmək istədiyinizdən əminsiniz?')" 
+                                                 class="text-red-500 hover:text-red-700">
+                                             Sil
+                                         </button>
+                                     </form>
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -49,6 +73,7 @@
             </div>
         </div>
     </div>
+    
 @endsection
 
 @if (session('success'))

@@ -56,7 +56,8 @@ class WarehouseController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $warehouse = Warehouse::findOrFail($id);
+        return view('pages.warehouse.edit', compact('warehouse'));
     }
 
     /**
@@ -64,7 +65,17 @@ class WarehouseController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'is_main' => 'required|boolean',
+        ]);
+
+        $warehouse = Warehouse::findOrFail($id);
+        $warehouse->name = $request->name;
+        $warehouse->is_main = $request->is_main;
+        $warehouse->save();
+
+        return redirect()->route('warehouses.index')->with('success', 'Uğurla düzəliş olundu.');
     }
 
     /**
@@ -72,6 +83,9 @@ class WarehouseController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $warehouse = Warehouse::findOrFail($id);
+        $warehouse->delete();
+
+        return redirect()->route('warehouses.index')->with('success', 'Uğurla silindi.');
     }
 }

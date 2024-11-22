@@ -156,11 +156,13 @@
                                 products.innerHTML = '';
                                 html = '';
                                 data.forEach(function(product) {
-                                    html += `<option value="${product.product_id}">${product.product_name} ${product.product_code ? `- ${product.product_code}` : ''} - ${product.category_name} (${product.quantity})</option>`
-                                    var option = document.createElement('option');
-                                    option.value = product.product_id;
-                                    option.textContent = `${product.product_name} ${product.product_code ? `- ${product.product_code}` : ''} - ${product.category_name} (${product.quantity})`;
-                                    products.appendChild(option);
+                                    if(product.quantity){
+                                        html += `<option value="${product.product_id}">${product.product_name} ${product.product_code ? `- ${product.product_code}` : ''} - ${product.category_name} (${product.quantity})</option>`
+                                        var option = document.createElement('option');
+                                        option.value = product.product_id;
+                                        option.textContent = `${product.product_name} ${product.product_code ? `- ${product.product_code}` : ''} - ${product.category_name} (${product.quantity})`;
+                                        products.appendChild(option);
+                                    }
                                 });
                             })
                         })

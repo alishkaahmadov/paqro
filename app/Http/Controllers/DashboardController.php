@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Company;
+use App\Models\Highway;
 use App\Models\Product;
 use App\Models\ProductEntry;
 use App\Models\Subcategory;
@@ -61,6 +62,7 @@ class DashboardController extends Controller
                     'product_entries.quantity')
             ->addBinding([$warehouseId, $startDate ?? "2020-01-01 00:00:00", $endDate ?? "2030-01-01 00:00:00", $warehouseId, $startDate ?? "2020-01-01 00:00:00", $endDate ?? "2030-01-01 00:00:00"], 'select')
             ->where('product_entries.warehouse_id', $warehouseId)
+            ->where('product_entries.quantity', '>', 0)
             ->get();
         return view('pages.dashboard.index', [
             'productEntries' => $groupedEntries,
@@ -140,6 +142,7 @@ class DashboardController extends Controller
             ->select(
                 DB::raw("(select name from warehouses where warehouses.id = warehouse_logs.from_warehouse_id) as from_warehouse"),
                 DB::raw("(select name from warehouses where warehouses.id = warehouse_logs.to_warehouse_id) as to_warehouse"),
+                "warehouse_logs.id as id",
                 "c.name as company_name",
                 "p.name as product_name",
                 "p.code as product_code",
@@ -171,6 +174,129 @@ class DashboardController extends Controller
         ]);
     }
 
+    public function entryPage(WarehouseLog $entry){
+        $products = Product::all();
+        $warehouses = Warehouse::all();
+        if(!$entry->from_warehouse_id){
+            $categories = Subcategory::all();
+            $companies = Company::all();
+    
+            $warehouseName = $warehouses->where('id', $entry->to_warehouse_id)->first()?->name;
+            $companyName = $companies->where('id', $entry->company_id)->first()?->name;
+            $currentProduct = $products->where('id', $entry->product_id)->first();
+            $productName = $currentProduct?->name;
+            $productCode = $currentProduct?->code;
+            $categoryName = $categories->where('id', $entry->subcategory_id)->first()?->name;
+            return view('pages.dashboard.entryEdit', compact(
+          'entry',
+         'products',
+                    'warehouses',
+                    'warehouseName',
+                    'companies',
+                    'companyName',
+                    'categories',
+                    'productName',
+                    'productCode',
+                    'categoryName',
+                ));
+        }else{
+            return view('pages.dashboard.exitEdit', [
+                'exit' => $entry,
+                'products' => $products,
+                'warehouses' => $warehouses
+            ]);
+        }
+    }
+
+    public function updateEntryPage(Request $request, WarehouseLog $entry){
+        try {
+            $request->validate([
+                'warehouse_id' => 'nullable|exists:warehouses,id',
+                'warehouse_name' => 'required|string',
+                'company_id' => 'nullable|exists:companies,id',
+                'company_name' => 'required|string',
+                'product' => 'required|string',
+                'product_code' => 'required|string',
+                'quantity' => 'required|integer',
+                'category' => 'required|string',
+                'entry_date' => 'required|date',
+            ]);
+            // check if warehouse exits else create new one
+            if ($request->warehouse_id) {
+                $warehouseId = (int)$request->warehouse_id;
+            } else {
+                $newWarehouse = Warehouse::create(['name' => $request->warehouse_name]);
+                $warehouseId = $newWarehouse->id;
+            }
+            // check if company exits else create new one
+            if ($request->company_id) {
+                $companyId = (int)$request->company_id;
+            } else {
+                $newCompany = Company::create(['name' => $request->company_name]);
+                $companyId = $newCompany->id;
+            }
+
+            $currentCategory = $request->category;
+            if ($categoryExits = Subcategory::where(['name' => $currentCategory])->first()) {
+                $categoryId = $categoryExits->id;
+            } else {
+                $newCategory = Subcategory::create(['name' => $currentCategory]);
+                $categoryId = $newCategory->id;
+            }
+
+            $currentProduct = $request->product;
+            $currentProductCode = $request->product_code;
+            if ($productExits = Product::where(['name' => $currentProduct, 'code' => $currentProductCode])->first()) {
+                $productId = $productExits->id;
+            } else {
+                $newProduct = Product::create(['name' => $currentProduct, 'code' => $currentProductCode]);
+                $productId = $newProduct->id;
+            }
+            //check if warehouse has current product => if has increase quantity if not create one
+            $productEntry = ProductEntry::where(['warehouse_id' => $warehouseId, 'product_id' => $productId, 'subcategory_id' => $categoryId])->first();
+            if ($productEntry) {
+                // increase
+                $productEntry->update(['quantity' => $productEntry->quantity + $request->quantity]);
+            } else {
+                // create new one
+                ProductEntry::create([
+                    'warehouse_id' => $warehouseId,
+                    'product_id' => $productId,
+                    'company_id' => $companyId,
+                    'quantity' => $request->quantity,
+                    'subcategory_id' => $categoryId,
+                    'entry_date' => $request->entry_date
+                ]);
+            }
+            // update older one
+            $olderProductEntry = ProductEntry::where(['warehouse_id' => $entry->to_warehouse_id, 'product_id' => $entry->product_id, 'subcategory_id' => $entry->subcategory_id])->first();
+            $olderProductEntry->update(['quantity' => $olderProductEntry->quantity - $entry->quantity]);
+            $entry->update([
+                'to_warehouse_id' => $warehouseId,
+                'quantity' => $request->quantity,
+                'entry_date' => $request->entry_date,
+                'product_id' => $productId,
+                'subcategory_id' => $categoryId,
+                'company_id' => $companyId
+            ]);
+            return redirect()->route('dashboard.index')
+                ->with('success', 'Məhsul uğurla dəyişildi.');
+        } catch (Throwable $th) {
+            return redirect()->route('dashboard.index')
+                ->with('error', 'Xəta baş verdi.');
+        }
+    }
+
+    public function deleteEntry(WarehouseLog $entry){
+        $toWarehouse = ProductEntry::where(['warehouse_id' => $entry->to_warehouse_id, 'product_id' => $entry->product_id])->first();
+        if($toWarehouse) $toWarehouse->update(['quantity' => $toWarehouse->quantity - $entry->quantity]);
+        if($entry->from_warehouse_id){
+            $fromWarehouse = ProductEntry::where(['warehouse_id' => $entry->from_warehouse_id, 'product_id' => $entry->product_id])->first();
+            if($fromWarehouse) $fromWarehouse->update(['quantity' => $fromWarehouse->quantity + $entry->quantity]);
+        }
+        $entry->delete();
+        return redirect()->route('dashboard.index')->with('success', 'Uğurla silindi.');
+    }
     public function exits(Request $request)
     {
         $startDate = $request->start_date ?? null;
@@ -234,6 +360,7 @@ class DashboardController extends Controller
             ->select(
                 DB::raw("(select name from warehouses where warehouses.id = warehouse_logs.from_warehouse_id) as from_warehouse"),
                 DB::raw("(select name from warehouses where warehouses.id = warehouse_logs.to_warehouse_id) as to_warehouse"),
+                "warehouse_logs.id as id",
                 "p.code as product_code",
                 "p.name as product_name",
                 "sc.name as subcategory_name",
@@ -265,6 +392,93 @@ class DashboardController extends Controller
             'start_date' => $startDate ?? null,
             'end_date' => $endDate ?? null
         ]);
+    }
+
+    public function exitPage(WarehouseLog $exit){
+        if($exit->highway_id){
+            return redirect()->route('dashboard.index');
+        }
+        $products = Product::all();
+        $warehouses = Warehouse::all();
+        return view('pages.dashboard.exitEdit', compact(
+      'exit',
+     'products',
+                'warehouses',
+            ));
+    }
+
+    public function updateExitPage(Request $request, WarehouseLog $exit){
+        try {
+            $request->validate([
+                'from_warehouse' => 'nullable|exists:warehouses,id',
+                'to_warehouse' => 'nullable|exists:warehouses,id',
+                'product' => 'required|exists:products,id',
+                'quantity' => 'required|integer',
+                'transfer_date' => 'required|date',
+            ]);
+            $currentProduct = $request->product;
+            $currentQuantity = (int)$request->quantity;
+            $currentEntryDate = $request->transfer_date;
+            $fromWarehouse = ProductEntry::where(['warehouse_id' => $request->from_warehouse, 'product_id' => $currentProduct])->first();
+            if ($fromWarehouse->quantity >= $currentQuantity) {
+                $fromWarehouse->update(['quantity' => $fromWarehouse->quantity - $currentQuantity]);
+                $toWarehouse = ProductEntry::where(['warehouse_id' => $request->to_warehouse, 'product_id' => $currentProduct])->first();
+                if ($toWarehouse) {
+                    // increase
+                    $toWarehouse->update(['quantity' => $toWarehouse->quantity + $currentQuantity]);
+                } else {
+                    // create
+                    ProductEntry::create([
+                        'warehouse_id' => $request->to_warehouse,
+                        'product_id' => $currentProduct,
+                        'company_id' => $fromWarehouse->company_id,
+                        'quantity' => $currentQuantity,
+                        'subcategory_id' => $fromWarehouse->subcategory_id,
+                        'entry_date' => $currentEntryDate
+                    ]);
+                }
+                // decrease older product entry
+                $olderToProductEntry = ProductEntry::where(['warehouse_id' => $exit->to_warehouse_id, 'product_id' => $exit->product_id, 'subcategory_id' => $exit->subcategory_id])->first();
+                $olderToProductEntry->update(['quantity' => $olderToProductEntry->quantity - $exit->quantity]);
+
+                $olderFromProductEntry = ProductEntry::where(['warehouse_id' => $exit->from_warehouse_id, 'product_id' => $exit->product_id, 'subcategory_id' => $exit->subcategory_id])->first();
+                $olderFromProductEntry->update(['quantity' => $olderFromProductEntry->quantity + $exit->quantity]);
+
+                // update older exit warehouse log
+                $exit->update([
+                    'from_warehouse_id' => $request->from_warehouse,
+                    'to_warehouse_id' => $request->to_warehouse,
+                    'quantity' => $request->quantity,
+                    'entry_date' => $request->transfer_date,
+                    'product_id' => $request->product,
+                    'subcategory_id' => $fromWarehouse->subcategory_id,
+                    'company_id' => $fromWarehouse->company_id
+                ]);
+                return redirect()->route('dashboard.index')->with('success', 'Məhsul uğurla dəyişildi.');
+            } else {
+                return redirect()->route('dashboard.index')
+                    ->with('error', 'Anbarda kifayət qədər məhsul yoxdur.');
+            }
+        } catch (Throwable $th) {
+            return redirect()->route('dashboard.index')
+                ->with('error', 'Xəta baş verdi.');
+        }
+    }
+
+    public function deleteExit(WarehouseLog $exit){
+        $fromWarehouse = ProductEntry::where(['warehouse_id' => $exit->from_warehouse_id, 'product_id' => $exit->product_id])->first();
+        if($fromWarehouse) $fromWarehouse->update(['quantity' => $fromWarehouse->quantity + $exit->quantity]);
+        if($exit->to_warehouse_id){
+            $toWarehouse = ProductEntry::where(['warehouse_id' => $exit->to_warehouse_id, 'product_id' => $exit->product_id])->first();
+            if($toWarehouse) $toWarehouse->update(['quantity' => $toWarehouse->quantity - $exit->quantity]);
+        }
+        // highway
+        if($exit->highway_id){
+            $highway = Highway::where('id', $exit->highway_id)->first();
+            if($highway) $highway->delete();
+        }
+        $exit->delete();
+        return redirect()->route('dashboard.index')->with('success', 'Uğurla silindi.');
     }
 
     public function overall(Request $request)
