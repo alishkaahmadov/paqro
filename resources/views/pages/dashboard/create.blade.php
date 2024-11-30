@@ -47,7 +47,7 @@
                             type="text" autocomplete="off">
                         <datalist id="products">
                             @foreach ($products as $product)
-                                <option data-code="{{ $product->code }}" value="{{ $product->name }}">
+                                <option data-code="{{ $product->code }}" value="{{ $product->name . '---' . $product->code }}">
                                     {{ $product->name }} {{ $product->code ? '- ' . $product->code : '' }}
                                 </option>
                             @endforeach
@@ -136,7 +136,7 @@
                             type="text" autocomplete="off">
                         <datalist id="products">
                             @foreach ($products as $product)
-                                <option data-code="{{ $product->code }}" value="{{ $product->name }}">
+                                <option data-code="{{ $product->code }}" value="{{ $product->name . '---' . $product->code }}">
                                     {{ $product->name }} {{ $product->code ? '- ' . $product->code : '' }}
                                 </option>
                             @endforeach
@@ -261,7 +261,7 @@
                             type="text" autocomplete="off">
                         <datalist id="products">
                             @foreach ($products as $product)
-                                <option data-code="{{ $product->code }}" value="{{ $product->name }}">
+                                <option data-code="{{ $product->code }}" value="{{ $product->name . '---' . $product->code }}">
                                     {{ $product->name }} {{ $product->code ? '- ' . $product->code : '' }}
                                 </option>
                             @endforeach

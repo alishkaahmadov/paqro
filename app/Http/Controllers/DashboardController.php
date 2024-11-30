@@ -54,8 +54,8 @@ class DashboardController extends Controller
         }
 
         $groupedEntries = $query->select(
-                    DB::raw('(select sum(warehouse_logs.quantity) from warehouse_logs where warehouse_logs.to_warehouse_id = ? and product_id = product_entries.product_id and entry_date between ? and ? group by warehouse_logs.to_warehouse_id) as entry_total'),
-                    DB::raw('(select sum(warehouse_logs.quantity) from warehouse_logs where warehouse_logs.from_warehouse_id = ? and product_id = product_entries.product_id and entry_date between ? and ? group by warehouse_logs.from_warehouse_id) as exit_total'),
+                    DB::raw('(select sum(warehouse_logs.quantity) from warehouse_logs where warehouse_logs.to_warehouse_id = ? and product_id = product_entries.product_id and subcategory_id = product_entries.subcategory_id and entry_date between ? and ? group by warehouse_logs.to_warehouse_id) as entry_total'),
+                    DB::raw('(select sum(warehouse_logs.quantity) from warehouse_logs where warehouse_logs.from_warehouse_id = ? and product_id = product_entries.product_id and subcategory_id = product_entries.subcategory_id and entry_date between ? and ? group by warehouse_logs.from_warehouse_id) as exit_total'),
                     'product_entries.product_id',
                     'product_entries.subcategory_id', 
                     'product_entries.warehouse_id', 
@@ -64,6 +64,7 @@ class DashboardController extends Controller
             ->where('product_entries.warehouse_id', $warehouseId)
             ->where('product_entries.quantity', '>', 0)
             ->get();
+
         return view('pages.dashboard.index', [
             'productEntries' => $groupedEntries,
             'products' => $products,
@@ -800,7 +801,8 @@ class DashboardController extends Controller
                     $categoryId = $newCategory->id;
                 }
                 // check if product exits else create new one with new product code
-                $currentProduct = $request->products[$i];
+                $currentProductWithCode = explode('---', $request->products[$i]);
+                $currentProduct = $currentProductWithCode[0];
                 $currentProductCode = $request->product_codes[$i];
                 if ($productExits = Product::where(['name' => $currentProduct, 'code' => $currentProductCode])->first()) {
                     $productId = $productExits->id;
@@ -853,7 +855,7 @@ class DashboardController extends Controller
         }
 
         if ($request->category_id) {
-            $query->where('p.subcategory_id', $request->category_id);
+            $query->where('product_entries.subcategory_id', $request->category_id);
         }
 
         if ($request->get('export_type') === 'all') {
