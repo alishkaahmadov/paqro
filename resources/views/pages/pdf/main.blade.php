@@ -11,6 +11,7 @@
             padding: 0;
             background-color: #f8f9fa;
             color: #333;
+            font-size: 10px;
         }
 
         h1 {
@@ -103,7 +104,9 @@
                 <th>№</th>
                 <th>Kod</th>
                 <th>Məshul</th>
-                <th>Sayı</th>
+                <th>Giriş</th>
+                <th>Çıxış</th>
+                <th>Qalıq</th>
                 <th>Kateqoriya</th>
             </tr>
         </thead>
@@ -113,6 +116,8 @@
                 <td>{{ $loop->index + 1 }}</td>
                 <td>{{ $product->product->code ?? '' }}</td>
                 <td>{{ $product->product->name }}</td>
+                <td>{{ $product->entry_total ?? 0 }}</td>
+                <td>{{ $product->exit_total ?? 0 }}</td>
                 <td>{{ $product->quantity }}</td>
                 <td>{{ $product->subcategory_name }}</td>
             </tr>

@@ -31,10 +31,11 @@ class WarehouseController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string'
+            'name' => 'required|string',
+            'warehouseman' => 'required|string'
         ]);
         try {
-            Warehouse::create(['name' => $request->name, 'is_main' => $request->is_main ? true : false]);
+            Warehouse::create(['name' => $request->name, 'warehouseman' => $request->warehouseman, 'is_main' => $request->is_main ? true : false]);
             return redirect()->route('warehouses.index')
                 ->with('success', 'Anbar uğurla yaradıldı.');
         } catch (Throwable $th) {
@@ -67,11 +68,13 @@ class WarehouseController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'warehouseman' => 'required|string|max:255',
             'is_main' => 'required|boolean',
         ]);
 
         $warehouse = Warehouse::findOrFail($id);
         $warehouse->name = $request->name;
+        $warehouse->warehouseman = $request->warehouseman;
         $warehouse->is_main = $request->is_main;
         $warehouse->save();
 

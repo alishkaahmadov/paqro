@@ -11,8 +11,8 @@
                     <label class="text-gray-700" for="warehouse">Anbar</label>
                     <input list="warehouses" id="warehouse" name="warehouse_name"
                         class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                        type="text" autocomplete="off">
-                    <input type="hidden" id="warehouse_id" name="warehouse_id">
+                        type="text" autocomplete="off" value="{{$mainWarehouse->name ?? ""}}">
+                    <input type="hidden" id="warehouse_id" name="warehouse_id" value="{{$mainWarehouse->id ?? ""}}">
                     <datalist id="warehouses">
                         @foreach ($warehouses as $warehouse)
                             <option data-id="{{ $warehouse->id }}" value="{{ $warehouse->name }}"></option>

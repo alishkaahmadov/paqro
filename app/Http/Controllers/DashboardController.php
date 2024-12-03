@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\EntryExport;
+use App\Exports\ExitExport;
+use App\Exports\MainExport;
+use App\Exports\OverallExport;
 use App\Models\Company;
 use App\Models\Highway;
 use App\Models\Product;
@@ -15,6 +19,7 @@ use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 use Throwable;
 
 class DashboardController extends Controller
@@ -33,7 +38,7 @@ class DashboardController extends Controller
         }
 
         $products = Product::all();
-        $warehouses = Warehouse::all();
+        $warehouses = Warehouse::orderBy('id', 'asc')->get();
         $categories = Subcategory::all();
 
         $query = ProductEntry::query();
@@ -61,10 +66,11 @@ class DashboardController extends Controller
                     'product_entries.warehouse_id', 
                     'product_entries.quantity')
             ->addBinding([$warehouseId, $startDate ?? "2020-01-01 00:00:00", $endDate ?? "2030-01-01 00:00:00", $warehouseId, $startDate ?? "2020-01-01 00:00:00", $endDate ?? "2030-01-01 00:00:00"], 'select')
+            ->leftJoin('products as p', 'p.id', '=', 'product_entries.product_id')
             ->where('product_entries.warehouse_id', $warehouseId)
             ->where('product_entries.quantity', '>', 0)
+            ->orderBy('p.name')
             ->get();
-
         return view('pages.dashboard.index', [
             'productEntries' => $groupedEntries,
             'products' => $products,
@@ -88,7 +94,7 @@ class DashboardController extends Controller
             $endDate = $currentStartDate->endOfDay()->subMinute()->toDateTimeString();
         }
 
-        $warehouses = Warehouse::all();
+        $warehouses = Warehouse::orderBy('id', 'asc')->get();
         $products = Product::all();
         $categories = Subcategory::all();
         $companies = Company::all();
@@ -102,18 +108,21 @@ class DashboardController extends Controller
             $warehouseId = $mainWarehouse->id;
         }
 
-        if ($request->from_warehouse_id) {
-            $query->where('from_warehouse_id', $request->from_warehouse_id);
+        if ($request->from_warehouse_ids && count($request->from_warehouse_ids) > 0) {
+            $query->whereIn('from_warehouse_id', $request->from_warehouse_ids);
+        }
+        if ($request->except_from_warehouse_ids && count($request->except_from_warehouse_ids) > 0) {
+            $query->whereNotIn('from_warehouse_id', $request->except_from_warehouse_ids);
         }
         if ($request->product_ids && count($request->product_ids) > 0) {
             $query->whereIn('product_id', $request->product_ids);
 
-            if(count($request->product_ids) == 1){
+            if(count($request->product_ids) == 1 && count($request->from_warehouse_ids) == 1){
                 // Məhsulun ümumi girish sayı
                 $query2 = WarehouseLog::query();
                 $query2->where(['to_warehouse_id' => $warehouseId, 'product_id' => $request->product_ids[0]]);
-                if($request->from_warehouse_id){
-                    $query2->where('from_warehouse_id', $request->from_warehouse_id);
+                if($request->from_warehouse_ids && count($request->from_warehouse_ids) > 0){
+                    $query2->where('from_warehouse_id', $request->from_warehouse_ids);
                 }
                 if ($request->category_id) {
                     $query2->where('subcategory_id', $request->category_id);
@@ -166,7 +175,8 @@ class DashboardController extends Controller
             'categories' => $categories,
             'companies' => $companies,
             'warehouse_id' => $request->warehouse_id ?? null,
-            'from_warehouse_id' => $request->from_warehouse_id ?? null,
+            'from_warehouse_ids' => $request->from_warehouse_ids ?? null,
+            'except_from_warehouse_ids' => $request->except_from_warehouse_ids ?? null,
             'product_ids' => $request->product_ids ?? null,
             'company_id' => $request->company_id ?? null,
             'category_id' => $request->category_id ?? null,
@@ -289,10 +299,11 @@ class DashboardController extends Controller
     }
 
     public function deleteEntry(WarehouseLog $entry){
-        $toWarehouse = ProductEntry::where(['warehouse_id' => $entry->to_warehouse_id, 'product_id' => $entry->product_id])->first();
+
+        $toWarehouse = ProductEntry::where(['warehouse_id' => $entry->to_warehouse_id, 'product_id' => $entry->product_id, 'subcategory_id' => $entry->subcategory_id])->first();
         if($toWarehouse) $toWarehouse->update(['quantity' => $toWarehouse->quantity - $entry->quantity]);
         if($entry->from_warehouse_id){
-            $fromWarehouse = ProductEntry::where(['warehouse_id' => $entry->from_warehouse_id, 'product_id' => $entry->product_id])->first();
+            $fromWarehouse = ProductEntry::where(['warehouse_id' => $entry->from_warehouse_id, 'product_id' => $entry->product_id, 'subcategory_id' => $entry->subcategory_id])->first();
             if($fromWarehouse) $fromWarehouse->update(['quantity' => $fromWarehouse->quantity + $entry->quantity]);
         }
         $entry->delete();
@@ -308,7 +319,7 @@ class DashboardController extends Controller
             $endDate = $currentStartDate->endOfDay()->subMinute()->toDateTimeString();
         }
 
-        $warehouses = Warehouse::all();
+        $warehouses = Warehouse::orderBy('id', 'asc')->get();
         $products = Product::all();
         $categories = Subcategory::all();
 
@@ -600,17 +611,21 @@ class DashboardController extends Controller
         $companies = Company::all();
         $categories = Subcategory::all();
 
+        $mainWarehouse = Warehouse::getMainWarehouse();
+
         return view('pages.dashboard.create', [
             'products' => $products,
             'warehouses' => $warehouses,
             'companies' => $companies,
-            'categories' => $categories
+            'categories' => $categories,
+            'mainWarehouse' => $mainWarehouse
         ]);
     }
 
     public function getProducts($warehouseId)
     {
         $products = ProductEntry::select(
+            "product_entries.id as id",
             "p.id as product_id",
             "p.name as product_name",
             "s.name as category_name",
@@ -620,6 +635,7 @@ class DashboardController extends Controller
             ->leftJoin('products as p', 'p.id', '=', 'product_entries.product_id')
             ->leftJoin('subcategories as s', 's.id', '=', 'product_entries.subcategory_id')
             ->where('product_entries.warehouse_id', $warehouseId)
+            ->where('product_entries.quantity', '>', 0)
             ->get();
 
         return response()->json($products);
@@ -669,19 +685,19 @@ class DashboardController extends Controller
                     $categories[] = '';
                     continue;
                 }
-                $currentProduct = $request->products[$i];
+                $currentProductEntry = $request->products[$i];
                 $currentQuantity = (int)$request->quantities[$i];
                 $currentEntryDate = $request->transfer_dates[$i];
-                $fromWarehouse = ProductEntry::where(['warehouse_id' => $request->from_warehouse, 'product_id' => $currentProduct])->first();
+                $fromWarehouse = ProductEntry::where('id', $currentProductEntry)->first();
                 if ($fromWarehouse->quantity >= $currentQuantity) {
-                    $currentProductData = Product::where('id', $currentProduct)->first();
+                    $currentProductData = Product::where('id', $fromWarehouse->product_id)->first();
                     $productNames[] = $currentProductData->name ?? '';
                     $productCodes[] = $currentProductData->code ?? '';
                     $currentProductCategory = Subcategory::where('id', $fromWarehouse->subcategory_id)->first();
                     $categories[] = $currentProductCategory->name ?? '';
 
                     $fromWarehouse->update(['quantity' => $fromWarehouse->quantity - $currentQuantity]);
-                    $toWarehouse = ProductEntry::where(['warehouse_id' => $request->to_warehouse, 'product_id' => $currentProduct])->first();
+                    $toWarehouse = ProductEntry::where(['warehouse_id' => $request->to_warehouse, 'product_id' => $fromWarehouse->product_id, 'subcategory_id' => $fromWarehouse->subcategory_id])->first();
                     if ($toWarehouse) {
                         // increase
                         $toWarehouse->update(['quantity' => $toWarehouse->quantity + $currentQuantity]);
@@ -689,7 +705,7 @@ class DashboardController extends Controller
                         // create
                         ProductEntry::create([
                             'warehouse_id' => $request->to_warehouse,
-                            'product_id' => $currentProduct,
+                            'product_id' => $fromWarehouse->product_id,
                             'company_id' => $fromWarehouse->company_id,
                             'quantity' => $currentQuantity,
                             'subcategory_id' => $fromWarehouse->subcategory_id,
@@ -701,7 +717,7 @@ class DashboardController extends Controller
                         'to_warehouse_id' => $request->to_warehouse,
                         'quantity' => $currentQuantity,
                         'entry_date' => $currentEntryDate,
-                        'product_id' => $currentProduct,
+                        'product_id' => $fromWarehouse->product_id,
                         'subcategory_id' => $fromWarehouse->subcategory_id,
                         'company_id' => $fromWarehouse->company_id
                     ]);
@@ -712,29 +728,37 @@ class DashboardController extends Controller
                 }
             }
             DB::commit();
-            // export pdf
-            $path = public_path('images/signature.png');
-            $imageData = base64_encode(file_get_contents($path));
-            $imageType = pathinfo($path, PATHINFO_EXTENSION);
-            $base64Image = 'data:image/' . $imageType . ';base64,' . $imageData;
-            $data = [
-                'to' => "Sabirabad filialının Direktoru Məmmədov Xalid Əlioğlan oğlu",
-                'quantities' => $request->quantities,
-                'transfer_date' => Carbon::parse($request->transfer_dates[0])->format('d.m.Y'),
-                'products' => $productNames,
-                'codes' => $productCodes,
-                'categories' => $categories,
-                'notes' => $request->notes,
-                'base64Image' => $base64Image
-            ];
-
-            $pdf = Pdf::loadView('pages.pdf.warehouse_exit', $data)->setPaper('a4')
-            ->setOptions(['isRemoteEnabled' => true]);
-            $fileName = 'warehouse_exit_' . now()->format('Y-m-d_H-i-s') . '.pdf';
-            Storage::put("public/{$fileName}", $pdf->output());
-            // $pdf->save($fileName);
-            
-            return view('pages.pdf.download', ['fileName' => $fileName]);
+            if($request->action == 'print'){
+                // export pdf
+                $path = public_path('images/signature.png');
+                $imageData = base64_encode(file_get_contents($path));
+                $imageType = pathinfo($path, PATHINFO_EXTENSION);
+                $base64Image = 'data:image/' . $imageType . ';base64,' . $imageData;
+                $fromWarehouseman = Warehouse::where('id', $request->from_warehouse)->first();
+                $data = [
+                    'warehouseName' => $fromWarehouseman->name,
+                    'to' => $fromWarehouseman->warehouseman,
+                    'quantities' => $request->quantities,
+                    'pdfDocNumber' => $request->pdf_doc_number,
+                    'transfer_date' => Carbon::parse($request->pdf_date)->format('d.m.Y'),
+                    'products' => $productNames,
+                    'codes' => $productCodes,
+                    'categories' => $categories,
+                    'notes' => $request->notes,
+                    'base64Image' => $base64Image
+                ];
+    
+                $pdf = Pdf::loadView('pages.pdf.warehouse_exit', $data)->setPaper('a4')
+                ->setOptions(['isRemoteEnabled' => true]);
+                $fileName = 'warehouse_exit_' . now()->format('Y-m-d_H-i-s') . '.pdf';
+                Storage::put("public/{$fileName}", $pdf->output());
+                // $pdf->save($fileName);
+                
+                return view('pages.pdf.download', ['fileName' => $fileName]);
+            }else{
+                return redirect()->route('dashboard.index')
+                    ->with('success', 'Uğurlu.');
+            }
         } catch (Throwable $th) {
             DB::rollBack();
             dd($th);
@@ -846,12 +870,19 @@ class DashboardController extends Controller
 
     public function exportMainProducts(Request $request)
     {
+        $startDate = $request->start_date ?? null;
+        $endDate = $request->end_date ?? null;
+        if($startDate && !$endDate){
+            $currentStartDate = Carbon::parse($startDate);
+            $startDate = $currentStartDate->startOfDay()->addMinute()->toDateTimeString();
+            $endDate = $currentStartDate->endOfDay()->subMinute()->toDateTimeString();
+        }
         $query = ProductEntry::query();
 
         $warehouseId = $request->warehouse_id ?: Warehouse::getMainWarehouse()->id;
 
-        if ($request->product_id) {
-            $query->where('product_entries.product_id', $request->product_id);
+        if ($request->product_ids && count($request->product_ids) > 0) {
+            $query->whereIn('product_entries.product_id', $request->product_ids);
         }
 
         if ($request->category_id) {
@@ -859,20 +890,30 @@ class DashboardController extends Controller
         }
 
         if ($request->get('export_type') === 'all') {
-            $products = $query->select('product_id', 'warehouse_id', 'quantity', 's.name as subcategory_name')
+            $products = $query->select(
+                DB::raw('(select sum(warehouse_logs.quantity) from warehouse_logs where warehouse_logs.to_warehouse_id = ? and product_id = product_entries.product_id and subcategory_id = product_entries.subcategory_id and entry_date between ? and ? group by warehouse_logs.to_warehouse_id) as entry_total'),
+                    DB::raw('(select sum(warehouse_logs.quantity) from warehouse_logs where warehouse_logs.from_warehouse_id = ? and product_id = product_entries.product_id and subcategory_id = product_entries.subcategory_id and entry_date between ? and ? group by warehouse_logs.from_warehouse_id) as exit_total'),
+                'product_id', 
+                'warehouse_id', 
+                'quantity', 
+                's.name as subcategory_name')
+                ->addBinding([$warehouseId, $startDate ?? "2020-01-01 00:00:00", $endDate ?? "2030-01-01 00:00:00", $warehouseId, $startDate ?? "2020-01-01 00:00:00", $endDate ?? "2030-01-01 00:00:00"], 'select')
                 ->leftJoin('products as p', 'p.id', '=', 'product_entries.product_id')
                 ->leftJoin('subcategories as s', 's.id', '=', 'product_entries.subcategory_id')
                 ->where('product_entries.warehouse_id', $warehouseId)
+                ->where('product_entries.quantity', '>', 0)
+                ->orderBy('p.name')
                 ->get();
-        } else {
-            $page = $request->input('page', 1);
-            $perPage = 20;
-            $products = $query->select('product_id', 'warehouse_id', 'quantity', 's.name as subcategory_name')
-                ->leftJoin('products as p', 'p.id', '=', 'product_entries.product_id')
-                ->leftJoin('subcategories as s', 's.id', '=', 'product_entries.subcategory_id')
-                ->where('product_entries.warehouse_id', $warehouseId)
-                ->paginate($perPage, ['*'], 'page', $page);
         }
+        // else {
+        //     $page = $request->input('page', 1);
+        //     $perPage = 20;
+        //     $products = $query->select('product_id', 'warehouse_id', 'quantity', 's.name as subcategory_name')
+        //         ->leftJoin('products as p', 'p.id', '=', 'product_entries.product_id')
+        //         ->leftJoin('subcategories as s', 's.id', '=', 'product_entries.subcategory_id')
+        //         ->where('product_entries.warehouse_id', $warehouseId)
+        //         ->paginate($perPage, ['*'], 'page', $page);
+        // }
         if ($products instanceof \Illuminate\Pagination\LengthAwarePaginator) {
             $data = [
                 'products' => $products->items() // Extract items if paginated
@@ -892,6 +933,14 @@ class DashboardController extends Controller
 
     public function exportEntryProducts(Request $request)
     {
+        $startDate = $request->start_date ?? null;
+        $endDate = $request->end_date ?? null;
+        if($startDate && !$endDate){
+            $currentStartDate = Carbon::parse($startDate);
+            $startDate = $currentStartDate->startOfDay()->addMinute()->toDateTimeString();
+            $endDate = $currentStartDate->endOfDay()->subMinute()->toDateTimeString();
+        }
+
         $query = WarehouseLog::query();
 
         if ($request->warehouse_id) {
@@ -900,11 +949,11 @@ class DashboardController extends Controller
             $mainWarehouse = Warehouse::getMainWarehouse();
             $warehouseId = $mainWarehouse->id;
         }
-        if ($request->from_warehouse_id) {
-            $query->where('from_warehouse_id', $request->from_warehouse_id);
+        if ($request->from_warehouse_ids && count($request->from_warehouse_ids) > 0) {
+            $query->whereIn('from_warehouse_id', $request->from_warehouse_ids);
         }
-        if ($request->product_id) {
-            $query->where('product_id', $request->product_id);
+        if ($request->product_ids && count($request->product_ids) > 0) {
+            $query->whereIn('product_id', $request->product_ids);
         }
         if ($request->company_id) {
             $query->where('company_id', $request->company_id);
@@ -913,7 +962,7 @@ class DashboardController extends Controller
             $query->where('subcategory_id', $request->category_id);
         }
         if ($request->start_date && $request->end_date) {
-            $query->whereBetween('warehouse_logs.entry_date', [$request->start_date, $request->end_date]);
+            $query->whereBetween('warehouse_logs.entry_date', [$startDate, $endDate]);
         }
 
         if ($request->get('export_type') === 'all') {
@@ -972,9 +1021,16 @@ class DashboardController extends Controller
         return $pdf->download('products.pdf');
     }
 
-
     public function exportExitProducts(Request $request)
     {
+        $startDate = $request->start_date ?? null;
+        $endDate = $request->end_date ?? null;
+        if($startDate && !$endDate){
+            $currentStartDate = Carbon::parse($startDate);
+            $startDate = $currentStartDate->startOfDay()->addMinute()->toDateTimeString();
+            $endDate = $currentStartDate->endOfDay()->subMinute()->toDateTimeString();
+        }
+
         $query = WarehouseLog::query();
 
         if ($request->warehouse_id) {
@@ -986,8 +1042,8 @@ class DashboardController extends Controller
         if ($request->to_warehouse_id) {
             $query->where('to_warehouse_id', $request->to_warehouse_id);
         }
-        if ($request->product_id) {
-            $query->where('product_id', $request->product_id);
+        if ($request->product_ids && count($request->product_ids) > 0) {
+            $query->whereIn('product_id', $request->product_ids);
         }
         if ($request->highway_code) {
             $query->where('h.code', $request->highway_code);
@@ -996,7 +1052,7 @@ class DashboardController extends Controller
             $query->where('subcategory_id', $request->category_id);
         }
         if ($request->start_date && $request->end_date) {
-            $query->whereBetween('warehouse_logs.entry_date', [$request->start_date, $request->end_date]);
+            $query->whereBetween('warehouse_logs.entry_date', [$startDate, $endDate]);
         }
 
         if ($request->get('export_type') === 'all') {
@@ -1058,6 +1114,13 @@ class DashboardController extends Controller
 
     public function exportOverallProducts(Request $request)
     {
+        $startDate = $request->start_date ?? null;
+        $endDate = $request->end_date ?? null;
+        if($startDate && !$endDate){
+            $currentStartDate = Carbon::parse($startDate);
+            $startDate = $currentStartDate->startOfDay()->addMinute()->toDateTimeString();
+            $endDate = $currentStartDate->endOfDay()->subMinute()->toDateTimeString();
+        }
         $query = WarehouseLog::query();
 
         if ($request->warehouse_id) {
@@ -1070,8 +1133,27 @@ class DashboardController extends Controller
             $warehouseName = $mainWarehouse->name;
         }
 
-        if ($request->product_id) {
-            $query->where('product_id', $request->product_id);
+        if($request->to_warehouse_id){
+            $query->where('warehouse_logs.to_warehouse_id', $request->to_warehouse_id)->where('warehouse_logs.from_warehouse_id', $warehouseId);
+        }else if($request->from_warehouse_id){
+            $query->where('warehouse_logs.from_warehouse_id', $request->from_warehouse_id)->where('warehouse_logs.to_warehouse_id', $warehouseId);
+        }else{
+            if(!$request->type_id){
+                $query->where(function($query) use($warehouseId) {
+                    $query->where('warehouse_logs.to_warehouse_id', $warehouseId)
+                          ->orWhere('warehouse_logs.from_warehouse_id', $warehouseId);
+                });
+            }else{
+                if($request->type_id == 1){
+                    $query->where('warehouse_logs.to_warehouse_id', $warehouseId);
+                }else{
+                    $query->where('warehouse_logs.from_warehouse_id', $warehouseId);
+                }
+            }
+        }
+
+        if ($request->product_ids && count($request->product_ids) > 0) {
+            $query->whereIn('product_id', $request->product_ids);
         }
         if ($request->company_id) {
             $query->where('company_id', $request->company_id);
@@ -1083,7 +1165,7 @@ class DashboardController extends Controller
             $query->where('subcategory_id', $request->category_id);
         }
         if ($request->start_date && $request->end_date) {
-            $query->whereBetween('warehouse_logs.entry_date', [$request->start_date, $request->end_date]);
+            $query->whereBetween('warehouse_logs.entry_date', [$startDate, $endDate]);
         }
 
 
@@ -1092,19 +1174,20 @@ class DashboardController extends Controller
                 ->select(
                     DB::raw("(select name from warehouses where warehouses.id = warehouse_logs.from_warehouse_id) as from_warehouse"),
                     DB::raw("(select name from warehouses where warehouses.id = warehouse_logs.to_warehouse_id) as to_warehouse"),
+                    DB::raw("(SELECT SUM(CASE WHEN wl2.to_warehouse_id = $warehouseId THEN wl2.quantity ELSE -wl2.quantity END) FROM warehouse_logs as wl2 where wl2.product_id = warehouse_logs.product_id and (wl2.to_warehouse_id = $warehouseId or wl2.from_warehouse_id = $warehouseId) and wl2.entry_date < warehouse_logs.entry_date) as residual"),
                     "p.name as product_name",
                     "p.code as product_code",
                     "h.code as highway_code",
+                    "c.name as company_name",
                     "sc.name as subcategory_name",
                     "warehouse_logs.quantity",
                     "warehouse_logs.to_warehouse_id",
                     "warehouse_logs.entry_date as entry_date"
                 )
                 ->leftJoin('products as p', 'p.id', '=', 'warehouse_logs.product_id')
-                ->leftJoin('subcategories as sc', 'sc.id', '=', 'subcategory_id')
+                ->leftJoin('subcategories as sc', 'sc.id', '=', 'warehouse_logs.subcategory_id')
                 ->leftJoin('highways as h', 'h.id', '=', 'warehouse_logs.highway_id')
-                ->where('warehouse_logs.to_warehouse_id', $warehouseId)
-                ->orWhere('warehouse_logs.from_warehouse_id', $warehouseId)
+                ->leftJoin('companies as c', 'c.id', '=', 'warehouse_logs.company_id')
                 ->orderBy('warehouse_logs.entry_date', 'desc')
                 ->get();
         } else {
@@ -1115,19 +1198,20 @@ class DashboardController extends Controller
                 ->select(
                     DB::raw("(select name from warehouses where warehouses.id = warehouse_logs.from_warehouse_id) as from_warehouse"),
                     DB::raw("(select name from warehouses where warehouses.id = warehouse_logs.to_warehouse_id) as to_warehouse"),
+                    DB::raw("(SELECT SUM(CASE WHEN wl2.to_warehouse_id = $warehouseId THEN wl2.quantity ELSE -wl2.quantity END) FROM warehouse_logs as wl2 where wl2.product_id = warehouse_logs.product_id and (wl2.to_warehouse_id = $warehouseId or wl2.from_warehouse_id = $warehouseId) and wl2.entry_date < warehouse_logs.entry_date) as residual"),
                     "p.name as product_name",
                     "p.code as product_code",
                     "h.code as highway_code",
+                    "c.name as company_name",
                     "sc.name as subcategory_name",
                     "warehouse_logs.quantity",
                     "warehouse_logs.to_warehouse_id",
                     "warehouse_logs.entry_date as entry_date"
                 )
                 ->leftJoin('products as p', 'p.id', '=', 'warehouse_logs.product_id')
-                ->leftJoin('subcategories as sc', 'sc.id', '=', 'subcategory_id')
+                ->leftJoin('subcategories as sc', 'sc.id', '=', 'warehouse_logs.subcategory_id')
                 ->leftJoin('highways as h', 'h.id', '=', 'warehouse_logs.highway_id')
-                ->where('warehouse_logs.to_warehouse_id', $warehouseId)
-                ->orWhere('warehouse_logs.from_warehouse_id', $warehouseId)
+                ->leftJoin('companies as c', 'c.id', '=', 'warehouse_logs.company_id')
                 ->orderBy('warehouse_logs.entry_date', 'desc')
                 ->paginate($perPage, ['*'], 'page', $page);
         }
@@ -1150,6 +1234,235 @@ class DashboardController extends Controller
 
         // Return the generated PDF
         return $pdf->download('products.pdf');
+    }
+
+    public function exportMainProductsExcel(Request $request)
+    {
+        $startDate = $request->start_date ?? null;
+        $endDate = $request->end_date ?? null;
+        if($startDate && !$endDate){
+            $currentStartDate = Carbon::parse($startDate);
+            $startDate = $currentStartDate->startOfDay()->addMinute()->toDateTimeString();
+            $endDate = $currentStartDate->endOfDay()->subMinute()->toDateTimeString();
+        }
+        $query = ProductEntry::query();
+
+        $warehouseId = $request->warehouse_id ?: Warehouse::getMainWarehouse()->id;
+
+        if ($request->product_ids && count($request->product_ids) > 0) {
+            $query->whereIn('product_entries.product_id', $request->product_ids);
+        }
+
+        if ($request->category_id) {
+            $query->where('product_entries.subcategory_id', $request->category_id);
+        }
+
+        $products = $query->select(
+            DB::raw('(select sum(warehouse_logs.quantity) from warehouse_logs where warehouse_logs.to_warehouse_id = ? and product_id = product_entries.product_id and subcategory_id = product_entries.subcategory_id and entry_date between ? and ? group by warehouse_logs.to_warehouse_id) as entry_total'),
+                DB::raw('(select sum(warehouse_logs.quantity) from warehouse_logs where warehouse_logs.from_warehouse_id = ? and product_id = product_entries.product_id and subcategory_id = product_entries.subcategory_id and entry_date between ? and ? group by warehouse_logs.from_warehouse_id) as exit_total'),
+            'p.name as product_name', 
+            'p.code as product_code', 
+            'product_id', 
+            'warehouse_id', 
+            'quantity', 
+            's.name as subcategory_name')
+            ->addBinding([$warehouseId, $startDate ?? "2020-01-01 00:00:00", $endDate ?? "2030-01-01 00:00:00", $warehouseId, $startDate ?? "2020-01-01 00:00:00", $endDate ?? "2030-01-01 00:00:00"], 'select')
+            ->leftJoin('products as p', 'p.id', '=', 'product_entries.product_id')
+            ->leftJoin('subcategories as s', 's.id', '=', 'product_entries.subcategory_id')
+            ->where('product_entries.warehouse_id', $warehouseId)
+            ->where('product_entries.quantity', '>', 0)
+            ->orderBy('p.name')
+            ->get();
+        return Excel::download(new MainExport($products), 'anbar_qaliq.xlsx');
+    }
+
+    public function exportEntryProductsExcel(Request $request)
+    {
+        $startDate = $request->start_date ?? null;
+        $endDate = $request->end_date ?? null;
+        if($startDate && !$endDate){
+            $currentStartDate = Carbon::parse($startDate);
+            $startDate = $currentStartDate->startOfDay()->addMinute()->toDateTimeString();
+            $endDate = $currentStartDate->endOfDay()->subMinute()->toDateTimeString();
+        }
+
+        $query = WarehouseLog::query();
+
+        if ($request->warehouse_id) {
+            $warehouseId = $request->warehouse_id;
+        } else {
+            $mainWarehouse = Warehouse::getMainWarehouse();
+            $warehouseId = $mainWarehouse->id;
+        }
+        if ($request->from_warehouse_ids && count($request->from_warehouse_ids) > 0) {
+            $query->whereIn('from_warehouse_id', $request->from_warehouse_ids);
+        }
+        if ($request->product_ids && count($request->product_ids) > 0) {
+            $query->whereIn('product_id', $request->product_ids);
+        }
+        if ($request->company_id) {
+            $query->where('company_id', $request->company_id);
+        }
+        if ($request->category_id) {
+            $query->where('subcategory_id', $request->category_id);
+        }
+        if ($request->start_date && $request->end_date) {
+            $query->whereBetween('warehouse_logs.entry_date', [$startDate, $endDate]);
+        }
+
+        $products = $query
+            ->select(
+                DB::raw("(select name from warehouses where warehouses.id = warehouse_logs.from_warehouse_id) as from_warehouse"),
+                DB::raw("(select name from warehouses where warehouses.id = warehouse_logs.to_warehouse_id) as to_warehouse"),
+                "c.name as company_name",
+                "p.name as product_name",
+                "p.code as product_code",
+                "sc.name as subcategory_name",
+                "warehouse_logs.quantity",
+                "warehouse_logs.entry_date as entry_date"
+            )
+            ->leftJoin('products as p', 'p.id', '=', 'warehouse_logs.product_id')
+            ->leftJoin('subcategories as sc', 'sc.id', '=', 'subcategory_id')
+            ->leftJoin('companies as c', 'c.id', '=', 'warehouse_logs.company_id')
+            ->where('warehouse_logs.to_warehouse_id', $warehouseId)
+            ->orderBy('warehouse_logs.entry_date', 'desc')
+            ->get();
+        
+        return Excel::download(new EntryExport($products), 'anbar_girisler.xlsx');
+    }
+
+    public function exportExitProductsExcel(Request $request)
+    {
+        $startDate = $request->start_date ?? null;
+        $endDate = $request->end_date ?? null;
+        if($startDate && !$endDate){
+            $currentStartDate = Carbon::parse($startDate);
+            $startDate = $currentStartDate->startOfDay()->addMinute()->toDateTimeString();
+            $endDate = $currentStartDate->endOfDay()->subMinute()->toDateTimeString();
+        }
+
+        $query = WarehouseLog::query();
+
+        if ($request->warehouse_id) {
+            $warehouseId = $request->warehouse_id;
+        } else {
+            $mainWarehouse = Warehouse::getMainWarehouse();
+            $warehouseId = $mainWarehouse->id;
+        }
+        if ($request->to_warehouse_id) {
+            $query->where('to_warehouse_id', $request->to_warehouse_id);
+        }
+        if ($request->product_ids && count($request->product_ids) > 0) {
+            $query->whereIn('product_id', $request->product_ids);
+        }
+        if ($request->highway_code) {
+            $query->where('h.code', $request->highway_code);
+        }
+        if ($request->category_id) {
+            $query->where('subcategory_id', $request->category_id);
+        }
+        if ($request->start_date && $request->end_date) {
+            $query->whereBetween('warehouse_logs.entry_date', [$startDate, $endDate]);
+        }
+
+        $products = $query
+            ->select(
+                DB::raw("(select name from warehouses where warehouses.id = warehouse_logs.from_warehouse_id) as from_warehouse"),
+                DB::raw("(select name from warehouses where warehouses.id = warehouse_logs.to_warehouse_id) as to_warehouse"),
+                "p.code as product_code",
+                "p.name as product_name",
+                "sc.name as subcategory_name",
+                "warehouse_logs.quantity",
+                "h.code as highway_code",
+                "warehouse_logs.entry_date as exit_date"
+            )
+            ->leftJoin('products as p', 'p.id', '=', 'warehouse_logs.product_id')
+            ->leftJoin('subcategories as sc', 'sc.id', '=', 'subcategory_id')
+            ->leftJoin('highways as h', 'h.id', '=', 'warehouse_logs.highway_id')
+            ->where('warehouse_logs.from_warehouse_id', $warehouseId)
+            ->orderBy('warehouse_logs.entry_date', 'desc')
+            ->get();
+        
+        return Excel::download(new ExitExport($products), 'anbar_cixislar.xlsx');
+    }
+
+    public function exportOverallProductsExcel(Request $request)
+    {
+        $startDate = $request->start_date ?? null;
+        $endDate = $request->end_date ?? null;
+        if($startDate && !$endDate){
+            $currentStartDate = Carbon::parse($startDate);
+            $startDate = $currentStartDate->startOfDay()->addMinute()->toDateTimeString();
+            $endDate = $currentStartDate->endOfDay()->subMinute()->toDateTimeString();
+        }
+
+        $query = WarehouseLog::query();
+
+        if ($request->warehouse_id) {
+            $warehouseId = $request->warehouse_id;
+            $warehouse = Warehouse::where('id', $warehouseId)->first();
+        } else {
+            $mainWarehouse = Warehouse::getMainWarehouse();
+            $warehouseId = $mainWarehouse->id;
+        }
+
+        if($request->to_warehouse_id){
+            $query->where('warehouse_logs.to_warehouse_id', $request->to_warehouse_id)->where('warehouse_logs.from_warehouse_id', $warehouseId);
+        }else if($request->from_warehouse_id){
+            $query->where('warehouse_logs.from_warehouse_id', $request->from_warehouse_id)->where('warehouse_logs.to_warehouse_id', $warehouseId);
+        }else{
+            if(!$request->type_id){
+                $query->where(function($query) use($warehouseId) {
+                    $query->where('warehouse_logs.to_warehouse_id', $warehouseId)
+                          ->orWhere('warehouse_logs.from_warehouse_id', $warehouseId);
+                });
+            }else{
+                if($request->type_id == 1){
+                    $query->where('warehouse_logs.to_warehouse_id', $warehouseId);
+                }else{
+                    $query->where('warehouse_logs.from_warehouse_id', $warehouseId);
+                }
+            }
+        }
+
+        if ($request->product_ids && count($request->product_ids) > 0) {
+            $query->whereIn('product_id', $request->product_ids);
+        }
+        if ($request->company_id) {
+            $query->where('company_id', $request->company_id);
+        }
+        if ($request->highway_code) {
+            $query->where('h.code', $request->highway_code);
+        }
+        if ($request->category_id) {
+            $query->where('subcategory_id', $request->category_id);
+        }
+        if ($startDate && $endDate) {
+            $query->whereBetween('warehouse_logs.entry_date', [$startDate, $endDate]);
+        }
+        
+        $products = $query
+            ->select(
+                DB::raw("(select name from warehouses where warehouses.id = warehouse_logs.from_warehouse_id) as from_warehouse"),
+                DB::raw("(select name from warehouses where warehouses.id = warehouse_logs.to_warehouse_id) as to_warehouse"),
+                DB::raw("(SELECT SUM(CASE WHEN wl2.to_warehouse_id = $warehouseId THEN wl2.quantity ELSE -wl2.quantity END) FROM warehouse_logs as wl2 where wl2.product_id = warehouse_logs.product_id and (wl2.to_warehouse_id = $warehouseId or wl2.from_warehouse_id = $warehouseId) and wl2.entry_date < warehouse_logs.entry_date) as residual"),
+                "p.name as product_name",
+                "p.code as product_code",
+                "h.code as highway_code",
+                "c.name as company_name",
+                "sc.name as subcategory_name",
+                "warehouse_logs.quantity",
+                "warehouse_logs.to_warehouse_id",
+                "warehouse_logs.entry_date as entry_date"
+            )
+            ->leftJoin('products as p', 'p.id', '=', 'warehouse_logs.product_id')
+            ->leftJoin('subcategories as sc', 'sc.id', '=', 'warehouse_logs.subcategory_id')
+            ->leftJoin('highways as h', 'h.id', '=', 'warehouse_logs.highway_id')
+            ->leftJoin('companies as c', 'c.id', '=', 'warehouse_logs.company_id')
+            ->orderBy('warehouse_logs.entry_date', 'desc')
+            ->get();
+        
+        return Excel::download(new OverallExport($products, $warehouseId), 'anbar_umumi.xlsx');
     }
 
     public function visualTable()

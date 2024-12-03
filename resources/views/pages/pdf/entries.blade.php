@@ -10,6 +10,7 @@
             padding: 0;
             background-color: #f8f9fa;
             color: #333;
+            font-size: 10px;
         }
 
         h1 {
@@ -103,8 +104,7 @@
                 <th>Kod</th>
                 <th>Məshul</th>
                 <th>Sayı</th>
-                <th>Şirkət</th>
-                <th>Anbardan</th>
+                <th>Daxilolma</th>
                 <th>Kateqoriya</th>
                 <th>Giriş tarixi</th>
             </tr>
@@ -113,11 +113,10 @@
             @foreach($products as $product)
             <tr>
                 <td>{{ $loop->index + 1 }}</td>
-                <td>{{ $product->product->code ?? '' }}</td>
+                <td>{{ $product->product_code ?? '' }}</td>
                 <td>{{ $product->product_name }}</td>
                 <td>{{ $product->quantity }}</td>
-                <td>{{ $product->company_name ?? "-" }}</td>
-                <td>{{ $product->from_warehouse ? $product->from_warehouse : '-' }}</td>
+                <td>{{ $product->from_warehouse ? $product->from_warehouse : ($product->company_name ?? "-") }}</td>
                 <td>{{ $product->subcategory_name }}</td>
                 <td>{{ $product->entry_date }}</td>
             </tr>

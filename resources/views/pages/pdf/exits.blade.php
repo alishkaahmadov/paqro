@@ -11,6 +11,7 @@
             padding: 0;
             background-color: #f8f9fa;
             color: #333;
+            font-size: 10px;
         }
 
         h1 {
@@ -129,7 +130,7 @@
             @foreach ($products as $product)
                 <tr>
                     <td>{{ $loop->index + 1 }}</td>
-                    <td>{{ $product->product->code ?? '' }}</td>
+                    <td>{{ $product->product_code ?? '' }}</td>
                     <td>{{ $product->product_name }}</td>
                     <td>{{ $product->quantity }}</td>
                     <td>{{ $product->to_warehouse ? $product->to_warehouse : '-' }}</td>

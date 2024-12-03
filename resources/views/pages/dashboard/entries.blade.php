@@ -51,13 +51,21 @@
                             </select>
                         </div>
                         <div>
-                            <label class="text-gray-700" for="warehouse">Anbardan</label>
-                            <select id="warehouse" name="from_warehouse_id"
+                            <label class="text-gray-700" for="from_warehouse">Anbardan</label>
+                            <select id="from_warehouse" name="from_warehouse_ids[]" multiple
                                 class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                                <option value="" selected>Anbar seçin</option>
                                 @foreach ($warehouses as $warehouse)
-                                    <option {{ $from_warehouse_id && $from_warehouse_id == $warehouse->id ? 'selected' : '' }}
-                                        value="{{ $warehouse->id }}">{{ $warehouse->name }}</option>
+                                {{-- {{ $from_warehouse_id && $from_warehouse_id == $warehouse->id ? 'selected' : '' }} --}}
+                                    <option value="{{ $warehouse->id }}">{{ $warehouse->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-gray-700" for="except_from_warehouse">Anbardan savayı</label>
+                            <select id="except_from_warehouse" name="except_from_warehouse_ids[]" multiple
+                                class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                                @foreach ($warehouses as $warehouse)
+                                    <option value="{{ $warehouse->id }}">{{ $warehouse->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -129,12 +137,16 @@
                             </th>
                             <th
                                 class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                Daxilolma
+                            </th>
+                            {{-- <th
+                                class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
                                 Şirkət
                             </th>
                             <th
                                 class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
                                 Anbardan
-                            </th>
+                            </th> --}}
                             <th
                                 class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
                                 Kateqoriya
@@ -171,12 +183,16 @@
                                 </td>
                                 <td
                                     class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
+                                    {{ $product->from_warehouse ? $product->from_warehouse : ($product->company_name ?? "-") }}
+                                </td>
+                                {{-- <td
+                                    class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
                                     {{ $product->company_name ?? "-" }}
                                 </td>
                                 <td
                                     class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
                                     {{ $product->from_warehouse ? $product->from_warehouse : '-' }}
-                                </td>
+                                </td> --}}
                                 <td
                                     class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
                                     {{ $product->subcategory_name }}
@@ -209,14 +225,17 @@
                     </div>
                 @endif
                 <div class="grid my-2">
-                    <form class="flex w-1/3 justify-self-end" id="exportForm">
+                    <form class="flex w-1/2 justify-self-end" id="exportForm">
                         <input type="hidden" name="export_type" value="all" id="export_type">
                         <button
+                            class="mr-2 w-full px-4 py-2 bg-green-500 border-2 border-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400"
+                            type="button" onclick="printToExcel(event)">Çap et (Excel)</button>
+                        <button
                             class="mr-2 w-full px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-md shadow-lg hover:from-blue-600 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            type="button" onclick="setExportType(event, 'current')">Səhifəni çap et</button>
+                            type="button" onclick="setExportType(event, 'current')">Səhifəni çap et (PDF)</button>
                         <button
                             class="w-full px-4 py-2 bg-red-500 border-2 border-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
-                            type="button" onclick="setExportType(event, 'all')">Çap et</button>
+                            type="button" onclick="setExportType(event, 'all')">Çap et (PDF)</button>
                     </form>
                 </div>
                 <div class="flex items-center justify-center my-2">
@@ -233,6 +252,14 @@
             $('#product').select2();
             const selectedProductIds = @json($product_ids);
             $('#product').val(selectedProductIds).trigger('change');
+
+            $('#from_warehouse').select2();
+            const selectedWarehouseIds = @json($from_warehouse_ids);
+            $('#from_warehouse').val(selectedWarehouseIds).trigger('change');
+
+            $('#except_from_warehouse').select2();
+            const selectedWarehouseExceptIds = @json($except_from_warehouse_ids);
+            $('#except_from_warehouse').val(selectedWarehouseExceptIds).trigger('change');
         });
 
         function setExportType(event, type) {
@@ -249,6 +276,13 @@
             const actionUrl = `{{ route('export.entryProducts') }}?${params.toString()}`;
 
             // Redirect to the constructed URL to trigger the form submission
+            window.location.href = actionUrl;
+        }
+
+        function printToExcel(event) {
+            event.preventDefault();
+            const params = new URLSearchParams(window.location.search);
+            const actionUrl = `{{ route('export.entryExcel') }}?${params.toString()}`;
             window.location.href = actionUrl;
         }
     </script>

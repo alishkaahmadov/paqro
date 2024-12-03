@@ -44,7 +44,6 @@ Route::get('/login', [AuthController::class, 'loginView'])->name('login-view');
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-
 Route::group(['middleware' => 'auth'], function(){
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard.indexPage');
     Route::get('/visual-table', [DashboardController::class, 'visualTable'])->name('visual-table');
@@ -60,10 +59,17 @@ Route::group(['middleware' => 'auth'], function(){
     Route::get('/dashboard/transfer', [DashboardController::class, 'transferPage'])->name('dashboard.transferPage');
     Route::post('/dashboard/transfer', [DashboardController::class, 'transfer'])->name('dashboard.transfer');
     Route::get('/get-products/{warehouseId}', [DashboardController::class, 'getProducts']);
+
+    Route::get('/export-main-excel', [DashboardController::class, 'exportMainProductsExcel'])->name('export.mainExcel');
+    Route::get('/export-entry-excel', [DashboardController::class, 'exportEntryProductsExcel'])->name('export.entryExcel');
+    Route::get('/export-exit-excel', [DashboardController::class, 'exportExitProductsExcel'])->name('export.exitExcel');
+    Route::get('/export-overall-excel', [DashboardController::class, 'exportOverallProductsExcel'])->name('export.overallExcel');
+
     Route::get('/export-main-products', [DashboardController::class, 'exportMainProducts'])->name('export.mainProducts');
     Route::get('/export-entry-products', [DashboardController::class, 'exportEntryProducts'])->name('export.entryProducts');
     Route::get('/export-exit-products', [DashboardController::class, 'exportExitProducts'])->name('export.exitProducts');
     Route::get('/export-overall-products', [DashboardController::class, 'exportOverallProducts'])->name('export.overallProducts');
+
     Route::get('/download-pdf', function (Request $request) {
         $fileName = $request->query('file');
         $filePath = "public/{$fileName}";

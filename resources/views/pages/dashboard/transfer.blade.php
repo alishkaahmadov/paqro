@@ -26,6 +26,22 @@
                         @endforeach
                     </select>
                 </div>
+
+                <div class="flex justify-between mt-2">
+                    <div class="md:w-1/2">
+                        <label class="text-gray-700" for="pdf_date">Tarix (PDF üçün)</label>
+                        <input name="pdf_date" data-datetime-local="true"
+                            class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                            type="datetime-local">
+                    </div>
+    
+                    <div class="md:w-1/2">
+                        <label class="text-gray-700" for="pdf_doc_number">Tələbnamə nömrəsi (PDF üçün)</label>
+                        <input name="pdf_doc_number"
+                            class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                            type="text">
+                    </div>
+                </div>
                 
                 <div class="relative flex justify-between flex-col md:flex-row mt-2 pt-8">
                     <button id="addMore"
@@ -74,8 +90,10 @@
             </div>
 
             <div class="flex justify-end mt-4">
-                <button type="submit"
-                    class="px-4 py-2 bg-gray-800 text-gray-200 rounded-md hover:bg-gray-700 focus:outline-none focus:bg-gray-700">Yarat</button>
+                <button type="submit" name="action" value="save"
+                    class="px-4 py-2 mr-2 bg-gray-800 text-gray-200 rounded-md hover:bg-gray-700 focus:outline-none focus:bg-gray-700">Yarat</button>
+                <button type="submit" name="action" value="print"
+                    class="px-4 py-2 bg-gray-800 text-gray-200 rounded-md hover:bg-gray-700 focus:outline-none focus:bg-gray-700">Yarat (Çap et)</button>
             </div>
         </form>
     </div>
@@ -156,10 +174,11 @@
                                 products.innerHTML = '';
                                 html = '';
                                 data.forEach(function(product) {
+                                    console.log(product)
                                     if(product.quantity){
-                                        html += `<option value="${product.product_id}">${product.product_name} ${product.product_code ? `- ${product.product_code}` : ''} - ${product.category_name} (${product.quantity})</option>`
+                                        html += `<option value="${product.id}">${product.product_name} ${product.product_code ? `- ${product.product_code}` : ''} - ${product.category_name} (${product.quantity})</option>`
                                         var option = document.createElement('option');
-                                        option.value = product.product_id;
+                                        option.value = product.id;
                                         option.textContent = `${product.product_name} ${product.product_code ? `- ${product.product_code}` : ''} - ${product.category_name} (${product.quantity})`;
                                         products.appendChild(option);
                                     }
@@ -245,9 +264,9 @@
                             products.innerHTML = '';
                             html = '';
                             data.forEach(function(product) {
-                                html += `<option value="${product.product_id}">${product.product_name} ${product.product_code ? `- ${product.product_code}` : ''} - ${product.category_name} (${product.quantity})</option>`
+                                html += `<option value="${product.id}">${product.product_name} ${product.product_code ? `- ${product.product_code}` : ''} - ${product.category_name} (${product.quantity})</option>`
                                 var option = document.createElement('option');
-                                option.value = product.product_id;
+                                option.value = product.id;
                                 option.textContent = `${product.product_name} ${product.product_code ? `- ${product.product_code}` : ''} - ${product.category_name} (${product.quantity})`;
                                 products.appendChild(option);
                             });

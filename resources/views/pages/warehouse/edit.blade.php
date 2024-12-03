@@ -18,6 +18,15 @@
         </div>
 
         <div class="mb-4">
+            <label for="warehouseman" class="block text-sm font-medium text-gray-700">Anbardar</label>
+            <input type="text" id="warehouseman" name="warehouseman" value="{{ old('warehouseman', $warehouse->warehouseman) }}"
+                   class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+            @error('warehouseman')
+                <span class="text-red-500 text-sm">{{ $message }}</span>
+            @enderror
+        </div>
+
+        <div class="mb-4">
             <label for="is_main" class="block text-sm font-medium text-gray-700">Əsas anbar</label>
             <select id="is_main" name="is_main"
                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
