@@ -117,7 +117,7 @@ class DashboardController extends Controller
         if ($request->product_ids && count($request->product_ids) > 0) {
             $query->whereIn('product_id', $request->product_ids);
 
-            if(count($request->product_ids) == 1 && count($request->from_warehouse_ids) == 1){
+            if(count($request->product_ids) == 1 && $request->from_warehouse_ids && count($request->from_warehouse_ids) == 1){
                 // Məhsulun ümumi girish sayı
                 $query2 = WarehouseLog::query();
                 $query2->where(['to_warehouse_id' => $warehouseId, 'product_id' => $request->product_ids[0]]);
