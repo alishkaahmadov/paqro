@@ -11,14 +11,16 @@
                 class="w-full mr-2 px-4 py-2 rounded-md focus:outline-none {{ request()->routeIs('dashboard.index') ? 'bg-gradient-to-r from-indigo-500 to-indigo-700 text-white shadow-lg border-b-4 border-indigo-800' : 'bg-indigo-500 text-white hover:bg-indigo-600 hover:shadow-md' }}">
                 Qalıq
             </a>
-            <a href="{{ route('dashboard.create') }}"
-                class="w-full px-4 py-2 bg-green-500 text-white rounded-md mr-2">
-                Giriş daxil et
-            </a>
-            <a href="{{ route('dashboard.transferPage') }}"
-                class="w-full px-4 py-2 bg-orange-500 text-white rounded-md">
-                Çıxış daxil et
-            </a>
+            @can('create', App\Models\WarehouseLog::class)
+                <a href="{{ route('dashboard.create') }}"
+                    class="w-full px-4 py-2 bg-green-500 text-white rounded-md mr-2">
+                    Giriş daxil et
+                </a>
+                <a href="{{ route('dashboard.transferPage') }}"
+                    class="w-full px-4 py-2 bg-orange-500 text-white rounded-md">
+                    Çıxış daxil et
+                </a>
+            @endcan
         </div>
         <div>
             <a href="{{ route('dashboard.entries') }}"

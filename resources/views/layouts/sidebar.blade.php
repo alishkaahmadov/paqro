@@ -30,16 +30,18 @@
             </svg>
             <span class="mx-3">Əsas səhifə</span>
         </a>
-        <a class="flex items-center px-6 py-2 mt-4 text-gray-100 bg-opacity-25 {{ Route::current()->uri() == 'warehouses' ? 'bg-gray-700' : '' }}"
-            href="/warehouses">
-            <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 9.5L12 4l9 5.5v9.5a2 2 0 0 1-2 2h-14a2 2 0 0 1-2-2v-9.5z"></path>
-                <path d="M9 22v-6h6v6"></path>
-            </svg>
+        @if (Auth::user()->is_admin)
+            <a class="flex items-center px-6 py-2 mt-4 text-gray-100 bg-opacity-25 {{ Route::current()->uri() == 'warehouses' ? 'bg-gray-700' : '' }}"
+                href="/warehouses">
+                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9.5L12 4l9 5.5v9.5a2 2 0 0 1-2 2h-14a2 2 0 0 1-2-2v-9.5z"></path>
+                    <path d="M9 22v-6h6v6"></path>
+                </svg>
 
-            <span class="mx-3">Anbarlar</span>
-        </a>
+                <span class="mx-3">Anbarlar</span>
+            </a>
+        @endif
         {{-- <a class="flex items-center px-6 py-2 mt-4 text-gray-100 bg-opacity-25 {{ Route::current()->uri() == 'products' ? 'bg-gray-700' : '' }}"
             href="/products">
             <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"

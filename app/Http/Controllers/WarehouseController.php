@@ -2,12 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Log;
 use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use Throwable;
 
 class WarehouseController extends Controller
 {
+
+    public function __construct()
+    {
+        // Apply middleware only to the create method
+        $this->middleware('isAdmin')->only(['create', 'edit', 'update', 'destroy']);
+    }
+
     /**
      * Display a listing of the resource.
      */

@@ -10,14 +10,16 @@
                 class="w-full mr-2 px-4 py-2 rounded-md focus:outline-none {{ request()->routeIs('dashboard.index') ? 'bg-gradient-to-r from-indigo-500 to-indigo-700 text-white shadow-lg border-b-4 border-indigo-800' : 'bg-indigo-500 text-white hover:bg-indigo-600 hover:shadow-md' }}">
                 Qalıq
             </a>
-            <a href="{{ route('dashboard.create') }}"
-                class="w-full px-4 py-2 bg-green-500 text-white rounded-md mr-2">
-                Giriş daxil et
-            </a>
-            <a href="{{ route('dashboard.transferPage') }}"
-                class="w-full px-4 py-2 bg-orange-500 text-white rounded-md">
-                Çıxış daxil et
-            </a>
+            @can('create', App\Models\WarehouseLog::class)
+                <a href="{{ route('dashboard.create') }}"
+                    class="w-full px-4 py-2 bg-green-500 text-white rounded-md mr-2">
+                    Giriş daxil et
+                </a>
+                <a href="{{ route('dashboard.transferPage') }}"
+                    class="w-full px-4 py-2 bg-orange-500 text-white rounded-md">
+                    Çıxış daxil et
+                </a>
+            @endcan
         </div>
         <div>
             <a href="{{ route('dashboard.entries') }}"
@@ -144,10 +146,12 @@
                                 class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
                                 Çıxış tarixi
                             </th>
-                            <th
-                                class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                                Tənzimlə / Sil
-                            </th>
+                            @if (Auth::user()->is_admin)
+                                <th
+                                    class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                    Tənzimlə / Sil
+                                </th>
+                            @endif
                         </tr>
                     </thead>
 
@@ -190,20 +194,22 @@
                                     class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
                                     {{ $product->exit_date }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5">
-                                    <a href="{{ route('dashboard.exits.edit', $product->id) }}"
-                                        class="text-blue-500 hover:text-blue-700 mr-2">
-                                        Düzəliş et
-                                     </a>
-                                     <form action="{{ route('dashboard.exits.delete', $product->id) }}" method="POST" class="inline-block">
-                                         @csrf
-                                         @method('DELETE')
-                                         <button type="submit" onclick="return confirm('Silmək istədiyinizdən əminsiniz?')" 
-                                                 class="text-red-500 hover:text-red-700">
-                                             Sil
-                                         </button>
-                                     </form>
-                                </td>
+                                @if (Auth::user()->is_admin)
+                                    <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5">
+                                        <a href="{{ route('dashboard.exits.edit', $product->id) }}"
+                                            class="text-blue-500 hover:text-blue-700 mr-2">
+                                            Düzəliş et
+                                        </a>
+                                        <form action="{{ route('dashboard.exits.delete', $product->id) }}" method="POST" class="inline-block">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" onclick="return confirm('Silmək istədiyinizdən əminsiniz?')" 
+                                                    class="text-red-500 hover:text-red-700">
+                                                Sil
+                                            </button>
+                                        </form>
+                                    </td>
+                                @endif
                             </tr>
                         @endforeach
                     </tbody>

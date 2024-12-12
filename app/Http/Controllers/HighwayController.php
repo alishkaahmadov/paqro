@@ -12,6 +12,13 @@ use Throwable;
 
 class HighwayController extends Controller
 {
+
+    public function __construct()
+    {
+        // Apply middleware only to the create method
+        $this->middleware('isAdmin')->only(['create', 'edit', 'update', 'destroy']);
+    }
+
     /**
      * Display a listing of the resource.
      */

@@ -8,6 +8,7 @@ use App\Exports\MainExport;
 use App\Exports\OverallExport;
 use App\Models\Company;
 use App\Models\Highway;
+use App\Models\Log;
 use App\Models\Product;
 use App\Models\ProductEntry;
 use App\Models\Subcategory;
@@ -24,6 +25,13 @@ use Throwable;
 
 class DashboardController extends Controller
 {
+
+    public function __construct()
+    {
+        // Apply middleware only to the create method
+        $this->middleware('isAdmin')->only(['create']);
+    }
+    
     /**
      * Display a listing of the resource.
      */
@@ -282,6 +290,16 @@ class DashboardController extends Controller
             // update older one
             $olderProductEntry = ProductEntry::where(['warehouse_id' => $entry->to_warehouse_id, 'product_id' => $entry->product_id, 'subcategory_id' => $entry->subcategory_id])->first();
             $olderProductEntry->update(['quantity' => $olderProductEntry->quantity - $entry->quantity]);
+
+
+            $oldEntryData = [
+                'quantity' => $entry->quantity,
+                'productInfo' => $entry->product?->name . " (" . $entry->product?->code . ")",
+                'to' => $entry->toWarehouse?->name,
+                'category' => $entry->subcategory?->name,
+                'date' => $entry->entry_date,
+            ];
+
             $entry->update([
                 'to_warehouse_id' => $warehouseId,
                 'quantity' => $request->quantity,
@@ -290,6 +308,23 @@ class DashboardController extends Controller
                 'subcategory_id' => $categoryId,
                 'company_id' => $companyId
             ]);
+
+            $entry->refresh();
+
+            Log::create([
+                'user_id' => auth()->id(),
+                'action' => 'Düzəliş etdi',
+                'model_type' => 'App\Models\WarehouseLog',
+                'model_id' => $entry->id,
+                'changes' => json_encode(["action" => "Girişə düzəliş etdi", "data" => [
+                    "Mehsul" => $oldEntryData["productInfo"] . " ===> " . $entry->product?->name . " (" . $entry->product?->code . ")",
+                    "Sayi" => $oldEntryData["quantity"] . " ===> " . $entry->quantity,
+                    "Anbara" => $oldEntryData["to"] . " ===> " . ($entry->to_warehouse_id ? $entry->toWarehouse?->name : ""),
+                    "Kateqoriya" => $oldEntryData["category"] . " ===> " . $entry->subcategory?->name,
+                    "Tarix" => $oldEntryData["date"] . " ===> " . $entry->entry_date,
+                    ]], JSON_UNESCAPED_UNICODE)
+            ]);
+
             return redirect()->route('dashboard.index')
                 ->with('success', 'Məhsul uğurla dəyişildi.');
         } catch (Throwable $th) {
@@ -306,6 +341,20 @@ class DashboardController extends Controller
             $fromWarehouse = ProductEntry::where(['warehouse_id' => $entry->from_warehouse_id, 'product_id' => $entry->product_id, 'subcategory_id' => $entry->subcategory_id])->first();
             if($fromWarehouse) $fromWarehouse->update(['quantity' => $fromWarehouse->quantity + $entry->quantity]);
         }
+        Log::create([
+            'user_id' => auth()->id(),
+            'action' => 'Sildi',
+            'model_type' => 'App\Models\WarehouseLog',
+            'model_id' => $entry->id,
+            'changes' => json_encode(["action" => "Girişi sildi", "data" => [
+                "Mehsul" => $entry->product?->name . " (" . $entry->product?->code . ")",
+                "Sayi" => $entry->quantity,
+                "Anbara" => $entry->toWarehouse?->name,
+                "Anbardan" => $entry->from_warehouse_id ? $entry->fromWarehouse?->name : "",
+                "Kateqoriya" => $entry->subcategory?->name,
+                "Tarix" => $entry->entry_date,
+                ]], JSON_UNESCAPED_UNICODE)
+        ]);
         $entry->delete();
         return redirect()->route('dashboard.index')->with('success', 'Uğurla silindi.');
     }
@@ -456,6 +505,17 @@ class DashboardController extends Controller
                 $olderFromProductEntry = ProductEntry::where(['warehouse_id' => $exit->from_warehouse_id, 'product_id' => $exit->product_id, 'subcategory_id' => $exit->subcategory_id])->first();
                 $olderFromProductEntry->update(['quantity' => $olderFromProductEntry->quantity + $exit->quantity]);
 
+
+                $oldExitData = [
+                    'quantity' => $exit->quantity,
+                    'productInfo' => $exit->product?->name . " (" . $exit->product?->code . ")",
+                    'from' => $exit->fromWarehouse?->name,
+                    'to' => $exit->to_warehouse_id ? $exit->toWarehouse?->name : "",
+                    'highwayCode' => $exit->highway_id ? $exit->highway?->code : "",
+                    'category' => $exit->subcategory?->name,
+                    'date' => $exit->entry_date,
+                ];
+
                 // update older exit warehouse log
                 $exit->update([
                     'from_warehouse_id' => $request->from_warehouse,
@@ -466,6 +526,25 @@ class DashboardController extends Controller
                     'subcategory_id' => $fromWarehouse->subcategory_id,
                     'company_id' => $fromWarehouse->company_id
                 ]);
+
+                $exit->refresh();
+
+                Log::create([
+                    'user_id' => auth()->id(),
+                    'action' => 'Düzəliş etdi',
+                    'model_type' => 'App\Models\WarehouseLog',
+                    'model_id' => $exit->id,
+                    'changes' => json_encode(["action" => "Çıxışa düzəliş etdi", "data" => [
+                        "Mehsul" => $oldExitData["productInfo"] . " ===> " . $exit->product?->name . " (" . $exit->product?->code . ")",
+                        "Sayi" => $oldExitData["quantity"] . " ===> " . $exit->quantity,
+                        "Anbardan" => $oldExitData["from"] . " ===> " . $exit->fromWarehouse?->name,
+                        "Anbara" => $oldExitData["to"] ? $oldExitData["to"] . " ===> " . ($exit->to_warehouse_id ? $exit->toWarehouse?->name : "") : "",
+                        //"Şassi nömrəsi" => $oldExitData["highwayCode"] ? $oldExitData["highwayCode"] . " ===> " . ($exit->highway_id ? $exit->highway?->code : "") : "",
+                        "Kateqoriya" => $oldExitData["category"] . " ===> " . $exit->subcategory?->name,
+                        "Tarix" => $oldExitData["date"] . " ===> " . $exit->entry_date,
+                        ]], JSON_UNESCAPED_UNICODE)
+                ]);
+
                 return redirect()->route('dashboard.index')->with('success', 'Məhsul uğurla dəyişildi.');
             } else {
                 return redirect()->route('dashboard.index')
@@ -489,6 +568,21 @@ class DashboardController extends Controller
             $highway = Highway::where('id', $exit->highway_id)->first();
             if($highway) $highway->delete();
         }
+        Log::create([
+            'user_id' => auth()->id(),
+            'action' => 'Sildi',
+            'model_type' => 'App\Models\WarehouseLog',
+            'model_id' => $exit->id,
+            'changes' => json_encode(["action" => "Çıxışı sildi", "data" => [
+                "Mehsul" => $exit->product?->name . " (" . $exit->product?->code . ")",
+                "Sayi" => $exit->quantity,
+                "Anbardan" => $exit->from_warehouse_id ? $exit->fromWarehouse?->name : "",
+                "Anbara" => $exit->to_warehouse_id ? $exit->toWarehouse?->name : "",
+                "Şassi nömrəsi" => $exit->highway_id ? $exit->highway?->code : "",
+                "Kateqoriya" => $exit->subcategory?->name,
+                "Tarix" => $exit->entry_date,
+                ]], JSON_UNESCAPED_UNICODE)
+        ]);
         $exit->delete();
         return redirect()->route('dashboard.index')->with('success', 'Uğurla silindi.');
     }
@@ -712,7 +806,7 @@ class DashboardController extends Controller
                             'entry_date' => $currentEntryDate
                         ]);
                     }
-                    WarehouseLog::create([
+                    $wrhsLogId = WarehouseLog::create([
                         'from_warehouse_id' => $request->from_warehouse,
                         'to_warehouse_id' => $request->to_warehouse,
                         'quantity' => $currentQuantity,
@@ -720,6 +814,20 @@ class DashboardController extends Controller
                         'product_id' => $fromWarehouse->product_id,
                         'subcategory_id' => $fromWarehouse->subcategory_id,
                         'company_id' => $fromWarehouse->company_id
+                    ]);
+                    Log::create([
+                        'user_id' => auth()->id(),
+                        'action' => 'Yaratdı',
+                        'model_type' => 'App\Models\WarehouseLog',
+                        'model_id' => $wrhsLogId->id,
+                        'changes' => json_encode(["action" => "Yeni çıxış daxil etdi", "data" => [
+                            "Say" => $currentQuantity,
+                            "Mehsul" => $wrhsLogId->product?->name . " (" . $wrhsLogId->product?->code . ")",
+                            "Anbardan" => $wrhsLogId->fromWarehouse?->name,
+                            "Anbara" => $wrhsLogId->toWarehouse?->name,
+                            "Kateqoriya" => $wrhsLogId->subcategory?->name,
+                            "Tarix" => $currentEntryDate
+                            ]], JSON_UNESCAPED_UNICODE)
                     ]);
                 } else {
                     DB::rollBack();
@@ -851,13 +959,26 @@ class DashboardController extends Controller
                         'entry_date' => $request->entry_dates[$i]
                     ]);
                 }
-                WarehouseLog::create([
+                $wrhsLogId = WarehouseLog::create([
                     'to_warehouse_id' => $warehouseId,
                     'quantity' => $request->quantities[$i],
                     'entry_date' => $request->entry_dates[$i],
                     'product_id' => $productId,
                     'subcategory_id' => $categoryId,
                     'company_id' => $companyId
+                ]);
+                Log::create([
+                    'user_id' => auth()->id(),
+                    'action' => 'Yaratdı',
+                    'model_type' => 'App\Models\WarehouseLog',
+                    'model_id' => $wrhsLogId->id,
+                    'changes' => json_encode(["action" => "Yeni giriş daxil etdi", "data" => [
+                        "Say" => $request->quantities[$i],
+                        "Mehsul" => $currentProduct . " (" . $currentProductCode . ")",
+                        "Anbara" => $wrhsLogId->toWarehouse?->name,
+                        "Kateqoriya" => $wrhsLogId->subcategory?->name,
+                        "Tarix" => $request->entry_dates[$i]
+                        ]], JSON_UNESCAPED_UNICODE)
                 ]);
             }
             return redirect()->route('dashboard.index')

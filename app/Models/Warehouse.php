@@ -10,7 +10,41 @@ class Warehouse extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'is_main'];
+    protected $fillable = ['name', 'is_main', 'warehouseman'];
+
+    protected static function boot(){
+        parent::boot();
+
+        static::created(function ($model) {
+            Log::create([
+                'user_id' => auth()->id(),
+                'action' => 'Yaratdı',
+                'model_type' => get_class($model),
+                'model_id' => $model->id,
+                'changes' => json_encode(["action" => $model->name . " adlı anbar yaratdı", "data" => $model->getAttributes()], JSON_UNESCAPED_UNICODE)
+            ]);
+        });
+
+        static::updated(function ($model) {
+            Log::create([
+                'user_id' => auth()->id(),
+                'action' => 'Düzəliş etdi',
+                'model_type' => get_class($model),
+                'model_id' => $model->id,
+                'changes' => json_encode(["action" => $model->getOriginal('name') . " adlı anbara düzəliş etdi", "uptaded" => $model->getChanges()], JSON_UNESCAPED_UNICODE)
+            ]);
+        });
+
+        static::deleted(function ($model) {
+            Log::create([
+                'user_id' => auth()->id(),
+                'action' => 'Sildi',
+                'model_type' => get_class($model),
+                'model_id' => $model->id,
+                'changes' => json_encode(["action" => $model->name . " adlı anbarı sildi"], JSON_UNESCAPED_UNICODE)
+            ]);
+        });
+    }
 
 
     public static function getMainWarehouse()
