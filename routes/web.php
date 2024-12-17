@@ -5,6 +5,7 @@ use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DnnController;
 use App\Http\Controllers\HighwayController;
+use App\Http\Controllers\LogController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SubcategoryController;
 use App\Http\Controllers\WarehouseController;
@@ -42,27 +43,27 @@ use Illuminate\Support\Facades\Storage;
 //     return $test;
 // });
 
-Route::get('/alishka2', function () {
-    $user1 = User::where('id', 1)->update([
-        'name' => 'Tamerlan',
-        'is_admin' => true,
-        'email' => 'tamerlan@gmail.com',
-        'password' => Hash::make('PaqroT2@24!'),
-    ]);
-    $user2 = User::create([
-        'name' => 'Jale',
-        'is_admin' => true,
-        'email' => 'jale@gmail.com',
-        'password' => Hash::make('PaqroJ2@24!'),
-    ]);
-    $user3 = User::create([
-        'name' => 'Cavid',
-        'is_admin' => false,
-        'email' => 'cavid@gmail.com',
-        'password' => Hash::make('PaqroC2@24!'),
-    ]);
-    return $user3;
-});
+// Route::get('/alishka2', function () {
+//     $user1 = User::where('id', 1)->update([
+//         'name' => 'Tamerlan',
+//         'is_admin' => true,
+//         'email' => 'tamerlan@gmail.com',
+//         'password' => Hash::make('PaqroT2@24!'),
+//     ]);
+//     $user2 = User::create([
+//         'name' => 'Jale',
+//         'is_admin' => true,
+//         'email' => 'jale@gmail.com',
+//         'password' => Hash::make('PaqroJ2@24!'),
+//     ]);
+//     $user3 = User::create([
+//         'name' => 'Cavid',
+//         'is_admin' => false,
+//         'email' => 'cavid@gmail.com',
+//         'password' => Hash::make('PaqroC2@24!'),
+//     ]);
+//     return $user3;
+// });
 
 Route::get('/login', [AuthController::class, 'loginView'])->name('login-view');
 Route::post('/login', [AuthController::class, 'login'])->name('login');
@@ -85,6 +86,9 @@ Route::group(['middleware' => 'auth'], function(){
         Route::get('/dashboard/transfer', [DashboardController::class, 'transferPage'])->name('dashboard.transferPage');
         Route::post('/dashboard/transfer', [DashboardController::class, 'transfer'])->name('dashboard.transfer');
         Route::resource('warehouses', WarehouseController::class)->names('warehouses');
+        Route::resource('logs', LogController::class)->names('logs');
+        Route::get('/highways/{highway}/change', [HighwayController::class, 'changeWarehousePage'])->name('highways.changeWarehousePage');
+        Route::put('/highways/{highway}/change', [HighwayController::class, 'changeWarehouse'])->name('highways.changeWarehouse');
     });
 
 

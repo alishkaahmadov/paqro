@@ -2,36 +2,14 @@
 
 @section('body')
     <div class="flex justify-between">
-        <h3 class="text-gray-700 text-3xl font-medium">Şassilər</h3>
-        <a href="{{ route('highways.create') }}"
-            class="flex items-center justify-center px-4 py-2 bg-indigo-500 text-white rounded-lg">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="14"
-                height="14">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" />
-            </svg>
-            Yenisini yarat
-        </a>
+        <h3 class="text-gray-700 text-3xl font-medium">Şassi</h3>
     </div>
     <div class="flex flex-col mt-8">
         <div class="-my-2 py-2 overflow-x-auto sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
             <div>
-                <form action="{{ route('highways.index') }}" method="get">
-                    <div class="grid grid-cols-3 mt-4 gap-3 mb-4">
+                <form action="{{ route('highways.show', ['highway' => $highwayId]) }}" method="get">
+                    <div class="grid grid-cols-2 mt-4 gap-3 mb-4">
                         <div>
-                            <label class="text-gray-700" for="warehouse">Şassi nömrəsi</label>
-                            <input value="{{ $highway_code ? $highway_code : '' }}" name="highway_code" id="highway_code" class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" type="text">
-                        </div>
-                        <div>
-                            <label class="text-gray-700" for="from_warehouse">Anbardan</label>
-                            <select id="from_warehouse" name="from_warehouse_id"
-                                class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                                <option selected value="">Anbar seçin</option>
-                                @foreach ($warehouses as $warehouse)
-                                    <option {{ $from_warehouse_id && $from_warehouse_id == $warehouse->id ? 'selected' : '' }} value="{{ $warehouse->id }}">{{ $warehouse->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        {{-- <div>
                             <label class="text-gray-700" for="product">Məhsul</label>
                             <select id="product" name="product_id"
                                 class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
@@ -41,7 +19,15 @@
                                         value="{{ $product->id }}">{{ $product->name }} {{ $product->code ? '- ' . $product->code : '' }}</option>
                                 @endforeach
                             </select>
-                        </div> --}}
+                        </div>
+                        <div>
+                            <label class="text-gray-700" for="start_date">Giriş tarixindən</label>
+                            <input value="{{ $start_date ? $start_date : '' }}" name="start_date" id="start_date" class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" type="datetime-local">
+                        </div>
+                        <div>
+                            <label class="text-gray-700" for="end_date">Giriş tarixinədək</label>
+                            <input value="{{ $end_date ? $end_date : '' }}" name="end_date" id="end_date" class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" type="datetime-local">
+                        </div>
                         <div class="self-end">
                             <button type="submit"
                                 class="w-full px-4 py-2 bg-green-500 border-2 border-green-500 text-white rounded-md hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-green-400">Axtar</button>
@@ -57,26 +43,23 @@
                                 Nömrəsi
                             </th>
                             <th class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                                Cari anbar
-                            </th>
-                            <th class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                                Daha çox
-                            </th>
-                            <th class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                                Yerdəyişmə
-                            </th>
-                            {{-- <th class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
                                 Məhsul
                             </th>
                             <th class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
                                 Sayı
                             </th>
                             <th class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                Anbardan
+                            </th>
+                            <th class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
                                 PDF faylı
                             </th>
                             <th class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
                                 Tarix
-                            </th> --}}
+                            </th>
+                            <th class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                Daha çox
+                            </th>
                         </tr>
                     </thead>
 
@@ -87,22 +70,13 @@
                                     {{$highway->code}}
                                 </td>
                                 <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
-                                    {{$highway->warehouse_name}}
-                                </td>
-                                <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
-                                    <a href="{{ route('highways.show', ['highway' => $highway->id]) }}">Ətraflı</a>
-                                </td>
-                                <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
-                                    <a href="{{ route('highways.changeWarehousePage', ['highway' => $highway->id]) }}">Yerdəyişmə et</a>
-                                </td>
-                                {{-- <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
                                     {{$highway->product_name}} {{ $highway->product_code ? '- ' . $highway->product_code : '' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
                                     {{$highway->quantity}}
                                 </td>
                                 <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
-                                    {{$highway->warehouse_name}}
+                                    {{$highway->from_warehouse}}
                                 </td>
                                 <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
                                     @if($highway->pdf_file)
@@ -113,7 +87,10 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
                                     {{$highway->entry_date}}
-                                </td> --}}
+                                </td>
+                                <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
+                                    <a href="{{ route('highways.edit', ['highway' => $highway->id]) }}">Düzəliş et</a>
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>
