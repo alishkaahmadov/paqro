@@ -903,6 +903,10 @@ class DashboardController extends Controller
                 'entry_dates' => 'required|array|min:1',
                 'entry_dates.*' => 'required|date',
             ]);
+            if(!($request->products[0] && $request->quantities[0] && $request->categories[0])){
+                return redirect()->route('dashboard.index')
+                ->with('error', 'Xəta baş verdi.');
+            }
             // check if warehouse exits else create new one
             if ($request->warehouse_id) {
                 $warehouseId = (int)$request->warehouse_id;
