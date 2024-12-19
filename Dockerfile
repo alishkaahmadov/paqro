@@ -24,17 +24,14 @@ RUN apt-get update && apt-get install -y \
     libgd-dev \
     libpq-dev
 
-
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
-#Mine
-
 
 # Install Node.js and npm
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
 RUN apt-get install -y nodejs
 
-# Install extensions
+# Install PHP extensions
 RUN docker-php-ext-install pdo_pgsql mbstring zip exif pcntl
 RUN docker-php-ext-configure gd --with-external-gd
 RUN docker-php-ext-install gd
@@ -42,22 +39,25 @@ RUN docker-php-ext-install gd
 # Install composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Add user for laravel application
+# Add user for Laravel application
 RUN groupadd -g 1000 www
 RUN useradd -u 1000 -ms /bin/bash -g www www
 
-# Copy existing application directory contents
+# Copy application source code
 COPY . /var/www
 
-# Copy existing application directory permissions
-COPY --chown=www:www . /var/www
+# Install PHP dependencies (vendor)
+RUN composer install --no-dev --optimize-autoloader
+
+# Install Node.js dependencies (node_modules)
+RUN npm install && npm run build
+
+# Set ownership and permissions
+RUN chown -R www:www /var/www
+RUN chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
 # Change current user to www
 USER www
-
-# Set permissions for Laravel storage and cache directories
-RUN chown -R www:www /var/www/storage /var/www/bootstrap/cache
-RUN chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
 # Expose port 9000 and start php-fpm server
 EXPOSE 9000
