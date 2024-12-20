@@ -1,12 +1,9 @@
 FROM php:8.1.25-fpm
 
-# Copy composer.lock and composer.json
-COPY composer.lock composer.json /var/www/
-
 # Set working directory
 WORKDIR /var/www
 
-# Install dependencies
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
     libpng-dev \
@@ -24,36 +21,38 @@ RUN apt-get update && apt-get install -y \
     libgd-dev \
     libpq-dev
 
-# Clear cache
+# Clear apt cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Node.js and npm
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-RUN apt-get install -y nodejs
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs
 
 # Install PHP extensions
 RUN docker-php-ext-install pdo_pgsql mbstring zip exif pcntl
 RUN docker-php-ext-configure gd --with-external-gd
 RUN docker-php-ext-install gd
 
-# Install composer
+# Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Add user for Laravel application
 RUN groupadd -g 1000 www
 RUN useradd -u 1000 -ms /bin/bash -g www www
 
-# Copy application source code
-COPY . /var/www
+# Copy package.json and composer.json before other files to cache dependencies
+COPY package.json package-lock.json /var/www/
+COPY composer.json composer.lock /var/www/
 
-# Install PHP dependencies (vendor)
-RUN composer install --no-dev --optimize-autoloader
+# Install Node dependencies and Composer dependencies
+RUN npm install --production
+RUN composer install --no-scripts --no-interaction --prefer-dist
 
-# Install Node.js dependencies (node_modules)
-RUN npm install && npm run build
+# Copy application code with permissions
+COPY --chown=www:www . /var/www
 
-# Set ownership and permissions
-RUN chown -R www:www /var/www
+# Set permissions for Laravel storage and cache directories
+RUN chown -R www:www /var/www/storage /var/www/bootstrap/cache
 RUN chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
 # Change current user to www
