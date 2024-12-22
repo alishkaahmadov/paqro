@@ -17,7 +17,7 @@ class Warehouse extends Model
 
         static::created(function ($model) {
             Log::create([
-                'user_id' => auth()->id(),
+                'user_id' => auth()->id() ?? 1,
                 'action' => 'Yaratdı',
                 'model_type' => get_class($model),
                 'model_id' => $model->id,

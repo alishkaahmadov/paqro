@@ -30,15 +30,15 @@ use Illuminate\Support\Facades\Storage;
 
 // Route::get('/alishka', function () {
 //     // create login controller
-//     $test = Warehouse::create([
-//         'name' => 'Şirvan anbarı',
-//         'is_main' => true
-//     ]);
 //     $user = User::create([
 //         'name' => 'Şirvan',
 //         'is_admin' => true,
 //         'email' => 'paqrommc@gmail.com',
 //         'password' => Hash::make('Paqro2@24!'),
+//     ]);
+//     $test = Warehouse::create([
+//         'name' => 'Şirvan anbarı',
+//         'is_main' => true
 //     ]);
 //     return $test;
 // });

@@ -6,6 +6,8 @@ services:
       dockerfile: Dockerfile
     container_name: app
     restart: always
+    depends_on:
+      - webserver
     tty: true
     environment:
       SERVICE_NAME: app
@@ -14,6 +16,7 @@ services:
     ports:
       - "5173:5173"
     volumes:
+    #  - ./:/var/www
       - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini
     networks:
       - app-network
@@ -27,9 +30,12 @@ services:
     ports:
       - "8989:80"
     volumes:
+    # - ./:/var/www
+      - ./public:/var/www/public # Mounting only the public folder
       - ./nginx/:/etc/nginx/conf.d/
     networks:
       - app-network
+
 
   db:
     image: postgres:latest
