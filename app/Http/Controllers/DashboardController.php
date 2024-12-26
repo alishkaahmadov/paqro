@@ -842,10 +842,10 @@ class DashboardController extends Controller
                 $imageData = base64_encode(file_get_contents($path));
                 $imageType = pathinfo($path, PATHINFO_EXTENSION);
                 $base64Image = 'data:image/' . $imageType . ';base64,' . $imageData;
-                $fromWarehouseman = Warehouse::where('id', $request->from_warehouse)->first();
+                $toWarehouseman = Warehouse::where('id', $request->to_warehouse)->first();
                 $data = [
-                    'warehouseName' => $fromWarehouseman->name,
-                    'to' => $fromWarehouseman->warehouseman,
+                    'warehouseName' => $toWarehouseman->name,
+                    'to' => $toWarehouseman->warehouseman,
                     'quantities' => $request->quantities,
                     'pdfDocNumber' => $request->pdf_doc_number,
                     'transfer_date' => Carbon::parse($request->pdf_date)->format('d.m.Y'),

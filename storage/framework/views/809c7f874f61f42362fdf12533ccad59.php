@@ -1,34 +1,32 @@
-@extends('layouts.master')
-
-@section('body')
+<?php $__env->startSection('body'); ?>
     <h3 class="text-gray-700 text-3xl font-medium">Yeni məhsul əlavə et</h3>
 
     <div class="flex flex-col mt-8">
-        <form action="{{ route('dashboard.store') }}" method="post">
-            @csrf
+        <form action="<?php echo e(route('dashboard.store')); ?>" method="post">
+            <?php echo csrf_field(); ?>
             <div id="mainDiv" class="grid grid-cols-1 mt-4">
                 <div>
                     <label class="text-gray-700" for="warehouse">Anbar</label>
                     <input list="warehouses" id="warehouse" name="warehouse_name"
                         class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                        type="text" autocomplete="off" value="{{$mainWarehouse->name ?? ""}}">
-                    <input type="hidden" id="warehouse_id" name="warehouse_id" value="{{$mainWarehouse->id ?? ""}}">
+                        type="text" autocomplete="off" value="<?php echo e($mainWarehouse->name ?? ""); ?>">
+                    <input type="hidden" id="warehouse_id" name="warehouse_id" value="<?php echo e($mainWarehouse->id ?? ""); ?>">
                     <datalist id="warehouses">
-                        @foreach ($warehouses as $warehouse)
-                            <option data-id="{{ $warehouse->id }}" value="{{ $warehouse->name }}"></option>
-                        @endforeach
+                        <?php $__currentLoopData = $warehouses; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $warehouse): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <option data-id="<?php echo e($warehouse->id); ?>" value="<?php echo e($warehouse->name); ?>"></option>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </datalist>
                 </div>
                 <div>
                     <label class="text-gray-700" for="company">Şirkət</label>
-                    <input list="companies" id="company" name="company_name" required
+                    <input list="companies" id="company" name="company_name"
                         class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                         type="text" autocomplete="off">
                     <input type="hidden" id="company_id" name="company_id">
                     <datalist id="companies">
-                        @foreach ($companies as $company)
-                            <option data-id="{{ $company->id }}" value="{{ $company->name }}"></option>
-                        @endforeach
+                        <?php $__currentLoopData = $companies; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $company): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <option data-id="<?php echo e($company->id); ?>" value="<?php echo e($company->name); ?>"></option>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </datalist>
                 </div>
                 <div class="relative flex justify-between flex-col md:flex-row mt-2 pt-8">
@@ -46,11 +44,12 @@
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                             type="text" autocomplete="off">
                         <datalist id="products">
-                            @foreach ($products as $product)
-                                <option data-code="{{ $product->code }}" value="{{ $product->name . '---' . $product->code }}">
-                                    {{ $product->name }} {{ $product->code ? '- ' . $product->code : '' }}
+                            <?php $__currentLoopData = $products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $product): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <option data-code="<?php echo e($product->code); ?>" value="<?php echo e($product->name . '---' . $product->code); ?>">
+                                    <?php echo e($product->name); ?> <?php echo e($product->code ? '- ' . $product->code : ''); ?>
+
                                 </option>
-                            @endforeach
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </datalist>
                     </div>
                     <div class="md:w-2/5">
@@ -71,9 +70,9 @@
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                             type="text" autocomplete="off">
                         <datalist id="categories">
-                            @foreach ($categories as $category)
-                                <option value="{{ $category->name }}"></option>
-                            @endforeach
+                            <?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $category): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <option value="<?php echo e($category->name); ?>"></option>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </datalist>
                     </div>
                     <div class="md:w-2/5">
@@ -91,9 +90,9 @@
             </div>
         </form>
     </div>
-@endsection
+<?php $__env->stopSection(); ?>
 
-@section('script')
+<?php $__env->startSection('script'); ?>
     <script>
 
         const productInput = document.getElementById('product')
@@ -135,11 +134,12 @@
                             class="product-input mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                             type="text" autocomplete="off">
                         <datalist id="products">
-                            @foreach ($products as $product)
-                                <option data-code="{{ $product->code }}" value="{{ $product->name . '---' . $product->code }}">
-                                    {{ $product->name }} {{ $product->code ? '- ' . $product->code : '' }}
+                            <?php $__currentLoopData = $products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $product): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <option data-code="<?php echo e($product->code); ?>" value="<?php echo e($product->name . '---' . $product->code); ?>">
+                                    <?php echo e($product->name); ?> <?php echo e($product->code ? '- ' . $product->code : ''); ?>
+
                                 </option>
-                            @endforeach
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </datalist>
                     </div>
                     <div class="md:w-2/5">
@@ -160,9 +160,9 @@
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                             type="text" autocomplete="off">
                         <datalist id="categories">
-                            @foreach ($categories as $category)
-                                <option value="{{ $category->name }}"></option>
-                            @endforeach
+                            <?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $category): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <option value="<?php echo e($category->name); ?>"></option>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </datalist>
                     </div>
                     <div class="md:w-2/5">
@@ -260,11 +260,12 @@
                             class="product-input mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                             type="text" autocomplete="off">
                         <datalist id="products">
-                            @foreach ($products as $product)
-                                <option data-code="{{ $product->code }}" value="{{ $product->name . '---' . $product->code }}">
-                                    {{ $product->name }} {{ $product->code ? '- ' . $product->code : '' }}
+                            <?php $__currentLoopData = $products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $product): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <option data-code="<?php echo e($product->code); ?>" value="<?php echo e($product->name . '---' . $product->code); ?>">
+                                    <?php echo e($product->name); ?> <?php echo e($product->code ? '- ' . $product->code : ''); ?>
+
                                 </option>
-                            @endforeach
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </datalist>
                     </div>
                     <div class="md:w-2/5">
@@ -285,9 +286,9 @@
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                             type="text" autocomplete="off">
                         <datalist id="categories">
-                            @foreach ($categories as $category)
-                                <option value="{{ $category->name }}"></option>
-                            @endforeach
+                            <?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $category): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <option value="<?php echo e($category->name); ?>"></option>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </datalist>
                     </div>
                     <div class="md:w-2/5">
@@ -338,4 +339,6 @@
 
         addNewElements(30)
     </script>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.master', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH /var/www/resources/views/pages/dashboard/create.blade.php ENDPATH**/ ?>
