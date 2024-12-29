@@ -481,7 +481,7 @@ class DashboardController extends Controller
             $currentQuantity = (int)$request->quantity;
             $currentEntryDate = $request->transfer_date;
             $fromWarehouse = ProductEntry::where(['warehouse_id' => $request->from_warehouse, 'product_id' => $currentProduct])->first();
-            if ($fromWarehouse->quantity >= $currentQuantity) {
+            if ($fromWarehouse->quantity + $exit->quantity >= $currentQuantity) {
                 $fromWarehouse->update(['quantity' => $fromWarehouse->quantity - $currentQuantity]);
                 $toWarehouse = ProductEntry::where(['warehouse_id' => $request->to_warehouse, 'product_id' => $currentProduct])->first();
                 if ($toWarehouse) {

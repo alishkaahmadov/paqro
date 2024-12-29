@@ -95,8 +95,8 @@ class WarehouseController extends Controller
     public function destroy(string $id)
     {
         $warehouse = Warehouse::findOrFail($id);
+        if($warehouse->is_main) return redirect()->route('warehouses.index')->with('error', 'Əsas anbar silinə bilməz.');
         $warehouse->delete();
-
         return redirect()->route('warehouses.index')->with('success', 'Uğurla silindi.');
     }
 }

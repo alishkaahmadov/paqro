@@ -1,19 +1,17 @@
-@extends('layouts.master')
-
-@section('body')
+<?php $__env->startSection('body'); ?>
     <h3 class="text-gray-700 text-3xl font-medium">Yeni transfer əlavə et</h3>
 
     <div class="flex flex-col mt-8">
-        <form action="{{ route('dashboard.transfer') }}" method="post">
-            @csrf
+        <form action="<?php echo e(route('dashboard.transfer')); ?>" method="post">
+            <?php echo csrf_field(); ?>
             <div id="mainDiv" class="grid grid-cols-1 mt-4">
                 <div>
                     <label class="text-gray-700" for="from_warehouse">Anbardan</label>
                     <select id="from_warehouse" name="from_warehouse"
                         class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                        @foreach ($warehouses as $warehouse)
-                            <option {{ $mainWarehouseId && $mainWarehouseId == $warehouse->id ? 'selected' : ($warehouse->id == 1 ? 'selected' : '') }} value="{{ $warehouse->id }}">{{ $warehouse->name }}</option>
-                        @endforeach
+                        <?php $__currentLoopData = $warehouses; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $warehouse): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <option <?php echo e($mainWarehouseId && $mainWarehouseId == $warehouse->id ? 'selected' : ($warehouse->id == 1 ? 'selected' : '')); ?> value="<?php echo e($warehouse->id); ?>"><?php echo e($warehouse->name); ?></option>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </select>
                 </div>
                 <div>
@@ -21,9 +19,9 @@
                     <select id="to_warehouse" name="to_warehouse"
                         class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                         <option disabled selected>Anbar seçin</option>
-                        @foreach ($warehouses as $warehouse)
-                            <option value="{{ $warehouse->id }}">{{ $warehouse->name }}</option>
-                        @endforeach
+                        <?php $__currentLoopData = $warehouses; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $warehouse): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <option value="<?php echo e($warehouse->id); ?>"><?php echo e($warehouse->name); ?></option>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </select>
                 </div>
 
@@ -61,11 +59,11 @@
                         <label class="text-gray-700" for="products">Məhsul</label>
                         <select id="products" name="products[]"
                             class="product-input mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                            @isset($products)
-                                @foreach ($products as $product)
-                                    <option value="{{ $product->id }}">{{ $product->name }}</option>
-                                @endforeach
-                            @endisset
+                            <?php if(isset($products)): ?>
+                                <?php $__currentLoopData = $products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $product): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <option value="<?php echo e($product->id); ?>"><?php echo e($product->name); ?></option>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                            <?php endif; ?>
                         </select>
                     </div>
     
@@ -101,9 +99,9 @@
             </div>
         </form>
     </div>
-@endsection
+<?php $__env->stopSection(); ?>
 
-@section('script')
+<?php $__env->startSection('script'); ?>
     <script>
         const identifyMeasure = document.getElementById('identifyMeasure');
         identifyMeasure.addEventListener('click', function(event){
@@ -178,7 +176,8 @@
         }
 
         function setDefaultWarehouse(){
-            const mainWarehouseId = {{$mainWarehouseId}}
+            const mainWarehouseId = <?php echo e($mainWarehouseId); ?>
+
 
             if(mainWarehouseId){
                 fetch(`/get-products/${mainWarehouseId}`)
@@ -298,4 +297,6 @@
         addNewElements(30);
         setDefaultWarehouse();
     </script>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.master', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\Users\User\Desktop\Alishka Projects\paqro\resources\views/pages/dashboard/transfer.blade.php ENDPATH**/ ?>
