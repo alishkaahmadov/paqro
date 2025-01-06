@@ -31,6 +31,9 @@
                         @endforeach
                     </datalist>
                 </div>
+                <div class="flex justify-end mt-2">
+                    <button id="identifyCategory" class="px-4 py-2 bg-indigo-500 text-white rounded-md mr-2">Kateqoriyanı eyniləşdir</button>
+                </div>
                 <div class="relative flex justify-between flex-col md:flex-row mt-2 pt-8">
                     <button id="addMore"
                         class="absolute top-0 right-0 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full flex items-center justify-center shadow-lg focus:outline-none focus:ring-2 focus:ring-green-400">
@@ -95,6 +98,28 @@
 
 @section('script')
     <script>
+
+        const identifyCategory = document.getElementById('identifyCategory');
+        identifyCategory.addEventListener('click', function(event){
+            event.preventDefault();
+            const categoryItem = document.getElementById('category');
+            if(this.innerHTML === "Kateqoriyanı eyniləşdir"){
+                if(categoryItem.value){
+                    const categoryItems = [...document.querySelectorAll('input[name="categories[]"]')];
+                    categoryItems.forEach(item => {
+                        item.value = categoryItem.value;
+                    });
+                    this.innerHTML = "Eyniləşdirməni sil";
+                }
+            }else{
+                const categoryItems = [...document.querySelectorAll('input[name="categories[]"]')];
+                    categoryItems.forEach(item => {
+                        item.value = '';
+                    });
+                this.innerHTML = "Kateqoriyanı eyniləşdir";
+            }
+        })
+
 
         const productInput = document.getElementById('product')
         const productOptions = [...document.getElementById('products').options];
@@ -310,10 +335,11 @@
             }
 
             // Set the inner HTML of the container div
-            newSet.innerHTML = newElementsHTML;
+            const newSet2 = document.createElement('div');
+            newSet2.innerHTML = newElementsHTML;
 
             // Append the new set of elements to the main container
-            document.getElementById('mainDiv').appendChild(newSet);
+            document.getElementById('mainDiv').appendChild(newSet2);
 
             const productInputs = [...document.querySelectorAll('.product-input')];
 

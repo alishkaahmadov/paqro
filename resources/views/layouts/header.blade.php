@@ -8,13 +8,21 @@
     </div>
     
     <div class="flex items-center">
+        @if (Auth::user()->is_admin)
+            <form action="{{ route('backup.database') }}" method="POST">
+                @csrf
+                <button type="submit" class="mr-4 px-2 py-2 bg-blue-500 text-white font-bold rounded hover:bg-blue-600">
+                    Backup et
+                </button>
+            </form>
+        @endif
+        
         <div x-data="{ dropdownOpen: false }"  class="relative">
             <button @click="dropdownOpen = ! dropdownOpen" class="relative block w-8 h-8 overflow-hidden rounded-full shadow focus:outline-none">
                 <img class="object-cover w-full h-full" src="https://images.unsplash.com/photo-1528892952291-009c663ce843?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=296&q=80" alt="Your avatar">
             </button>
 
             <div x-cloak x-show="dropdownOpen" @click="dropdownOpen = false" class="fixed inset-0 z-10 w-full h-full"></div>
-
             <div x-cloak x-show="dropdownOpen" class="absolute right-0 z-10 w-48 mt-2 overflow-hidden bg-white rounded-md shadow-xl">
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf

@@ -3,11 +3,13 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DatabaseBackupController;
 use App\Http\Controllers\DnnController;
 use App\Http\Controllers\HighwayController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SubcategoryController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\WarehouseController;
 use App\Models\User;
 use App\Models\Warehouse;
@@ -86,9 +88,13 @@ Route::group(['middleware' => 'auth'], function(){
         Route::get('/dashboard/transfer', [DashboardController::class, 'transferPage'])->name('dashboard.transferPage');
         Route::post('/dashboard/transfer', [DashboardController::class, 'transfer'])->name('dashboard.transfer');
         Route::resource('warehouses', WarehouseController::class)->names('warehouses');
+        Route::resource('users', UserController::class)->names('users');
+        Route::patch('users/deactivate/{user}', [UserController::class, 'deactivate'])->name('users.deactivate');
+        Route::patch('users/activate/{user}', [UserController::class, 'activate'])->name('users.activate');
         Route::resource('logs', LogController::class)->names('logs');
         Route::get('/highways/{highway}/change', [HighwayController::class, 'changeWarehousePage'])->name('highways.changeWarehousePage');
         Route::put('/highways/{highway}/change', [HighwayController::class, 'changeWarehouse'])->name('highways.changeWarehouse');
+        Route::post('/backup-database', [DatabaseBackupController::class, 'backupDatabase'])->name('backup.database');
     });
 
 

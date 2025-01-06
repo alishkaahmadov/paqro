@@ -78,7 +78,7 @@
 
                     <div class="md:w-2/5">
                         <label class="text-gray-700">Ölçü vahidi</label>
-                        <input name="notes[]"
+                        <input name="notes[]" id="measure"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                             type="text" placeholder="litr/ədəd">
                     </div>
@@ -108,10 +108,20 @@
         const identifyMeasure = document.getElementById('identifyMeasure');
         identifyMeasure.addEventListener('click', function(event){
             event.preventDefault();
+            const measureItem = document.getElementById('measure');
             if(this.innerHTML === "Ölçü vahidini eyniləşdir"){
-
-                this.innerHTML = "Eyniləşdirməni sil";
+                if(measureItem.value){
+                    const measureItems = [...document.querySelectorAll('input[name="notes[]"]')];
+                    measureItems.forEach(item => {
+                        item.value = measureItem.value;
+                    });
+                    this.innerHTML = "Eyniləşdirməni sil";
+                }
             }else{
+                const measureItems = [...document.querySelectorAll('input[name="notes[]"]')];
+                    measureItems.forEach(item => {
+                        item.value = '';
+                    });
                 this.innerHTML = "Ölçü vahidini eyniləşdir";
             }
         })
