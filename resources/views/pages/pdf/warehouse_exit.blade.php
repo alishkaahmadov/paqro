@@ -163,7 +163,7 @@
         </thead>
         <tbody>
             @for ($i = 0; $i < count($products); $i++)
-                @if (!!($codes[$i] && $products[$i] && $quantities[$i]))
+                @if (!!($products[$i] && $quantities[$i]))
                     <tr>
                         <td>{{ +$i + 1 }}</td>
                         <td>{{ $codes[$i] }}</td>

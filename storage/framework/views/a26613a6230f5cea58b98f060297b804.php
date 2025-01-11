@@ -163,7 +163,7 @@
         </thead>
         <tbody>
             <?php for($i = 0; $i < count($products); $i++): ?>
-                <?php if(!!($codes[$i] && $products[$i] && $quantities[$i])): ?>
+                <?php if(!!($products[$i] && $quantities[$i])): ?>
                     <tr>
                         <td><?php echo e(+$i + 1); ?></td>
                         <td><?php echo e($codes[$i]); ?></td>
