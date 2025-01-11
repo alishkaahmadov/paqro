@@ -33,6 +33,7 @@
                 </div>
                 <div class="flex justify-end mt-2">
                     <button id="identifyCategory" class="px-4 py-2 bg-indigo-500 text-white rounded-md mr-2">Kateqoriyanı eyniləşdir</button>
+                    <button id="identifyMeasure" class="px-4 py-2 bg-indigo-500 text-white rounded-md mr-2">Ölçü vahidini eyniləşdir</button>
                 </div>
                 <div class="relative flex justify-between flex-col md:flex-row mt-2 pt-8">
                     <button id="addMore"
@@ -69,6 +70,12 @@
                             type="number">
                     </div>
                     <div class="md:w-2/5">
+                        <label class="text-gray-700">Ölçü vahidi</label>
+                        <input name="notes[]" id="measure"
+                            class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                            type="text" placeholder="litr/ədəd">
+                    </div>
+                    <div class="md:w-2/5">
                         <label class="text-gray-700" for="category">Kateqoriya</label>
                         <input list="categories" id="category" name="categories[]"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
@@ -98,6 +105,28 @@
 
 @section('script')
     <script>
+
+        const identifyMeasure = document.getElementById('identifyMeasure');
+        identifyMeasure.addEventListener('click', function(event){
+            event.preventDefault();
+            const measureItem = document.getElementById('measure');
+            if(this.innerHTML === "Ölçü vahidini eyniləşdir"){
+                if(measureItem.value){
+                    const measureItems = [...document.querySelectorAll('input[name="notes[]"]')];
+                    measureItems.forEach(item => {
+                        item.value = measureItem.value;
+                    });
+                    this.innerHTML = "Eyniləşdirməni sil";
+                }
+            }else{
+                const measureItems = [...document.querySelectorAll('input[name="notes[]"]')];
+                    measureItems.forEach(item => {
+                        item.value = '';
+                    });
+                this.innerHTML = "Ölçü vahidini eyniləşdir";
+            }
+        })
+
 
         const identifyCategory = document.getElementById('identifyCategory');
         identifyCategory.addEventListener('click', function(event){
@@ -178,6 +207,12 @@
                         <input name="quantities[]"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                             type="number">
+                    </div>
+                    <div class="md:w-2/5">
+                        <label class="text-gray-700">Ölçü vahidi</label>
+                        <input name="notes[]" id="measure"
+                            class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                            type="text" placeholder="litr/ədəd">
                     </div>
                     <div class="md:w-2/5">
                         <label class="text-gray-700" for="category">Kateqoriya</label>
@@ -303,6 +338,12 @@
                         <input name="quantities[]"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                             type="number">
+                    </div>
+                    <div class="md:w-2/5">
+                        <label class="text-gray-700">Ölçü vahidi</label>
+                        <input name="notes[]" id="measure"
+                            class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                            type="text" placeholder="litr/ədəd">
                     </div>
                     <div class="md:w-2/5">
                         <label class="text-gray-700" for="category">Kateqoriya</label>

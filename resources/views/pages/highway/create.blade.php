@@ -36,6 +36,10 @@
                     <input name="quantity" class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" type="number">
                 </div>
                 <div>
+                    <label class="text-gray-700" for="measure">Ölçü vahidi</label>
+                    <input name="measure" class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" type="text">
+                </div>
+                <div>
                     <label class="text-gray-700" for="pdf">PDF faylı</label>
                     <input name="pdf" class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" type="file" accept="application/pdf">
                 </div>
@@ -71,13 +75,14 @@
                 fetch(`/get-products/${warehouseId}`)
                     .then(response => response.json())
                     .then(data => {
+                        console.log(data)
                         var productsSelect = document.getElementById('products');
                         productsSelect.innerHTML = '<option selected value="">Məhsul seçin</option>'; // Reset options
 
                         data.forEach(function(product) {
                             var option = document.createElement('option');
                             option.value = product.product_id;
-                            option.textContent = `${product.product_name} ${product.product_code ? `- ${product.product_code}` : ''} (${product.quantity})`;
+                            option.textContent = `${product.product_name} ${product.product_code ? `- ${product.product_code}` : ''} - ${product.category_name} (${product.quantity})`;
                             productsSelect.appendChild(option);
                         });
                     })

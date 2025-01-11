@@ -19,7 +19,7 @@
                 </div>
                 <div>
                     <label class="text-gray-700" for="company">Şirkət</label>
-                    <input list="companies" id="company" name="company_name"
+                    <input list="companies" id="company" name="company_name" required
                         class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                         type="text" autocomplete="off">
                     <input type="hidden" id="company_id" name="company_id">
@@ -28,6 +28,10 @@
                             <option data-id="<?php echo e($company->id); ?>" value="<?php echo e($company->name); ?>"></option>
                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </datalist>
+                </div>
+                <div class="flex justify-end mt-2">
+                    <button id="identifyCategory" class="px-4 py-2 bg-indigo-500 text-white rounded-md mr-2">Kateqoriyanı eyniləşdir</button>
+                    <button id="identifyMeasure" class="px-4 py-2 bg-indigo-500 text-white rounded-md mr-2">Ölçü vahidini eyniləşdir</button>
                 </div>
                 <div class="relative flex justify-between flex-col md:flex-row mt-2 pt-8">
                     <button id="addMore"
@@ -65,6 +69,12 @@
                             type="number">
                     </div>
                     <div class="md:w-2/5">
+                        <label class="text-gray-700">Ölçü vahidi</label>
+                        <input name="notes[]" id="measure"
+                            class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                            type="text" placeholder="litr/ədəd">
+                    </div>
+                    <div class="md:w-2/5">
                         <label class="text-gray-700" for="category">Kateqoriya</label>
                         <input list="categories" id="category" name="categories[]"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
@@ -94,6 +104,50 @@
 
 <?php $__env->startSection('script'); ?>
     <script>
+
+        const identifyMeasure = document.getElementById('identifyMeasure');
+        identifyMeasure.addEventListener('click', function(event){
+            event.preventDefault();
+            const measureItem = document.getElementById('measure');
+            if(this.innerHTML === "Ölçü vahidini eyniləşdir"){
+                if(measureItem.value){
+                    const measureItems = [...document.querySelectorAll('input[name="notes[]"]')];
+                    measureItems.forEach(item => {
+                        item.value = measureItem.value;
+                    });
+                    this.innerHTML = "Eyniləşdirməni sil";
+                }
+            }else{
+                const measureItems = [...document.querySelectorAll('input[name="notes[]"]')];
+                    measureItems.forEach(item => {
+                        item.value = '';
+                    });
+                this.innerHTML = "Ölçü vahidini eyniləşdir";
+            }
+        })
+
+
+        const identifyCategory = document.getElementById('identifyCategory');
+        identifyCategory.addEventListener('click', function(event){
+            event.preventDefault();
+            const categoryItem = document.getElementById('category');
+            if(this.innerHTML === "Kateqoriyanı eyniləşdir"){
+                if(categoryItem.value){
+                    const categoryItems = [...document.querySelectorAll('input[name="categories[]"]')];
+                    categoryItems.forEach(item => {
+                        item.value = categoryItem.value;
+                    });
+                    this.innerHTML = "Eyniləşdirməni sil";
+                }
+            }else{
+                const categoryItems = [...document.querySelectorAll('input[name="categories[]"]')];
+                    categoryItems.forEach(item => {
+                        item.value = '';
+                    });
+                this.innerHTML = "Kateqoriyanı eyniləşdir";
+            }
+        })
+
 
         const productInput = document.getElementById('product')
         const productOptions = [...document.getElementById('products').options];
@@ -153,6 +207,12 @@
                         <input name="quantities[]"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                             type="number">
+                    </div>
+                    <div class="md:w-2/5">
+                        <label class="text-gray-700">Ölçü vahidi</label>
+                        <input name="notes[]" id="measure"
+                            class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                            type="text" placeholder="litr/ədəd">
                     </div>
                     <div class="md:w-2/5">
                         <label class="text-gray-700" for="category">Kateqoriya</label>
@@ -281,6 +341,12 @@
                             type="number">
                     </div>
                     <div class="md:w-2/5">
+                        <label class="text-gray-700">Ölçü vahidi</label>
+                        <input name="notes[]" id="measure"
+                            class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                            type="text" placeholder="litr/ədəd">
+                    </div>
+                    <div class="md:w-2/5">
                         <label class="text-gray-700" for="category">Kateqoriya</label>
                         <input list="categories" id="category" name="categories[]"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
@@ -311,10 +377,11 @@
             }
 
             // Set the inner HTML of the container div
-            newSet.innerHTML = newElementsHTML;
+            const newSet2 = document.createElement('div');
+            newSet2.innerHTML = newElementsHTML;
 
             // Append the new set of elements to the main container
-            document.getElementById('mainDiv').appendChild(newSet);
+            document.getElementById('mainDiv').appendChild(newSet2);
 
             const productInputs = [...document.querySelectorAll('.product-input')];
 

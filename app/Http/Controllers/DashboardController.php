@@ -66,17 +66,22 @@ class DashboardController extends Controller
             $query->where('product_entries.subcategory_id', $request->category_id);
         }
 
+        if ($request->except_category_ids && count($request->except_category_ids) > 0) {
+            $query->whereNotIn('product_entries.subcategory_id', $request->except_category_ids);
+        }
+
         $groupedEntries = $query->select(
                     DB::raw('(select sum(warehouse_logs.quantity) from warehouse_logs where warehouse_logs.to_warehouse_id = ? and product_id = product_entries.product_id and subcategory_id = product_entries.subcategory_id and entry_date between ? and ? group by warehouse_logs.to_warehouse_id) as entry_total'),
                     DB::raw('(select sum(warehouse_logs.quantity) from warehouse_logs where warehouse_logs.from_warehouse_id = ? and product_id = product_entries.product_id and subcategory_id = product_entries.subcategory_id and entry_date between ? and ? group by warehouse_logs.from_warehouse_id) as exit_total'),
                     'product_entries.product_id',
+                    'product_entries.measure',
                     'product_entries.subcategory_id', 
                     'product_entries.warehouse_id', 
                     'product_entries.quantity')
             ->addBinding([$warehouseId, $startDate ?? "2020-01-01 00:00:00", $endDate ?? "2030-01-01 00:00:00", $warehouseId, $startDate ?? "2020-01-01 00:00:00", $endDate ?? "2030-01-01 00:00:00"], 'select')
             ->leftJoin('products as p', 'p.id', '=', 'product_entries.product_id')
             ->where('product_entries.warehouse_id', $warehouseId)
-            ->where('product_entries.quantity', '>', 0)
+            // ->where('product_entries.quantity', '>', 0)
             ->orderBy('p.name')
             ->get();
         return view('pages.dashboard.index', [
@@ -88,6 +93,7 @@ class DashboardController extends Controller
             'categories' => $categories,
             'category_id' => $request->category_id ?? null,
             'start_date' => $startDate ?? null,
+            'except_category_ids' => $request->except_category_ids ?? null,
             'end_date' => $endDate ?? null
         ]);
     }
@@ -166,6 +172,7 @@ class DashboardController extends Controller
                 "p.code as product_code",
                 "sc.name as subcategory_name",
                 "warehouse_logs.quantity",
+                "warehouse_logs.measure",
                 "warehouse_logs.entry_date as entry_date"
             )
             ->leftJoin('products as p', 'p.id', '=', 'warehouse_logs.product_id')
@@ -426,6 +433,7 @@ class DashboardController extends Controller
                 "p.name as product_name",
                 "sc.name as subcategory_name",
                 "warehouse_logs.quantity",
+                "warehouse_logs.measure",
                 "h.code as highway_code",
                 // "d.code as dnn_code",
                 "warehouse_logs.entry_date as exit_date"
@@ -781,6 +789,7 @@ class DashboardController extends Controller
                 }
                 $currentProductEntry = $request->products[$i];
                 $currentQuantity = (int)$request->quantities[$i];
+                $currentMeasure = $request->notes[$i];
                 $currentEntryDate = $request->transfer_dates[$i];
                 $fromWarehouse = ProductEntry::where('id', $currentProductEntry)->first();
                 if ($fromWarehouse->quantity >= $currentQuantity) {
@@ -802,6 +811,7 @@ class DashboardController extends Controller
                             'product_id' => $fromWarehouse->product_id,
                             'company_id' => $fromWarehouse->company_id,
                             'quantity' => $currentQuantity,
+                            'measure' => $currentMeasure,
                             'subcategory_id' => $fromWarehouse->subcategory_id,
                             'entry_date' => $currentEntryDate
                         ]);
@@ -810,6 +820,7 @@ class DashboardController extends Controller
                         'from_warehouse_id' => $request->from_warehouse,
                         'to_warehouse_id' => $request->to_warehouse,
                         'quantity' => $currentQuantity,
+                        'measure' => $currentMeasure,
                         'entry_date' => $currentEntryDate,
                         'product_id' => $fromWarehouse->product_id,
                         'subcategory_id' => $fromWarehouse->subcategory_id,
@@ -900,10 +911,13 @@ class DashboardController extends Controller
                 'categories' => 'required|array|min:1',
                 'categories.*' => 'nullable|string',
 
+                'notes' => 'required|array|min:1',
+                'notes.*' => 'nullable|string',
+
                 'entry_dates' => 'required|array|min:1',
                 'entry_dates.*' => 'required|date',
             ]);
-            if(!($request->products[0] && $request->quantities[0] && $request->categories[0])){
+            if(!($request->products[0] && $request->quantities[0] && $request->categories[0] && $request->notes[0])){
                 return redirect()->route('dashboard.index')
                 ->with('error', 'Xəta baş verdi.');
             }
@@ -925,7 +939,7 @@ class DashboardController extends Controller
             // loop through all arrays 
             $loopLength = count($request->products);
             for ($i = 0; $i < $loopLength; $i++) {
-                if(!($request->products[$i] && $request->quantities[$i] && $request->categories[$i])){
+                if(!($request->products[$i] && $request->quantities[$i] && $request->categories[$i] && $request->notes[$i])){
                     continue;
                 }
                 // check if category exits else create new one
@@ -959,6 +973,7 @@ class DashboardController extends Controller
                         'product_id' => $productId,
                         'company_id' => $companyId,
                         'quantity' => $request->quantities[$i],
+                        'measure' => $request->notes[$i],
                         'subcategory_id' => $categoryId,
                         'entry_date' => $request->entry_dates[$i]
                     ]);
@@ -966,6 +981,7 @@ class DashboardController extends Controller
                 $wrhsLogId = WarehouseLog::create([
                     'to_warehouse_id' => $warehouseId,
                     'quantity' => $request->quantities[$i],
+                    'measure' => $request->notes[$i],
                     'entry_date' => $request->entry_dates[$i],
                     'product_id' => $productId,
                     'subcategory_id' => $categoryId,

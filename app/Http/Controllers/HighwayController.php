@@ -7,6 +7,7 @@ use App\Models\HighwayProduct;
 use App\Models\Log;
 use App\Models\Product;
 use App\Models\ProductEntry;
+use App\Models\Subcategory;
 use App\Models\Warehouse;
 use App\Models\WarehouseLog;
 use Carbon\Carbon;
@@ -92,6 +93,7 @@ class HighwayController extends Controller
             'product_id' => 'required|exists:products,id',
             'code' => 'required|string',
             'quantity' => 'required|integer',
+            'measure' => 'required|string',
             'pdf' => 'nullable|mimes:pdf|max:51200', // 50mb,
             'date' => 'required|date'
         ]);
@@ -117,12 +119,14 @@ class HighwayController extends Controller
                     'product_entry_id' => $warehouse->id,
                     'pdf_file' => $filePath ?? null,
                     'quantity' => $request->quantity,
+                    'measure' => $request->measure,
                     'entry_date' => $request->date,
                     'from_warehouse_id' => $request->warehouse_id
                 ]);
                 WarehouseLog::create([
                     'from_warehouse_id' => $request->warehouse_id,
                     'quantity' => $request->quantity,
+                    'measure' => $request->measure,
                     'entry_date' => $request->date,
                     'product_id' => $request->product_id,
                     'company_id' => $warehouse->company_id,
@@ -157,11 +161,16 @@ class HighwayController extends Controller
         }
 
         $products = Product::all();
+        $categories = Subcategory::all();
 
         $query = HighwayProduct::query();
 
         if ($request->product_id) {
             $query->where('pe.product_id', $request->product_id);
+        }
+
+        if ($request->category_id) {
+            $query->where('pe.subcategory_id', $request->category_id);
         }
 
         if ($startDate && $endDate) {
@@ -173,8 +182,10 @@ class HighwayController extends Controller
             "h.code as code",
             "p.name as product_name",
             "p.code as product_code",
+            "c.name as category_name",
             "w.name as from_warehouse",
             "highway_products.quantity",
+            "highway_products.measure",
             "highway_products.entry_date",
             "highway_products.pdf_file"
         )
@@ -182,6 +193,7 @@ class HighwayController extends Controller
             ->leftJoin('products as p', 'p.id', '=', 'pe.product_id')
             ->leftJoin('highways as h', 'h.id', '=', 'highway_products.highway_id')
             ->leftJoin('warehouses as w', 'w.id', '=', 'highway_products.from_warehouse_id')
+            ->leftJoin('subcategories as c', 'c.id', '=', 'pe.subcategory_id')
             ->where('h.code', $highway->code)
             ->orderBy('highway_products.id', 'desc')
             ->paginate(10)->appends($request->query());
@@ -190,6 +202,8 @@ class HighwayController extends Controller
             'highwayId' => $highway->id,
             'highways' => $highways,
             'products' => $products,
+            'categories' => $categories,
+            'category_id' => $request->category_id ?? null,
             'product_id' => $request->product_id ?? null,
             'start_date' => $startDate ?? null,
             'end_date' => $endDate ?? null

@@ -64,14 +64,16 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5">
                                     @if ($user->is_active)
-                                        <form action="{{ route('users.deactivate', $user->id) }}" method="POST" class="inline-block">
-                                            @csrf
-                                            @method('PATCH')
-                                            <button type="submit" onclick="return confirm('Deaktiv etmək istədiyinizdən əminsiniz?')" 
-                                                    class="text-red-500 hover:text-red-700">
-                                                Deaktiv et
-                                            </button>
-                                        </form>
+                                        @if ($user->email != "admin@gmail.com")
+                                            <form action="{{ route('users.deactivate', $user->id) }}" method="POST" class="inline-block">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit" onclick="return confirm('Deaktiv etmək istədiyinizdən əminsiniz?')" 
+                                                        class="text-red-500 hover:text-red-700">
+                                                    Deaktiv et
+                                                </button>
+                                            </form>
+                                        @endif
                                     @else
                                         <form action="{{ route('users.activate', $user->id) }}" method="POST" class="inline-block">
                                             @csrf

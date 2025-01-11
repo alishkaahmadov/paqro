@@ -68,7 +68,8 @@ class ProductController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $product = Product::findOrFail($id);
+        return view('pages.product.edit', compact('product'));
     }
 
     /**
@@ -76,7 +77,17 @@ class ProductController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'code' => 'required|string|max:255'
+        ]);
+
+        $warehouse = Product::findOrFail($id);
+        $warehouse->name = $request->name;
+        $warehouse->code = $request->code;
+        $warehouse->save();
+
+        return redirect()->route('products.index')->with('success', 'Uğurla düzəliş olundu.');
     }
 
     /**

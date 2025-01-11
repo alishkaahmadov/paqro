@@ -76,6 +76,15 @@
                             </select>
                         </div>
                         <div>
+                            <label class="text-gray-700" for="except_category">Kateqoriyadan savayı</label>
+                            <select id="except_category" name="except_category_ids[]" multiple
+                                class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                                @foreach ($categories as $category)
+                                    <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
                             <label class="text-gray-700" for="start_date">Giriş tarixindən</label>
                             <input value="{{ $start_date ? $start_date : '' }}" name="start_date" id="start_date" class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" type="datetime-local">
                         </div>
@@ -120,6 +129,10 @@
                             </th>
                             <th
                                 class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                Ölçü vahidi
+                            </th>
+                            <th
+                                class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
                                 Kateqoriya
                             </th>
                         </tr>
@@ -151,6 +164,10 @@
                                 <td
                                     class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
                                     {{ $product->quantity }}
+                                </td>
+                                <td
+                                    class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
+                                    {{ $product->measure }}
                                 </td>
                                 <td
                                     class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
@@ -205,6 +222,11 @@
             $('#product').select2();
             const selectedProductIds = @json($product_ids);
             $('#product').val(selectedProductIds).trigger('change');
+
+            $('#except_category').select2();
+            const selectedExceptCategoryIds = @json($except_category_ids);
+            $('#except_category').val(selectedExceptCategoryIds).trigger('change');
+
         });
 
         function setExportType(event, type) {

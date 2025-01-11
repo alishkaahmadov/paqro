@@ -21,6 +21,17 @@
                             </select>
                         </div>
                         <div>
+                            <label class="text-gray-700" for="category">Kateqoriya</label>
+                            <select id="category" name="category_id"
+                                class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                                <option value="" selected>Kateqoriya seçin</option>
+                                @foreach ($categories as $category)
+                                    <option {{ $category_id && $category_id == $category->id ? 'selected' : '' }}
+                                        value="{{ $category->id }}">{{ $category->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
                             <label class="text-gray-700" for="start_date">Giriş tarixindən</label>
                             <input value="{{ $start_date ? $start_date : '' }}" name="start_date" id="start_date" class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" type="datetime-local">
                         </div>
@@ -46,7 +57,13 @@
                                 Məhsul
                             </th>
                             <th class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                Kateqoriya
+                            </th>
+                            <th class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
                                 Sayı
+                            </th>
+                            <th class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                Ölçü vahidi
                             </th>
                             <th class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
                                 Anbardan
@@ -73,7 +90,13 @@
                                     {{$highway->product_name}} {{ $highway->product_code ? '- ' . $highway->product_code : '' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
+                                    {{$highway->category_name}}
+                                </td>
+                                <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
                                     {{$highway->quantity}}
+                                </td>
+                                <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
+                                    {{$highway->measure}}
                                 </td>
                                 <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
                                     {{$highway->from_warehouse}}

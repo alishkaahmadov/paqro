@@ -6,13 +6,17 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DatabaseBackupController;
 use App\Http\Controllers\DnnController;
 use App\Http\Controllers\HighwayController;
+use App\Http\Controllers\ImportExcelController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SubcategoryController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WarehouseController;
+use App\Models\ProductEntry;
+use App\Models\Subcategory;
 use App\Models\User;
 use App\Models\Warehouse;
+use App\Models\WarehouseLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -67,6 +71,15 @@ use Illuminate\Support\Facades\Storage;
 //     return $user3;
 // });
 
+// Route::get('/deleteProducts', function(){
+//     $categoryName = 'MTZ 1221';
+//     $category = Subcategory::where('name', $categoryName)->first();
+//     if($category){
+//         $productEntries = ProductEntry::where('subcategory_id', $category->id)->delete();
+//         $warehouseLogs = WarehouseLog::where('subcategory_id', $category->id)->delete();
+//     }
+// });
+
 Route::get('/login', [AuthController::class, 'loginView'])->name('login-view');
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
@@ -91,9 +104,12 @@ Route::group(['middleware' => 'auth'], function(){
         Route::resource('users', UserController::class)->names('users');
         Route::patch('users/deactivate/{user}', [UserController::class, 'deactivate'])->name('users.deactivate');
         Route::patch('users/activate/{user}', [UserController::class, 'activate'])->name('users.activate');
+        Route::resource('products', ProductController::class)->names('products');
         Route::resource('logs', LogController::class)->names('logs');
         Route::get('/highways/{highway}/change', [HighwayController::class, 'changeWarehousePage'])->name('highways.changeWarehousePage');
         Route::put('/highways/{highway}/change', [HighwayController::class, 'changeWarehouse'])->name('highways.changeWarehouse');
+        Route::get('import-excel', [ImportExcelController::class, 'create'])->name('import-excel-page');
+        Route::post('import-excel', [ImportExcelController::class, 'store'])->name('import-excel');
         Route::post('/backup-database', [DatabaseBackupController::class, 'backupDatabase'])->name('backup.database');
     });
 
@@ -127,5 +143,4 @@ Route::group(['middleware' => 'auth'], function(){
 
 //Route::resource('companies', CompanyController::class)->names('companies');
 // Route::resource('categories', SubcategoryController::class)->names('categories');
-// Route::resource('products', ProductController::class)->names('products');
 // Route::resource('dnns', DnnController::class)->names('dnns');

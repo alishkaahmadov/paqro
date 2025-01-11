@@ -8,14 +8,16 @@
                 class="w-full mr-2 px-4 py-2 rounded-md focus:outline-none <?php echo e(request()->routeIs('dashboard.index') ? 'bg-gradient-to-r from-indigo-500 to-indigo-700 text-white shadow-lg border-b-4 border-indigo-800' : 'bg-indigo-500 text-white hover:bg-indigo-600 hover:shadow-md'); ?>">
                 Qalıq
             </a>
-            <a href="<?php echo e(route('dashboard.create')); ?>"
-                class="w-full px-4 py-2 bg-green-500 text-white rounded-md mr-2">
-                Giriş daxil et
-            </a>
-            <a href="<?php echo e(route('dashboard.transferPage')); ?>"
-                class="w-full px-4 py-2 bg-orange-500 text-white rounded-md">
-                Çıxış daxil et
-            </a>
+            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('create', App\Models\WarehouseLog::class)): ?>
+                <a href="<?php echo e(route('dashboard.create')); ?>"
+                    class="w-full px-4 py-2 bg-green-500 text-white rounded-md mr-2">
+                    Giriş daxil et
+                </a>
+                <a href="<?php echo e(route('dashboard.transferPage')); ?>"
+                    class="w-full px-4 py-2 bg-orange-500 text-white rounded-md">
+                    Çıxış daxil et
+                </a>
+            <?php endif; ?>
         </div>
         <div>
             <a href="<?php echo e(route('dashboard.entries')); ?>"
@@ -138,6 +140,10 @@
                             </th>
                             <th
                                 class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                Ölçü vahidi
+                            </th>
+                            <th
+                                class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
                                 Daxilolma
                             </th>
                             
@@ -149,10 +155,12 @@
                                 class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
                                 Giriş tarixi
                             </th>
-                            <th
-                                class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                                Tənzimlə / Sil
-                            </th>
+                            <?php if(Auth::user()->is_admin): ?>
+                                <th
+                                    class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                    Tənzimlə / Sil
+                                </th>
+                            <?php endif; ?>
                         </tr>
                     </thead>
 
@@ -181,6 +189,11 @@
                                 </td>
                                 <td
                                     class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
+                                    <?php echo e($product->measure); ?>
+
+                                </td>
+                                <td
+                                    class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
                                     <?php echo e($product->from_warehouse ? $product->from_warehouse : ($product->company_name ?? "-")); ?>
 
                                 </td>
@@ -195,20 +208,22 @@
                                     <?php echo e($product->entry_date); ?>
 
                                 </td>
-                                <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5">
-                                    <a href="<?php echo e(route('dashboard.entries.edit', $product->id)); ?>"
-                                        class="text-blue-500 hover:text-blue-700 mr-2">
-                                        Düzəliş et
-                                     </a>
-                                     <form action="<?php echo e(route('dashboard.entries.delete', $product->id)); ?>" method="POST" class="inline-block">
-                                         <?php echo csrf_field(); ?>
-                                         <?php echo method_field('DELETE'); ?>
-                                         <button type="submit" onclick="return confirm('Silmək istədiyinizdən əminsiniz?')" 
-                                                 class="text-red-500 hover:text-red-700">
-                                             Sil
-                                         </button>
-                                     </form>
-                                </td>
+                                <?php if(Auth::user()->is_admin): ?>
+                                    <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5">
+                                        <a href="<?php echo e(route('dashboard.entries.edit', $product->id)); ?>"
+                                            class="text-blue-500 hover:text-blue-700 mr-2">
+                                            Düzəliş et
+                                        </a>
+                                        <form action="<?php echo e(route('dashboard.entries.delete', $product->id)); ?>" method="POST" class="inline-block">
+                                            <?php echo csrf_field(); ?>
+                                            <?php echo method_field('DELETE'); ?>
+                                            <button type="submit" onclick="return confirm('Silmək istədiyinizdən əminsiniz?')" 
+                                                    class="text-red-500 hover:text-red-700">
+                                                Sil
+                                            </button>
+                                        </form>
+                                    </td>
+                                <?php endif; ?>
                             </tr>
                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </tbody>

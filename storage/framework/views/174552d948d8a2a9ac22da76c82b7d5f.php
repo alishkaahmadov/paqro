@@ -14,7 +14,7 @@
         <div class="-my-2 py-2 overflow-x-auto sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
             <div>
                 <form action="<?php echo e(route('highways.index')); ?>" method="get">
-                    <div class="grid grid-cols-2 mt-4 gap-3 mb-4">
+                    <div class="grid grid-cols-3 mt-4 gap-3 mb-4">
                         <div>
                             <label class="text-gray-700" for="warehouse">Şassi nömrəsi</label>
                             <input value="<?php echo e($highway_code ? $highway_code : ''); ?>" name="highway_code" id="highway_code" class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" type="text">
@@ -25,22 +25,11 @@
                                 class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                                 <option selected value="">Anbar seçin</option>
                                 <?php $__currentLoopData = $warehouses; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $warehouse): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                    <option value="<?php echo e($warehouse->id); ?>"><?php echo e($warehouse->name); ?></option>
+                                    <option <?php echo e($from_warehouse_id && $from_warehouse_id == $warehouse->id ? 'selected' : ''); ?> value="<?php echo e($warehouse->id); ?>"><?php echo e($warehouse->name); ?></option>
                                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             </select>
                         </div>
-                        <div>
-                            <label class="text-gray-700" for="product">Məhsul</label>
-                            <select id="product" name="product_id"
-                                class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                                <option value="" selected>Məhsul seçin</option>
-                                <?php $__currentLoopData = $products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $product): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                    <option <?php echo e($product_id && $product_id == $product->id ? 'selected' : ''); ?>
-
-                                        value="<?php echo e($product->id); ?>"><?php echo e($product->name); ?> <?php echo e($product->code ? '- ' . $product->code : ''); ?></option>
-                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                            </select>
-                        </div>
+                        
                         <div class="self-end">
                             <button type="submit"
                                 class="w-full px-4 py-2 bg-green-500 border-2 border-green-500 text-white rounded-md hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-green-400">Axtar</button>
@@ -56,20 +45,15 @@
                                 Nömrəsi
                             </th>
                             <th class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                                Məhsul
+                                Cari anbar
                             </th>
                             <th class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                                Sayı
+                                Daha çox
                             </th>
                             <th class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                                Anbardan
+                                Yerdəyişmə
                             </th>
-                            <th class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                                PDF faylı
-                            </th>
-                            <th class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                                Tarix
-                            </th>
+                            
                         </tr>
                     </thead>
 
@@ -81,28 +65,16 @@
 
                                 </td>
                                 <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
-                                    <?php echo e($highway->product_name); ?> <?php echo e($highway->product_code ? '- ' . $highway->product_code : ''); ?>
-
-                                </td>
-                                <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
-                                    <?php echo e($highway->quantity); ?>
-
-                                </td>
-                                <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
                                     <?php echo e($highway->warehouse_name); ?>
 
                                 </td>
                                 <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
-                                    <?php if($highway->pdf_file): ?>
-                                        <a class="text-indigo-400 underline" href="<?php echo e(asset('storage/' . $highway->pdf_file)); ?>" target="_blank">Göstər</a>
-                                    <?php else: ?>
-                                        -
-                                    <?php endif; ?>
+                                    <a href="<?php echo e(route('highways.show', ['highway' => $highway->id])); ?>">Ətraflı</a>
                                 </td>
                                 <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
-                                    <?php echo e($highway->entry_date); ?>
-
+                                    <a href="<?php echo e(route('highways.changeWarehousePage', ['highway' => $highway->id])); ?>">Yerdəyişmə et</a>
                                 </td>
+                                
                             </tr>
                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </tbody>

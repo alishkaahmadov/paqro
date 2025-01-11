@@ -40,6 +40,10 @@
                             type="text">
                     </div>
                 </div>
+
+                <div class="flex justify-end mt-2">
+                    <button id="identifyMeasure" class="px-4 py-2 bg-indigo-500 text-white rounded-md mr-2">Ölçü vahidini eyniləşdir</button>
+                </div>
                 
                 <div class="relative flex justify-between flex-col md:flex-row mt-2 pt-8">
                     <button id="addMore"
@@ -72,7 +76,7 @@
 
                     <div class="md:w-2/5">
                         <label class="text-gray-700">Ölçü vahidi</label>
-                        <input name="notes[]"
+                        <input name="notes[]" id="measure"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                             type="text" placeholder="litr/ədəd">
                     </div>
@@ -99,6 +103,27 @@
 
 <?php $__env->startSection('script'); ?>
     <script>
+        const identifyMeasure = document.getElementById('identifyMeasure');
+        identifyMeasure.addEventListener('click', function(event){
+            event.preventDefault();
+            const measureItem = document.getElementById('measure');
+            if(this.innerHTML === "Ölçü vahidini eyniləşdir"){
+                if(measureItem.value){
+                    const measureItems = [...document.querySelectorAll('input[name="notes[]"]')];
+                    measureItems.forEach(item => {
+                        item.value = measureItem.value;
+                    });
+                    this.innerHTML = "Eyniləşdirməni sil";
+                }
+            }else{
+                const measureItems = [...document.querySelectorAll('input[name="notes[]"]')];
+                    measureItems.forEach(item => {
+                        item.value = '';
+                    });
+                this.innerHTML = "Ölçü vahidini eyniləşdir";
+            }
+        })
+
         let addingLoop = 0;
         $('#products').select2();
         let html = '';
@@ -173,7 +198,7 @@
                                 products.innerHTML = '';
                                 html = '';
                                 data.forEach(function(product) {
-                                    console.log(product)
+                                    // console.log(product)
                                     if(product.quantity){
                                         html += `<option value="${product.id}">${product.product_name} ${product.product_code ? `- ${product.product_code}` : ''} - ${product.category_name} (${product.quantity})</option>`
                                         var option = document.createElement('option');
