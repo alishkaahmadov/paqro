@@ -2,7 +2,7 @@
     <h3 class="text-gray-700 text-3xl font-medium">Yeni transfer əlavə et</h3>
 
     <div class="flex flex-col mt-8">
-        <form action="<?php echo e(route('dashboard.transfer')); ?>" method="post">
+        <form action="<?php echo e(route('dashboard.transfer')); ?>" method="post" id="myForm" onsubmit="validateForm(event)">
             <?php echo csrf_field(); ?>
             <div id="mainDiv" class="grid grid-cols-1 mt-4">
                 <div>
@@ -103,6 +103,53 @@
 
 <?php $__env->startSection('script'); ?>
     <script>
+        let allProductsData = [];
+
+        const form = document.getElementById('myForm');
+        let clickedButtonValue = null;
+
+        form.querySelectorAll('button[type="submit"]').forEach(button => {
+            button.addEventListener('click', (event) => {
+                console.log('button clicked')
+                submitFormWithButton(event.target.name, event.target.value);
+            });
+        });
+
+        function validateForm(event) {
+            console.log('vallll')
+            event.preventDefault();
+
+            const products = [...document.querySelectorAll('select[name="products[]"]')]
+            const quantites = [...document.querySelectorAll('input[name="quantities[]"]')]
+            let isValid = true;
+            for (let i = 0; i < products.length; i++) {
+                const element = products[i];
+                if(element.value && quantites[i].value){
+                    const selectedProductQunatity = allProductsData.find(item => item.id == element.value)?.quantity;
+                    if(selectedProductQunatity < quantites[i].value){
+                        quantites[i].classList.add('quantity_error');
+                        isValid = false;
+                        break;
+                    }else{
+                        if(quantites[i].classList.contains('quantity_error')) quantites[i].classList.remove('quantity_error');
+                    }
+                }
+            }
+            if(isValid) document.getElementById('myForm').submit();
+        }
+
+        function submitFormWithButton(name, value) {
+
+            // Create a hidden input to mimic the button's name and value
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = name;
+            hiddenInput.value = value;
+
+            // Append the hidden input to the form
+            form.appendChild(hiddenInput);
+        }
+
         const identifyMeasure = document.getElementById('identifyMeasure');
         identifyMeasure.addEventListener('click', function(event){
             event.preventDefault();
@@ -146,7 +193,6 @@
                         <label class="text-gray-700" for="products">Məhsul</label>
                         <select name="products[]"
                             class="product-input mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                            ${html}
                         </select>
                     </div>
     
@@ -193,12 +239,12 @@
                 fetch(`/get-products/${mainWarehouseId}`)
                         .then(response => response.json())
                         .then(data => {
+                            allProductsData = [...data];
                             var productsSelect = [...document.querySelectorAll('.product-input')];
                             productsSelect.forEach(products => {
-                                products.innerHTML = '';
-                                html = '';
+                                products.innerHTML = '<option value="" selected></option>';
+                                html = '<option value="" selected></option>';
                                 data.forEach(function(product) {
-                                    // console.log(product)
                                     if(product.quantity){
                                         html += `<option value="${product.id}">${product.product_name} ${product.product_code ? `- ${product.product_code}` : ''} - ${product.category_name} (${product.quantity})</option>`
                                         var option = document.createElement('option');
@@ -283,10 +329,11 @@
                 fetch(`/get-products/${warehouseId}`)
                     .then(response => response.json())
                     .then(data => {
+                        allProductsData = [...data];
                         var productsSelect = [...document.querySelectorAll('.product-input')];
                         productsSelect.forEach(products => {
-                            products.innerHTML = '';
-                            html = '';
+                            products.innerHTML = '<option value="" selected></option>';
+                            html = '<option value="" selected></option>';
                             data.forEach(function(product) {
                                 html += `<option value="${product.id}">${product.product_name} ${product.product_code ? `- ${product.product_code}` : ''} - ${product.category_name} (${product.quantity})</option>`
                                 var option = document.createElement('option');

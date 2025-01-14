@@ -6,52 +6,81 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Anbar çıxış</title>
     <style>
-        * {
-            font-family: DejaVu Sans !important;
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
         }
 
+        /* Body styles */
         body {
             padding: 10px 40px;
             color: #333;
-            padding-bottom: 100px;
             font-size: 10px;
             font-weight: bold;
+            font-family: DejaVu Sans !important;
         }
 
-        thead {}
-
+        /* Table styles */
         table {
             width: 100%;
-            border-collapse: collapse;
-            table-layout: auto;
-            width: auto;
+            border-collapse: separate;
+            /* Avoid issues with border-collapse */
+            border-spacing: 0;
+            /* Remove gaps between table borders */
+            font-size: 8px;
+            border: 1px solid black;
+            margin-bottom: 40px;
+            /* Ensure outer border is present */
         }
 
+        /* Table cells */
         th,
         td {
-            padding: 10px;
+            padding: 2px 10px;
             text-align: center;
-            border: 1px solid #ddd;
+            border: 1px solid black !important;
+            /* Force cell borders to render */
             vertical-align: top;
             word-wrap: break-word;
         }
 
+        /* Prevent rows from breaking between pages */
         tr {
-            /* Set a minimum row height */
+            page-break-inside: avoid;
         }
 
+        /* Ensure table header stays on top */
+        thead {
+            display: table-header-group;
+        }
+
+
+        /* Ensure tbody fills available space */
+        tbody::after {
+            content: '';
+            display: table-row;
+            height: 100%;
+            /* Pushes rows to take up extra space */
+        }
+
+        /* Hover effect for table rows */
         tr:hover {
             background-color: #f1f1f1;
         }
 
+        /* Last row border adjustment */
         tbody tr:last-child td {
-            border-bottom: none;
+            border-bottom: 1px solid black !important;
         }
 
+        /* Zebra striping for table rows */
         tbody tr:nth-child(even) {
             background-color: #f9f9f9;
         }
 
+        /* Title alignment styles */
         .title {
             display: flex;
             flex-direction: column;
@@ -59,6 +88,7 @@
             align-items: center;
         }
 
+        /* Utility classes for padding and margins */
         .py-1 {
             padding: 4px 0;
         }
@@ -71,64 +101,77 @@
             margin-top: 16px;
         }
 
-        .under-text {
-            display: block;
-            font-size: .8em;
-            margin-top: 2px;
-        }
-
-        .footer {
-            position: relative;
-            padding: 40px 0;
-        }
-        .relative{
-            position: relative;
-        }
-
-        .sign-image {
-            width: 75px;
-            height: 75px;
-            position: absolute;
-            left: 20px;
-            top: -45px;
-            /* top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%); */
-            text-align: center;
-        }
-        .sign-image img {
-            max-width: 100%;
-            height: auto;
-        }
+        /* Underline and subtext styles */
         .underline {
             border-bottom: 1px solid black;
         }
 
-        .block {
+        .under-text {
             display: block;
+            font-size: 0.8em;
+            margin-top: 2px;
         }
-        .w-10{
-            width: 10%;
+
+        /* Footer styles */
+        .footer {
+            position: relative;
+            padding: 40px 0;
         }
-        .w-20{
-            width: 20%;
+
+        .relative {
+            position: relative;
         }
-        .w-30{
-            width: 30%;
+
+        /* Signature image container */
+        .sign-image {
+            width: 150px;
+            height: 150px;
+            position: absolute;
+            left: 2px;
+            top: -65px;
+            text-align: center;
         }
-        .w-70{
-            width: 70%;
+
+        .sign-image img {
+            max-width: 100%;
+            height: auto;
         }
-        .min-h-1{
-            min-height: 1em;
-        }
+
+        /* Table layout for signatures and approvals */
         .table2 {
             display: table;
             width: 100%;
         }
+
         .table-cell2 {
             display: table-cell;
             vertical-align: top;
+        }
+
+        /* Width utility classes */
+        .w-10 {
+            width: 10%;
+        }
+
+        .w-20 {
+            width: 20%;
+        }
+
+        .w-30 {
+            width: 30%;
+        }
+
+        .w-70 {
+            width: 70%;
+        }
+
+        .min-h-1 {
+            min-height: 1em;
+        }
+
+        /* Block display for elements */
+        .block {
+            display: block;
         }
     </style>
 </head>
@@ -151,7 +194,7 @@
     <div class="mb-4" style="text-align: center"><?php echo e($pdfDocNumber); ?></div>
     <div class="mb-4 underline">Kimə: <?php echo e($warehouseName); ?> filialının Anbardarı <?php echo e($to); ?>na</div>
     <table>
-        <thead>
+        <thead style="display: table-header-group;">
             <tr>
                 <th>№</th>
                 <th>KOD</th>
@@ -197,7 +240,9 @@
         <div class="mt-4">
             <div class="table2">
                 <div class="table-cell2 w-70">
-                    <div class="underline">Təhvil aldım: <?php echo e($warehouseName); ?> filialının Anbardarı <?php echo e($to); ?></div>
+                    <div class="underline">Təhvil aldım: <?php echo e($warehouseName); ?> filialının Anbardarı <?php echo e($to); ?>
+
+                    </div>
                     <span class="under-text">(vəzifəsi, soyadı, adı, atasının adı)</span>
                 </div>
                 <div class="w-10"></div>

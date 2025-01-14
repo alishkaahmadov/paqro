@@ -47,6 +47,9 @@
         .select2-container{
             margin-top: 8px;
         }
+        .quantity_error{
+            border: 2px solid red !important;
+        }
     </style>
 </head>
 
