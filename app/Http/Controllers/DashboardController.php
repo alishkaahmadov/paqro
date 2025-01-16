@@ -856,7 +856,7 @@ class DashboardController extends Controller
                 $toWarehouseman = Warehouse::where('id', $request->to_warehouse)->first();
                 $data = [
                     'warehouseName' => $toWarehouseman->name,
-                    'to' => $toWarehouseman->warehouseman,
+                    'to' => $request->to_whom ?? $toWarehouseman->name . ' filialının Anbardarı ' . $toWarehouseman->warehouseman,
                     'quantities' => $request->quantities,
                     'pdfDocNumber' => $request->pdf_doc_number,
                     'transfer_date' => Carbon::parse($request->pdf_date)->format('d.m.Y'),

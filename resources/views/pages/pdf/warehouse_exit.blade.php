@@ -192,7 +192,7 @@
         <span class="under-text">(vəzifəsi, soyadı, adı, atasının adı)</span>
     </div>
     <div class="mb-4" style="text-align: center">{{ $pdfDocNumber }}</div>
-    <div class="mb-4 underline">Kimə: {{ $warehouseName }} filialının Anbardarı {{ $to }}na</div>
+    <div class="mb-4 underline">Kimə: {{ $to }}na</div>
     <table>
         <thead style="display: table-header-group;">
             <tr>
@@ -240,7 +240,7 @@
         <div class="mt-4">
             <div class="table2">
                 <div class="table-cell2 w-70">
-                    <div class="underline">Təhvil aldım: {{ $warehouseName }} filialının Anbardarı {{ $to }}
+                    <div class="underline">Təhvil aldım: {{ $to }}
                     </div>
                     <span class="under-text">(vəzifəsi, soyadı, adı, atasının adı)</span>
                 </div>

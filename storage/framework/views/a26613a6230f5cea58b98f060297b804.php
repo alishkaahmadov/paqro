@@ -192,7 +192,7 @@
         <span class="under-text">(vəzifəsi, soyadı, adı, atasının adı)</span>
     </div>
     <div class="mb-4" style="text-align: center"><?php echo e($pdfDocNumber); ?></div>
-    <div class="mb-4 underline">Kimə: <?php echo e($warehouseName); ?> filialının Anbardarı <?php echo e($to); ?>na</div>
+    <div class="mb-4 underline">Kimə: <?php echo e($warehouseName); ?> filialının <?php echo e($to); ?>na</div>
     <table>
         <thead style="display: table-header-group;">
             <tr>
@@ -240,7 +240,7 @@
         <div class="mt-4">
             <div class="table2">
                 <div class="table-cell2 w-70">
-                    <div class="underline">Təhvil aldım: <?php echo e($warehouseName); ?> filialının Anbardarı <?php echo e($to); ?>
+                    <div class="underline">Təhvil aldım: <?php echo e($warehouseName); ?> filialının <?php echo e($to); ?>
 
                     </div>
                     <span class="under-text">(vəzifəsi, soyadı, adı, atasının adı)</span>
