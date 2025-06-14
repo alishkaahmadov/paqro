@@ -76,6 +76,12 @@
                             type="text" placeholder="litr/ədəd">
                     </div>
                     <div class="md:w-2/5">
+                        <label class="text-gray-700">Rəf</label>
+                        <input name="shelfs[]" id="shelf"
+                            class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                            type="text">
+                    </div>
+                    <div class="md:w-2/5">
                         <label class="text-gray-700" for="category">Kateqoriya</label>
                         <input list="categories" id="category" name="categories[]"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
@@ -215,6 +221,12 @@
                             type="text" placeholder="litr/ədəd">
                     </div>
                     <div class="md:w-2/5">
+                        <label class="text-gray-700">Rəf</label>
+                        <input name="shelfs[]" id="shelf"
+                            class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                            type="text">
+                    </div>
+                    <div class="md:w-2/5">
                         <label class="text-gray-700" for="category">Kateqoriya</label>
                         <input list="categories" id="category" name="categories[]"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
@@ -344,6 +356,12 @@
                         <input name="notes[]" id="measure"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                             type="text" placeholder="litr/ədəd">
+                    </div>
+                    <div class="md:w-2/5">
+                        <label class="text-gray-700">Rəf</label>
+                        <input name="shelfs[]" id="shelf"
+                            class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                            type="text">
                     </div>
                     <div class="md:w-2/5">
                         <label class="text-gray-700" for="category">Kateqoriya</label>

@@ -10,7 +10,7 @@ class WarehouseLog extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['from_warehouse_id', 'to_warehouse_id', 'product_id', 'subcategory_id', 'quantity', 'measure', 'entry_date', 'company_id', 'highway_id', 'highway_product_id'];
+    protected $fillable = ['from_warehouse_id', 'to_warehouse_id', 'product_id', 'subcategory_id', 'quantity', 'measure', 'shelf', 'entry_date', 'company_id', 'highway_id', 'highway_product_id'];
 
     public function fromWarehouse() :BelongsTo
     {

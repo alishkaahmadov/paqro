@@ -12,6 +12,7 @@ use App\Models\Warehouse;
 use App\Models\WarehouseLog;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 
 class HighwayController extends Controller
@@ -87,62 +88,90 @@ class HighwayController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
-        $request->validate([
-            'warehouse_id' => 'required|exists:warehouses,id',
-            'product_id' => 'required|exists:products,id',
-            'code' => 'required|string',
-            'quantity' => 'required|integer',
-            'measure' => 'required|string',
-            'pdf' => 'nullable|mimes:pdf|max:51200', // 50mb,
-            'date' => 'required|date'
-        ]);
+    {   
+        DB::beginTransaction();
         try {
-            // check quantity
-            $warehouse = ProductEntry::where(['warehouse_id' => $request->warehouse_id, 'product_id' => $request->product_id])->first();
-            if ($warehouse->quantity >= $request->quantity) {
-                $warehouse->update(['quantity' => $warehouse->quantity - $request->quantity]);
-                if($request->pdf){
-                    $fileName = time() . '_' . $request->pdf->getClientOriginalName();
-                    $filePath = $request->pdf->storeAs('uploads', $fileName, 'public');
-                }
-                
-                if(!$highway = Highway::where('code', $request->code)->first()){
-                    // create
-                    $highway = Highway::create([
-                        'code' => $request->code,
-                        'belong_to_warehouse_id' => $request->warehouse_id
-                    ]);
-                }
+            $request->validate([
+                'warehouse_id' => 'required|exists:warehouses,id',
 
-                $highwayProduct = $highway->products()->create([
-                    'product_entry_id' => $warehouse->id,
-                    'pdf_file' => $filePath ?? null,
-                    'quantity' => $request->quantity,
-                    'measure' => $request->measure,
-                    'entry_date' => $request->date,
-                    'from_warehouse_id' => $request->warehouse_id
+                'code' => 'required|string',
+
+                'products' => 'required|array|min:1',
+                'products.*' => 'nullable',
+
+                'quantities' => 'required|array|min:1',
+                'quantities.*' => 'nullable|integer',
+
+                'notes' => 'required|array|min:1',
+                'notes.*' => 'nullable|string',
+
+                'moto_saats' => 'required|array|min:1',
+                'moto_saats.*' => 'nullable|string',
+
+                'pdfs' => 'required|array|min:1',
+                'pdfs.*' => 'nullable|mimes:pdf|max:51200',
+
+                'dates' => 'required|array|min:1',
+                'dates.*' => 'required|date',
+            ]);
+
+            // loop through all arrays 
+            if(!$highway = Highway::where('code', $request->code)->first()){
+                // create
+                $highway = Highway::create([
+                    'code' => $request->code,
+                    'belong_to_warehouse_id' => $request->warehouse_id
                 ]);
-                WarehouseLog::create([
-                    'from_warehouse_id' => $request->warehouse_id,
-                    'quantity' => $request->quantity,
-                    'measure' => $request->measure,
-                    'entry_date' => $request->date,
-                    'product_id' => $request->product_id,
-                    'company_id' => $warehouse->company_id,
-                    'subcategory_id' => $warehouse->subcategory_id,
-                    'highway_id' => $highway->id,
-                    'highway_product_id' => $highwayProduct->id
-                ]);
-                return redirect()->route('highways.index')
-                    ->with('success', 'Şassi əlavə olundu.');
-            } else {
-                return redirect()->route('dashboard.index')
-                ->with('error', 'Anbarda kifayət qədər məhsul yoxdur.');
             }
+            $loopLength = count($request->products);
+            for ($i = 0; $i < $loopLength; $i++) {
+                if(!($request->products[$i] && $request->quantities[$i] && $request->notes[$i])) continue;
+                $currentProductEntry = $request->products[$i];
+                $currentQuantity = (int)$request->quantities[$i];
+                $currentMeasure = $request->notes[$i];
+                $currentMoto = $request->moto_saats[$i];
+                $currentPdf = $request->pdfs[$i] ?? null;
+                $currentEntryDate = $request->dates[$i];
+                $fromWarehouse = ProductEntry::where('id', $currentProductEntry)->first();  
+                if ($fromWarehouse?->quantity >= $currentQuantity) {
+                    $fromWarehouse->update(['quantity' => $fromWarehouse->quantity - $currentQuantity]);
+                    if($currentPdf){
+                        $fileName = time() . '_' . $currentPdf->getClientOriginalName();
+                        $filePath = $currentPdf->storeAs('uploads', $fileName, 'public');
+                    }
+                    
+                    $highwayProduct = $highway->products()->create([
+                        'product_entry_id' => $fromWarehouse?->id,
+                        'pdf_file' => $filePath ?? null,
+                        'quantity' => $currentQuantity,
+                        'measure' => $currentMeasure,
+                        'moto_saat' => $currentMoto,
+                        'entry_date' => $currentEntryDate,
+                        'from_warehouse_id' => $request->warehouse_id
+                    ]);
+                    WarehouseLog::create([
+                        'from_warehouse_id' => $request->warehouse_id,
+                        'quantity' => $currentQuantity,
+                        'measure' => $currentMeasure,
+                        'entry_date' => $currentEntryDate,
+                        'product_id' => $fromWarehouse?->product_id,
+                        'company_id' => $fromWarehouse?->company_id,
+                        'subcategory_id' => $fromWarehouse?->subcategory_id,
+                        'highway_id' => $highway->id,
+                        'highway_product_id' => $highwayProduct->id
+                    ]);
+                } else {
+                    DB::rollBack();
+                    return redirect()->route('highways.index')
+                        ->with('error', 'Anbarda kifayət qədər məhsul yoxdur.');
+                }
+            }
+            DB::commit();
+            return redirect()->route('highways.index')->with('success', 'Uğurlu.');
         } catch (Throwable $th) {
-            dd($th->getMessage());
-            return redirect()->route('dashboard.index')
+            DB::rollBack();
+            dd($th);
+            return redirect()->route('highways.index')
                 ->with('error', 'Xəta baş verdi.');
         }
     }
@@ -186,6 +215,7 @@ class HighwayController extends Controller
             "w.name as from_warehouse",
             "highway_products.quantity",
             "highway_products.measure",
+            "highway_products.moto_saat",
             "highway_products.entry_date",
             "highway_products.pdf_file"
         )

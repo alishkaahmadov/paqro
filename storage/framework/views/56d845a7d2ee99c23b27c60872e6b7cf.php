@@ -134,6 +134,10 @@
                             </th>
                             <th
                                 class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                Rəf
+                            </th>
+                            <th
+                                class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
                                 Kateqoriya
                             </th>
                         </tr>
@@ -144,7 +148,8 @@
                             <tr>
                                 <td
                                     class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
-                                    <?php echo e($loop->index + 1); ?>
+                                    
+                                    <?php echo e(($productEntries->currentPage() - 1) * 50 + 1 + $loop->index); ?>
 
                                 </td>
                                 <td
@@ -179,6 +184,11 @@
                                 </td>
                                 <td
                                     class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
+                                    <?php echo e($product->shelf); ?>
+
+                                </td>
+                                <td
+                                    class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
                                     <?php echo e($product->subcategory->name); ?>
 
                                 </td>
@@ -198,7 +208,9 @@
                             type="button" onclick="setExportType(event, 'all')">Çap et (PDF)</button>
                     </form>
                 </div>
-                
+                <div class="flex items-center justify-center my-2">
+                    <?php echo $__env->make('components.pagination', ['paginator' => $productEntries], \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+                </div>
             </div>
         </div>
     </div>

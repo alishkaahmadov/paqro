@@ -75,6 +75,7 @@ class DashboardController extends Controller
                     DB::raw('(select sum(warehouse_logs.quantity) from warehouse_logs where warehouse_logs.from_warehouse_id = ? and product_id = product_entries.product_id and subcategory_id = product_entries.subcategory_id and entry_date between ? and ? group by warehouse_logs.from_warehouse_id) as exit_total'),
                     'product_entries.product_id',
                     'product_entries.measure',
+                    'product_entries.shelf',
                     'product_entries.subcategory_id', 
                     'product_entries.warehouse_id', 
                     'product_entries.quantity')
@@ -83,7 +84,7 @@ class DashboardController extends Controller
             ->where('product_entries.warehouse_id', $warehouseId)
             // ->where('product_entries.quantity', '>', 0)
             ->orderBy('p.name')
-            ->get();
+            ->paginate(50)->appends($request->query());
         return view('pages.dashboard.index', [
             'productEntries' => $groupedEntries,
             'products' => $products,
@@ -296,7 +297,7 @@ class DashboardController extends Controller
             }
             // update older one
             $olderProductEntry = ProductEntry::where(['warehouse_id' => $entry->to_warehouse_id, 'product_id' => $entry->product_id, 'subcategory_id' => $entry->subcategory_id])->first();
-            $olderProductEntry->update(['quantity' => $olderProductEntry->quantity - $entry->quantity]);
+            $olderProductEntry->update(['quantity' => $olderProductEntry->quantity - $entry->quantity, 'shelf' => $request->shelf]);
 
 
             $oldEntryData = [
@@ -310,6 +311,7 @@ class DashboardController extends Controller
             $entry->update([
                 'to_warehouse_id' => $warehouseId,
                 'quantity' => $request->quantity,
+                'shelf' => $request->shelf,
                 'entry_date' => $request->entry_date,
                 'product_id' => $productId,
                 'subcategory_id' => $categoryId,
@@ -363,7 +365,7 @@ class DashboardController extends Controller
                 ]], JSON_UNESCAPED_UNICODE)
         ]);
         $entry->delete();
-        return redirect()->route('dashboard.index')->with('success', 'Uğurla silindi.');
+        return redirect()->back()->with('success', 'Uğurla silindi.');
     }
     public function exits(Request $request)
     {
@@ -866,7 +868,6 @@ class DashboardController extends Controller
                     'notes' => $request->notes,
                     'base64Image' => $base64Image
                 ];
-    
                 $pdf = Pdf::loadView('pages.pdf.warehouse_exit', $data)->setPaper('a4')
                 ->setOptions(['isRemoteEnabled' => true]);
                 $fileName = 'warehouse_exit_' . now()->format('Y-m-d_H-i-s') . '.pdf';
@@ -914,10 +915,13 @@ class DashboardController extends Controller
                 'notes' => 'required|array|min:1',
                 'notes.*' => 'nullable|string',
 
+                'shelfs' => 'required|array|min:1',
+                'shelfs.*' => 'nullable|string',
+
                 'entry_dates' => 'required|array|min:1',
                 'entry_dates.*' => 'required|date',
             ]);
-            if(!($request->products[0] && $request->quantities[0] && $request->categories[0] && $request->notes[0])){
+            if(!($request->products[0] && $request->quantities[0] && $request->categories[0] && $request->notes[0] && $request->shelfs[0])){
                 return redirect()->route('dashboard.index')
                 ->with('error', 'Xəta baş verdi.');
             }
@@ -939,7 +943,7 @@ class DashboardController extends Controller
             // loop through all arrays 
             $loopLength = count($request->products);
             for ($i = 0; $i < $loopLength; $i++) {
-                if(!($request->products[$i] && $request->quantities[$i] && $request->categories[$i] && $request->notes[$i])){
+                if(!($request->products[$i] && $request->quantities[$i] && $request->categories[$i] && $request->notes[$i] && $request->shelfs[$i])){
                     continue;
                 }
                 // check if category exits else create new one
@@ -974,6 +978,7 @@ class DashboardController extends Controller
                         'company_id' => $companyId,
                         'quantity' => $request->quantities[$i],
                         'measure' => $request->notes[$i],
+                        'shelf' => $request->shelfs[$i],
                         'subcategory_id' => $categoryId,
                         'entry_date' => $request->entry_dates[$i]
                     ]);
@@ -982,6 +987,7 @@ class DashboardController extends Controller
                     'to_warehouse_id' => $warehouseId,
                     'quantity' => $request->quantities[$i],
                     'measure' => $request->notes[$i],
+                    'shelf' => $request->shelfs[$i],
                     'entry_date' => $request->entry_dates[$i],
                     'product_id' => $productId,
                     'subcategory_id' => $categoryId,

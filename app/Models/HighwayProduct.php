@@ -10,7 +10,7 @@ class HighwayProduct extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['highway_id', 'measure', 'product_entry_id', 'quantity', 'pdf_file', 'entry_date', 'from_warehouse_id'];
+    protected $fillable = ['highway_id', 'measure', 'moto_saat', 'product_entry_id', 'quantity', 'pdf_file', 'entry_date', 'from_warehouse_id'];
 
     public function product_entry(): BelongsTo
     {

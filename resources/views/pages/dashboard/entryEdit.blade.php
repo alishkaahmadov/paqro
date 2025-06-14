@@ -67,6 +67,12 @@
                             type="text" value="{{ old('measure', $entry->measure) }}">
                     </div>
                     <div class="md:w-2/5">
+                        <label class="text-gray-700" for="shelf">Rəf</label>
+                        <input name="shelf"
+                            class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                            type="text" value="{{ old('shelf', $entry->shelf) }}">
+                    </div>
+                    <div class="md:w-2/5">
                         <label class="text-gray-700" for="category">Kateqoriya</label>
                         <input list="categories" id="category" name="category"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"

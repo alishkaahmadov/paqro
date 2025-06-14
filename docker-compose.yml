@@ -16,7 +16,8 @@ services:
     ports:
       - "5173:5173"
     volumes:
-      - ./:/var/www
+      # - ./:/var/www
+      - ./storage:/var/www/storage
       - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini
     networks:
       - app-network
@@ -32,6 +33,7 @@ services:
     volumes:
     # - ./:/var/www
       - ./public:/var/www/public # Mounting only the public folder
+      - ./storage:/var/www/storage
       - ./nginx/:/etc/nginx/conf.d/
     networks:
       - app-network
