@@ -5,7 +5,7 @@ namespace App\Exports;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 
-class MainExport implements FromArray, WithHeadings
+class LimitExport implements FromArray, WithHeadings
 {
     protected $data;
 
@@ -21,10 +21,10 @@ class MainExport implements FromArray, WithHeadings
             return [
                 'Kod' => $product->product_code,
                 'Məhsul' => $product->product_name,
-                'Giriş' => $product->entry_total ?? 0,
-                'Çıxış' => $product->exit_total ?? 0,
-                'Qalıq' => ($product->entry_total - $product->exit_total) ?? 0,
-                'Kateqoriya' => $product->subcategory_name,
+                'Qalıq' => $product->quantity,
+                'Ölçü vahidi' => $product->measure,
+                'Kateqoriya' => $product->category_name,
+                'Limit' => $product->limit,
             ];
         })->toArray();
     }
@@ -34,10 +34,10 @@ class MainExport implements FromArray, WithHeadings
         return [
             'Kod',
             'Məhsul',
-            'Giriş',
-            'Çıxış',
             'Qalıq',
+            'Ölçü vahidi',
             'Kateqoriya',
+            'Limit',
         ];
     }
 }

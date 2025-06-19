@@ -9,8 +9,11 @@
         @method('PUT')
 
         <div class="mb-4">
-            <label for="current_warehouse" class="block text-sm font-medium text-gray-700">Cari anbar</label>
+            <label for="code" class="block text-sm font-medium text-gray-700">Şassi nömrəsi</label>
+            <input required type="text" id="code" name="code" value="{{ old('code', $code) }}"
+                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
 
+            <label for="current_warehouse" class="block text-sm font-medium text-gray-700">Cari anbar</label>
             <select id="current_warehouse" name="current_warehouse"
                 class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                 @foreach ($warehouses as $warehouse)

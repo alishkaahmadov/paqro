@@ -52,7 +52,9 @@ class DashboardController extends Controller
         $query = ProductEntry::query();
 
         if ($request->warehouse_id) {
-            $warehouseId = $request->warehouse_id;
+            $warehouseId = $request->warehouse_id === "all"
+                ? "all"
+                : $request->warehouse_id;
         } else {
             $mainWarehouse = Warehouse::getMainWarehouse();
             $warehouseId = $mainWarehouse->id;
@@ -70,23 +72,94 @@ class DashboardController extends Controller
             $query->whereNotIn('product_entries.subcategory_id', $request->except_category_ids);
         }
 
-        $groupedEntries = $query->select(
-                    DB::raw('(select sum(warehouse_logs.quantity) from warehouse_logs where warehouse_logs.to_warehouse_id = ? and product_id = product_entries.product_id and subcategory_id = product_entries.subcategory_id and entry_date between ? and ? group by warehouse_logs.to_warehouse_id) as entry_total'),
-                    DB::raw('(select sum(warehouse_logs.quantity) from warehouse_logs where warehouse_logs.from_warehouse_id = ? and product_id = product_entries.product_id and subcategory_id = product_entries.subcategory_id and entry_date between ? and ? group by warehouse_logs.from_warehouse_id) as exit_total'),
-                    'product_entries.product_id',
-                    'product_entries.measure',
-                    'product_entries.shelf',
-                    'product_entries.subcategory_id', 
-                    'product_entries.warehouse_id', 
-                    'product_entries.quantity')
-            ->addBinding([$warehouseId, $startDate ?? "2020-01-01 00:00:00", $endDate ?? "2030-01-01 00:00:00", $warehouseId, $startDate ?? "2020-01-01 00:00:00", $endDate ?? "2030-01-01 00:00:00"], 'select')
+        $start = $startDate ?? "2020-01-01 00:00:00";
+        $end = $endDate ?? "2030-01-01 00:00:00";
+
+        // Subquery for entries
+        $entrySub = DB::table('warehouse_logs')
+            ->select([
+                'product_id',
+                'subcategory_id',
+                'to_warehouse_id as warehouse_id',
+                DB::raw('SUM(quantity) as entry_total')
+            ])
+            ->whereBetween('entry_date', [$start, $end])
+            ->groupBy('product_id', 'subcategory_id', 'to_warehouse_id');
+
+        // Subquery for exits
+        $exitSub = DB::table('warehouse_logs')
+            ->select([
+                'product_id',
+                'subcategory_id',
+                'from_warehouse_id as warehouse_id',
+                DB::raw('SUM(quantity) as exit_total')
+            ])
+            ->whereBetween('entry_date', [$start, $end])
+            ->groupBy('product_id', 'subcategory_id', 'from_warehouse_id');
+
+
+        $totalEntries = (clone $query)->select([
+                'product_entries.product_id',
+                'product_entries.subcategory_id',
+                'product_entries.warehouse_id',
+                'product_entries.quantity',
+                DB::raw('COALESCE(entry.entry_total, 0) as entry_total'),
+                DB::raw('COALESCE(exit.exit_total, 0) as exit_total'),
+            ])
+            ->leftJoinSub($entrySub, 'entry', function ($join) {
+                $join->on('entry.product_id', '=', 'product_entries.product_id')
+                    ->on('entry.subcategory_id', '=', 'product_entries.subcategory_id')
+                    ->on('entry.warehouse_id', '=', 'product_entries.warehouse_id');
+            })
+            ->leftJoinSub($exitSub, 'exit', function ($join) {
+                $join->on('exit.product_id', '=', 'product_entries.product_id')
+                    ->on('exit.subcategory_id', '=', 'product_entries.subcategory_id')
+                    ->on('exit.warehouse_id', '=', 'product_entries.warehouse_id');
+            })
+            ->when($warehouseId !== "all", function($query) use ($warehouseId){
+                $query->where('product_entries.warehouse_id', $warehouseId);
+            });
+
+        $totalQuantities = $totalEntries->sum('quantity');
+        $totalEntryCount = $totalEntries->sum('entry_total');
+        $totalExitCount = $totalEntries->sum('exit_total');
+
+
+        $groupedEntries = $query->select([
+                'product_entries.product_id',
+                'product_entries.measure',
+                'product_entries.shelf',
+                'product_entries.subcategory_id',
+                'product_entries.warehouse_id',
+                'w.name as warehouse_name',
+                'product_entries.quantity',
+                DB::raw('COALESCE(entry.entry_total, 0) as entry_total'),
+                DB::raw('COALESCE(exit.exit_total, 0) as exit_total'),
+            ])
+            ->leftJoinSub($entrySub, 'entry', function ($join) {
+                $join->on('entry.product_id', '=', 'product_entries.product_id')
+                    ->on('entry.subcategory_id', '=', 'product_entries.subcategory_id')
+                    ->on('entry.warehouse_id', '=', 'product_entries.warehouse_id');
+            })
+            ->leftJoinSub($exitSub, 'exit', function ($join) {
+                $join->on('exit.product_id', '=', 'product_entries.product_id')
+                    ->on('exit.subcategory_id', '=', 'product_entries.subcategory_id')
+                    ->on('exit.warehouse_id', '=', 'product_entries.warehouse_id');
+            })
             ->leftJoin('products as p', 'p.id', '=', 'product_entries.product_id')
-            ->where('product_entries.warehouse_id', $warehouseId)
-            // ->where('product_entries.quantity', '>', 0)
+            ->leftJoin('warehouses as w', 'w.id', '=', 'product_entries.warehouse_id')
+            ->when($warehouseId !== "all", function($query) use ($warehouseId){
+                $query->where('product_entries.warehouse_id', $warehouseId);
+            })
             ->orderBy('p.name')
-            ->paginate(50)->appends($request->query());
+            ->paginate(50)
+            ->appends($request->query());
+
         return view('pages.dashboard.index', [
             'productEntries' => $groupedEntries,
+            'totalQuantities' => $totalQuantities,
+            'totalEntryCount' => $totalEntryCount,
+            'totalExitCount' => $totalExitCount,
             'products' => $products,
             'warehouses' => $warehouses,
             'warehouse_id' => $request->warehouse_id ?? null,
@@ -488,7 +561,7 @@ class DashboardController extends Controller
                 'transfer_date' => 'required|date',
             ]);
             $currentProduct = $request->product;
-            $currentQuantity = (int)$request->quantity;
+            $currentQuantity = (float)$request->quantity;
             $currentEntryDate = $request->transfer_date;
             $fromWarehouse = ProductEntry::where(['warehouse_id' => $request->from_warehouse, 'product_id' => $currentProduct])->first();
             if ($fromWarehouse->quantity + $exit->quantity >= $currentQuantity) {
@@ -768,7 +841,7 @@ class DashboardController extends Controller
                 'products.*' => 'nullable',
 
                 'quantities' => 'required|array|min:1',
-                'quantities.*' => 'nullable|integer',
+                'quantities.*' => 'nullable|numeric',
 
                 'notes' => 'required|array|min:1',
                 'notes.*' => 'nullable|string',
@@ -790,7 +863,7 @@ class DashboardController extends Controller
                     continue;
                 }
                 $currentProductEntry = $request->products[$i];
-                $currentQuantity = (int)$request->quantities[$i];
+                $currentQuantity = (float)$request->quantities[$i];
                 $currentMeasure = $request->notes[$i];
                 $currentEntryDate = $request->transfer_dates[$i];
                 $fromWarehouse = ProductEntry::where('id', $currentProductEntry)->first();
@@ -907,7 +980,7 @@ class DashboardController extends Controller
                 'product_codes.*' => 'nullable|string',
 
                 'quantities' => 'required|array|min:1',
-                'quantities.*' => 'nullable|integer',
+                'quantities.*' => 'nullable|numeric',
 
                 'categories' => 'required|array|min:1',
                 'categories.*' => 'nullable|string',
@@ -1026,7 +1099,14 @@ class DashboardController extends Controller
         }
         $query = ProductEntry::query();
 
-        $warehouseId = $request->warehouse_id ?: Warehouse::getMainWarehouse()->id;
+        if ($request->warehouse_id) {
+            $warehouseId = $request->warehouse_id === "all"
+                ? "all"
+                : $request->warehouse_id;
+        } else {
+            $mainWarehouse = Warehouse::getMainWarehouse();
+            $warehouseId = $mainWarehouse->id;
+        }
 
         if ($request->product_ids && count($request->product_ids) > 0) {
             $query->whereIn('product_entries.product_id', $request->product_ids);
@@ -1036,31 +1116,66 @@ class DashboardController extends Controller
             $query->where('product_entries.subcategory_id', $request->category_id);
         }
 
-        if ($request->get('export_type') === 'all') {
-            $products = $query->select(
-                DB::raw('(select sum(warehouse_logs.quantity) from warehouse_logs where warehouse_logs.to_warehouse_id = ? and product_id = product_entries.product_id and subcategory_id = product_entries.subcategory_id and entry_date between ? and ? group by warehouse_logs.to_warehouse_id) as entry_total'),
-                    DB::raw('(select sum(warehouse_logs.quantity) from warehouse_logs where warehouse_logs.from_warehouse_id = ? and product_id = product_entries.product_id and subcategory_id = product_entries.subcategory_id and entry_date between ? and ? group by warehouse_logs.from_warehouse_id) as exit_total'),
-                'product_id', 
-                'warehouse_id', 
-                'quantity', 
-                's.name as subcategory_name')
-                ->addBinding([$warehouseId, $startDate ?? "2020-01-01 00:00:00", $endDate ?? "2030-01-01 00:00:00", $warehouseId, $startDate ?? "2020-01-01 00:00:00", $endDate ?? "2030-01-01 00:00:00"], 'select')
-                ->leftJoin('products as p', 'p.id', '=', 'product_entries.product_id')
-                ->leftJoin('subcategories as s', 's.id', '=', 'product_entries.subcategory_id')
-                ->where('product_entries.warehouse_id', $warehouseId)
-                ->where('product_entries.quantity', '>', 0)
-                ->orderBy('p.name')
-                ->get();
+        if ($request->except_category_ids && count($request->except_category_ids) > 0) {
+            $query->whereNotIn('product_entries.subcategory_id', $request->except_category_ids);
         }
-        // else {
-        //     $page = $request->input('page', 1);
-        //     $perPage = 20;
-        //     $products = $query->select('product_id', 'warehouse_id', 'quantity', 's.name as subcategory_name')
-        //         ->leftJoin('products as p', 'p.id', '=', 'product_entries.product_id')
-        //         ->leftJoin('subcategories as s', 's.id', '=', 'product_entries.subcategory_id')
-        //         ->where('product_entries.warehouse_id', $warehouseId)
-        //         ->paginate($perPage, ['*'], 'page', $page);
-        // }
+
+        $start = $startDate ?? "2020-01-01 00:00:00";
+        $end = $endDate ?? "2030-01-01 00:00:00";
+
+        // Subquery for entries
+        $entrySub = DB::table('warehouse_logs')
+            ->select([
+                'product_id',
+                'subcategory_id',
+                'to_warehouse_id as warehouse_id',
+                DB::raw('SUM(quantity) as entry_total')
+            ])
+            ->whereBetween('entry_date', [$start, $end])
+            ->groupBy('product_id', 'subcategory_id', 'to_warehouse_id');
+
+        // Subquery for exits
+        $exitSub = DB::table('warehouse_logs')
+            ->select([
+                'product_id',
+                'subcategory_id',
+                'from_warehouse_id as warehouse_id',
+                DB::raw('SUM(quantity) as exit_total')
+            ])
+            ->whereBetween('entry_date', [$start, $end])
+            ->groupBy('product_id', 'subcategory_id', 'from_warehouse_id');
+
+        $products = $query->select([
+                'product_entries.product_id',
+                'product_entries.measure',
+                'product_entries.shelf',
+                'product_entries.subcategory_id',
+                'product_entries.warehouse_id',
+                'w.name as warehouse_name',
+                'product_entries.quantity',
+                's.name as subcategory_name',
+                DB::raw('COALESCE(entry.entry_total, 0) as entry_total'),
+                DB::raw('COALESCE(exit.exit_total, 0) as exit_total'),
+            ])
+            ->leftJoinSub($entrySub, 'entry', function ($join) {
+                $join->on('entry.product_id', '=', 'product_entries.product_id')
+                    ->on('entry.subcategory_id', '=', 'product_entries.subcategory_id')
+                    ->on('entry.warehouse_id', '=', 'product_entries.warehouse_id');
+            })
+            ->leftJoinSub($exitSub, 'exit', function ($join) {
+                $join->on('exit.product_id', '=', 'product_entries.product_id')
+                    ->on('exit.subcategory_id', '=', 'product_entries.subcategory_id')
+                    ->on('exit.warehouse_id', '=', 'product_entries.warehouse_id');
+            })
+            ->leftJoin('products as p', 'p.id', '=', 'product_entries.product_id')
+            ->leftJoin('warehouses as w', 'w.id', '=', 'product_entries.warehouse_id')
+            ->leftJoin('subcategories as s', 's.id', '=', 'product_entries.subcategory_id')
+            ->when($warehouseId !== "all", function($query) use ($warehouseId){
+                $query->where('product_entries.warehouse_id', $warehouseId);
+            })
+            ->orderBy('p.name')
+            ->get();
+
         if ($products instanceof \Illuminate\Pagination\LengthAwarePaginator) {
             $data = [
                 'products' => $products->items() // Extract items if paginated
@@ -1099,6 +1214,9 @@ class DashboardController extends Controller
         if ($request->from_warehouse_ids && count($request->from_warehouse_ids) > 0) {
             $query->whereIn('from_warehouse_id', $request->from_warehouse_ids);
         }
+        if ($request->except_from_warehouse_ids && count($request->except_from_warehouse_ids) > 0) {
+            $query->whereNotIn('from_warehouse_id', $request->except_from_warehouse_ids);
+        }
         if ($request->product_ids && count($request->product_ids) > 0) {
             $query->whereIn('product_id', $request->product_ids);
         }
@@ -1108,7 +1226,7 @@ class DashboardController extends Controller
         if ($request->category_id) {
             $query->where('subcategory_id', $request->category_id);
         }
-        if ($request->start_date && $request->end_date) {
+        if ($startDate && $endDate) {
             $query->whereBetween('warehouse_logs.entry_date', [$startDate, $endDate]);
         }
 
@@ -1198,7 +1316,7 @@ class DashboardController extends Controller
         if ($request->category_id) {
             $query->where('subcategory_id', $request->category_id);
         }
-        if ($request->start_date && $request->end_date) {
+        if ($startDate && $endDate) {
             $query->whereBetween('warehouse_logs.entry_date', [$startDate, $endDate]);
         }
 
@@ -1394,7 +1512,14 @@ class DashboardController extends Controller
         }
         $query = ProductEntry::query();
 
-        $warehouseId = $request->warehouse_id ?: Warehouse::getMainWarehouse()->id;
+        if ($request->warehouse_id) {
+            $warehouseId = $request->warehouse_id === "all"
+                ? "all"
+                : $request->warehouse_id;
+        } else {
+            $mainWarehouse = Warehouse::getMainWarehouse();
+            $warehouseId = $mainWarehouse->id;
+        }
 
         if ($request->product_ids && count($request->product_ids) > 0) {
             $query->whereIn('product_entries.product_id', $request->product_ids);
@@ -1404,20 +1529,60 @@ class DashboardController extends Controller
             $query->where('product_entries.subcategory_id', $request->category_id);
         }
 
-        $products = $query->select(
-            DB::raw('(select sum(warehouse_logs.quantity) from warehouse_logs where warehouse_logs.to_warehouse_id = ? and product_id = product_entries.product_id and subcategory_id = product_entries.subcategory_id and entry_date between ? and ? group by warehouse_logs.to_warehouse_id) as entry_total'),
-                DB::raw('(select sum(warehouse_logs.quantity) from warehouse_logs where warehouse_logs.from_warehouse_id = ? and product_id = product_entries.product_id and subcategory_id = product_entries.subcategory_id and entry_date between ? and ? group by warehouse_logs.from_warehouse_id) as exit_total'),
-            'p.name as product_name', 
-            'p.code as product_code', 
-            'product_id', 
-            'warehouse_id', 
-            'quantity', 
-            's.name as subcategory_name')
-            ->addBinding([$warehouseId, $startDate ?? "2020-01-01 00:00:00", $endDate ?? "2030-01-01 00:00:00", $warehouseId, $startDate ?? "2020-01-01 00:00:00", $endDate ?? "2030-01-01 00:00:00"], 'select')
+        if ($request->except_category_ids && count($request->except_category_ids) > 0) {
+            $query->whereNotIn('product_entries.subcategory_id', $request->except_category_ids);
+        }
+
+        $start = $startDate ?? "2020-01-01 00:00:00";
+        $end = $endDate ?? "2030-01-01 00:00:00";
+
+        $entrySub = DB::table('warehouse_logs')
+            ->select([
+                'product_id',
+                'subcategory_id',
+                'to_warehouse_id as warehouse_id',
+                DB::raw('SUM(quantity) as entry_total')
+            ])
+            ->whereBetween('entry_date', [$start, $end])
+            ->groupBy('product_id', 'subcategory_id', 'to_warehouse_id');
+
+        $exitSub = DB::table('warehouse_logs')
+            ->select([
+                'product_id',
+                'subcategory_id',
+                'from_warehouse_id as warehouse_id',
+                DB::raw('SUM(quantity) as exit_total')
+            ])
+            ->whereBetween('entry_date', [$start, $end])
+            ->groupBy('product_id', 'subcategory_id', 'from_warehouse_id');
+
+        $products = $query->select([
+                'product_entries.measure',
+                'product_entries.shelf',
+                'w.name as warehouse_name',
+                'product_entries.quantity',
+                's.name as subcategory_name',
+                'p.name as product_name',
+                'p.code as product_code',
+                DB::raw('COALESCE(entry.entry_total, 0) as entry_total'),
+                DB::raw('COALESCE(exit.exit_total, 0) as exit_total'),
+            ])
+            ->leftJoinSub($entrySub, 'entry', function ($join) {
+                $join->on('entry.product_id', '=', 'product_entries.product_id')
+                    ->on('entry.subcategory_id', '=', 'product_entries.subcategory_id')
+                    ->on('entry.warehouse_id', '=', 'product_entries.warehouse_id');
+            })
+            ->leftJoinSub($exitSub, 'exit', function ($join) {
+                $join->on('exit.product_id', '=', 'product_entries.product_id')
+                    ->on('exit.subcategory_id', '=', 'product_entries.subcategory_id')
+                    ->on('exit.warehouse_id', '=', 'product_entries.warehouse_id');
+            })
             ->leftJoin('products as p', 'p.id', '=', 'product_entries.product_id')
+            ->leftJoin('warehouses as w', 'w.id', '=', 'product_entries.warehouse_id')
             ->leftJoin('subcategories as s', 's.id', '=', 'product_entries.subcategory_id')
-            ->where('product_entries.warehouse_id', $warehouseId)
-            ->where('product_entries.quantity', '>', 0)
+            ->when($warehouseId !== "all", function($query) use ($warehouseId){
+                $query->where('product_entries.warehouse_id', $warehouseId);
+            })
             ->orderBy('p.name')
             ->get();
         return Excel::download(new MainExport($products), 'anbar_qaliq.xlsx');
@@ -1444,6 +1609,9 @@ class DashboardController extends Controller
         if ($request->from_warehouse_ids && count($request->from_warehouse_ids) > 0) {
             $query->whereIn('from_warehouse_id', $request->from_warehouse_ids);
         }
+        if ($request->except_from_warehouse_ids && count($request->except_from_warehouse_ids) > 0) {
+            $query->whereNotIn('from_warehouse_id', $request->except_from_warehouse_ids);
+        }
         if ($request->product_ids && count($request->product_ids) > 0) {
             $query->whereIn('product_id', $request->product_ids);
         }
@@ -1453,7 +1621,7 @@ class DashboardController extends Controller
         if ($request->category_id) {
             $query->where('subcategory_id', $request->category_id);
         }
-        if ($request->start_date && $request->end_date) {
+        if ($startDate && $endDate) {
             $query->whereBetween('warehouse_logs.entry_date', [$startDate, $endDate]);
         }
 
@@ -1508,7 +1676,7 @@ class DashboardController extends Controller
         if ($request->category_id) {
             $query->where('subcategory_id', $request->category_id);
         }
-        if ($request->start_date && $request->end_date) {
+        if ($startDate && $endDate) {
             $query->whereBetween('warehouse_logs.entry_date', [$startDate, $endDate]);
         }
 

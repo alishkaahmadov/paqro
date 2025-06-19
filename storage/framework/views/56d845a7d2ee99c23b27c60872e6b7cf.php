@@ -50,9 +50,10 @@
 
                                         value="<?php echo e($warehouse->id); ?>"><?php echo e($warehouse->name); ?></option>
                                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                <option value="all" <?php echo e($warehouse_id && $warehouse_id == "all" ? 'selected' : ''); ?>>Bütün anbarlar</option>
                             </select>
                         </div>
-                        <div>
+                        <div class="col-span-2">
                             <label class="text-gray-700" for="product">Məhsul</label>
                             <select id="product" name="product_ids[]" multiple
                                 class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
@@ -110,6 +111,10 @@
                             </th>
                             <th
                                 class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                Anbar
+                            </th>
+                            <th
+                                class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
                                 Kod
                             </th>
                             <th
@@ -154,6 +159,11 @@
                                 </td>
                                 <td
                                     class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
+                                    <?php echo e($product->warehouse_name); ?>
+
+                                </td>
+                                <td
+                                    class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
                                     <?php echo e($product->product->code ? $product->product->code : ''); ?>
 
                                 </td>
@@ -174,7 +184,7 @@
                                 </td>
                                 <td
                                     class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
-                                    <?php echo e($product->quantity); ?>
+                                    <?php echo e(($start_date || $end_date) ? ($product->entry_total - $product->exit_total ?? 0) : $product->quantity); ?>
 
                                 </td>
                                 <td
@@ -197,6 +207,20 @@
                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </tbody>
                 </table>
+                <?php if($totalQuantities > 0): ?>
+                    <div class="py-2 px-4 flex justify-end font-bold">
+                        Ümumi giriş sayı: <?php echo e($totalEntryCount); ?>
+
+                    </div>
+                    <div class="py-2 px-4 flex justify-end font-bold">
+                        Ümumi çıxış sayı: <?php echo e($totalExitCount); ?>
+
+                    </div>
+                    <div class="py-2 px-4 flex justify-end font-bold">
+                        Ümumi qalıq sayı: <?php echo e($totalQuantities); ?>
+
+                    </div>
+                <?php endif; ?>
                 <div class="grid my-2">
                     <form class="flex w-1/3 justify-self-end" id="exportForm">
                         <input type="hidden" name="export_type" value="all" id="export_type">

@@ -11,7 +11,7 @@ class ProductEntry extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['product_id', 'measure', 'shelf', 'subcategory_id', 'company_id', 'warehouse_id', 'quantity', 'entry_date'];
+    protected $fillable = ['product_id', 'measure', 'shelf', 'subcategory_id', 'limit', 'is_ordered', 'company_id', 'warehouse_id', 'quantity', 'entry_date'];
 
     public function product() :BelongsTo
     {

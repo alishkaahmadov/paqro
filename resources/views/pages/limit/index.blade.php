@@ -2,45 +2,12 @@
 
 @section('body')
     <div class="flex justify-between">
-        <h3 class="text-gray-700 text-3xl font-medium">Məhsul sayları</h3>
-        
-    </div>
-    <div class="flex justify-between w-full mt-4">
-        <div>
-            <a href="{{ route('dashboard.index') }}"
-                class="w-full mr-2 px-4 py-2 rounded-md focus:outline-none {{ request()->routeIs('dashboard.index') ? 'bg-gradient-to-r from-indigo-500 to-indigo-700 text-white shadow-lg border-b-4 border-indigo-800' : 'bg-indigo-500 text-white hover:bg-indigo-600 hover:shadow-md' }}">
-                Qalıq
-            </a>
-            @can('create', App\Models\WarehouseLog::class)
-                <a href="{{ route('dashboard.create') }}"
-                    class="w-full px-4 py-2 bg-green-500 text-white rounded-md mr-2">
-                    Giriş daxil et
-                </a>
-                <a href="{{ route('dashboard.transferPage') }}"
-                    class="w-full px-4 py-2 bg-orange-500 text-white rounded-md">
-                    Çıxış daxil et
-                </a>
-            @endcan
-        </div>
-        <div>
-            <a href="{{ route('dashboard.entries') }}"
-                class="w-full mr-2 px-4 py-2 rounded-md focus:outline-none {{ request()->routeIs('dashboard.entries') ? 'bg-gradient-to-r from-gray-500 to-gray-700 text-white shadow-lg border-b-4 border-gray-800' : 'bg-gray-500 text-white hover:bg-gray-600 hover:shadow-md' }}">
-                Girişlər
-            </a>
-            <a href="{{ route('dashboard.exits') }}"
-                class="w-full mr-2 px-4 py-2 rounded-md focus:outline-none {{ request()->routeIs('dashboard.exits') ? 'bg-gradient-to-r from-gray-500 to-gray-700 text-white shadow-lg border-b-4 border-gray-800' : 'bg-gray-500 text-white hover:bg-gray-600 hover:shadow-md' }}">
-                Çıxışlar
-            </a>
-            <a href="{{ route('dashboard.overall') }}"
-                class="w-full px-4 py-2 rounded-md focus:outline-none {{ request()->routeIs('dashboard.overall') ? 'bg-gradient-to-r from-gray-500 to-gray-700 text-white shadow-lg border-b-4 border-gray-800' : 'bg-gray-500 text-white hover:bg-gray-600 hover:shadow-md' }}">
-                Ümumi
-            </a>
-        </div>
+        <h3 class="text-gray-700 text-3xl font-medium">Limitlər</h3>
     </div>
     <div class="flex flex-col mt-3">
         <div class="-my-2 py-2 overflow-x-auto sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
             <div>
-                <form action="{{ route('dashboard.index') }}" method="get">
+                <form action="{{ route('limit.index') }}" method="get">
                     <div class="grid grid-cols-3 mt-4 gap-3 mb-4">
                         <div>
                             <label class="text-gray-700" for="warehouse">Anbar</label>
@@ -76,23 +43,6 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div>
-                            <label class="text-gray-700" for="except_category">Kateqoriyadan savayı</label>
-                            <select id="except_category" name="except_category_ids[]" multiple
-                                class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                                @foreach ($categories as $category)
-                                    <option value="{{ $category->id }}">{{ $category->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label class="text-gray-700" for="start_date">Giriş tarixindən</label>
-                            <input value="{{ $start_date ? $start_date : '' }}" name="start_date" id="start_date" class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" type="datetime-local">
-                        </div>
-                        <div>
-                            <label class="text-gray-700" for="end_date">Giriş tarixinədək</label>
-                            <input value="{{ $end_date ? $end_date : '' }}" name="end_date" id="end_date" class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" type="datetime-local">
-                        </div>
                         <div class="self-end">
                             <button type="submit"
                                 class="w-full px-4 py-2 bg-green-500 border-2 border-green-500 text-white rounded-md hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-green-400">Axtar</button>
@@ -122,14 +72,6 @@
                             </th>
                             <th
                                 class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                                Giriş
-                            </th>
-                            <th
-                                class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                                Çıxış
-                            </th>
-                            <th
-                                class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
                                 Qalıq
                             </th>
                             <th
@@ -138,21 +80,24 @@
                             </th>
                             <th
                                 class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                                Rəf
+                                Kateqoriya
                             </th>
                             <th
                                 class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                                Kateqoriya
+                                Limit
+                            </th>
+                            <th
+                                class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                Təyinetmə
                             </th>
                         </tr>
                     </thead>
 
                     <tbody class="bg-white">
                         @foreach ($productEntries as $product)
-                            <tr>
+                            <tr class="{{ $product->is_ordered ? 'bg-yellow-400' : ($product->limit > $product->quantity ? 'bg-red-400' : '') }}">
                                 <td
                                     class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
-                                    {{-- {{ $loop->index + 1 }}  --}}
                                     {{ ($productEntries->currentPage() - 1) * 50 + 1 + $loop->index }}
                                 </td>
                                 <td
@@ -169,15 +114,7 @@
                                 </td>
                                 <td
                                     class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
-                                    {{ $product->entry_total ?? 0 }}
-                                </td>
-                                <td
-                                    class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
-                                    {{ $product->exit_total ?? 0 }}
-                                </td>
-                                <td
-                                    class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
-                                    {{  ($start_date || $end_date) ? ($product->entry_total - $product->exit_total ?? 0) : $product->quantity }}
+                                    {{  $product->quantity }}
                                 </td>
                                 <td
                                     class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
@@ -185,42 +122,30 @@
                                 </td>
                                 <td
                                     class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
-                                    {{ $product->shelf }}
+                                    {{ $product->subcategory->name }}
                                 </td>
                                 <td
                                     class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
-                                    {{ $product->subcategory->name }}
+                                    {{ $product->limit ?? 0 }}
                                 </td>
-                                {{-- <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
-                                    {{$product->company->name}}
+                                <td
+                                    class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
+                                    <a href="{{ route('limit.edit', [
+                                        'entry' => $product->id, 
+                                        'warehouse_id' => request('warehouse_id'),
+                                        'category_id' => request('category_id')
+                                    ]) }}">Təyin et</a>
                                 </td>
-                                <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
-                                    {{$product->entry_date}}
-                                </td> --}}
                             </tr>
                         @endforeach
                     </tbody>
                 </table>
-                @if ($totalQuantities > 0)
-                    <div class="py-2 px-4 flex justify-end font-bold">
-                        Ümumi giriş sayı: {{ $totalEntryCount }}
-                    </div>
-                    <div class="py-2 px-4 flex justify-end font-bold">
-                        Ümumi çıxış sayı: {{ $totalExitCount }}
-                    </div>
-                    <div class="py-2 px-4 flex justify-end font-bold">
-                        Ümumi qalıq sayı: {{ $totalQuantities }}
-                    </div>
-                @endif
                 <div class="grid my-2">
                     <form class="flex w-1/3 justify-self-end" id="exportForm">
                         <input type="hidden" name="export_type" value="all" id="export_type">
                         <button
                             class="mr-2 w-full px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-md shadow-lg hover:from-blue-600 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             type="button" onclick="printToExcel(event)">Çap et (Excel)</button>
-                        <button
-                            class="w-full px-4 py-2 bg-red-500 border-2 border-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
-                            type="button" onclick="setExportType(event, 'all')">Çap et (PDF)</button>
                     </form>
                 </div>
                 <div class="flex items-center justify-center my-2">
@@ -247,38 +172,17 @@
             }
             toastr.error("{{session('error')}}", "Xəta!");
         @endif
+
         $(document).ready(function() {
             $('#product').select2();
             const selectedProductIds = @json($product_ids);
             $('#product').val(selectedProductIds).trigger('change');
-
-            $('#except_category').select2();
-            const selectedExceptCategoryIds = @json($except_category_ids);
-            $('#except_category').val(selectedExceptCategoryIds).trigger('change');
-
         });
-
-        function setExportType(event, type) {
-            event.preventDefault(); // Prevent the default form submission
-
-            // Set the export type in the hidden input
-            document.getElementById('export_type').value = type;
-
-            // Construct the URL with query parameters
-            const params = new URLSearchParams(window.location.search);
-            params.set('export_type', type); // Update or add the export_type parameter
-
-            // Create the full URL with parameters
-            const actionUrl = `{{ route('export.mainProducts') }}?${params.toString()}`;
-
-            // Redirect to the constructed URL to trigger the form submission
-            window.location.href = actionUrl;
-        }
 
         function printToExcel(event) {
             event.preventDefault();
             const params = new URLSearchParams(window.location.search);
-            const actionUrl = `{{ route('export.mainExcel') }}?${params.toString()}`;
+            const actionUrl = `{{ route('export.limitExcel') }}?${params.toString()}`;
             window.location.href = actionUrl;
         }
 

@@ -49,7 +49,7 @@
                         <label class="text-gray-700">Sayı</label>
                         <input name="quantities[]"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                            type="number">
+                            type="number" step="any">
                     </div>
 
                     <div class="md:w-2/5">
@@ -134,7 +134,7 @@
                         <label class="text-gray-700" for="quantity">Sayı</label>
                         <input name="quantities[]"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                            type="number">
+                            type="number" step="any">
                     </div>
 
                     <div class="md:w-2/5">
@@ -181,6 +181,9 @@
 
         function validateForm(event) {
             event.preventDefault();
+            if(![...document.querySelectorAll('input[name="pdfs[]"]')][0].value){
+                if(!confirm("PDF olmadan yükləməkdən əminsiniz?")) return;
+            }
 
             const products = [...document.querySelectorAll('select[name="products[]"]')]
             const quantites = [...document.querySelectorAll('input[name="quantities[]"]')]
@@ -230,7 +233,7 @@
                         <label class="text-gray-700" for="quantity">Sayı</label>
                         <input name="quantities[]"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                            type="number">
+                            type="number" step="any">
                     </div>
 
                     <div class="md:w-2/5">

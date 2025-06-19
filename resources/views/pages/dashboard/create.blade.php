@@ -47,14 +47,14 @@
                     <div class="md:w-2/5">
                         <label class="text-gray-700" for="product">Məhsul</label>
                         <input list="products" id="product" name="products[]"
-                            class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                            class="product-input mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                             type="text" autocomplete="off">
-                        <datalist id="products">
-                            @foreach ($products as $product)
+                        <datalist id="products" class="product-data-list">
+                            {{-- @foreach ($products as $product)
                                 <option data-code="{{ $product->code }}" value="{{ $product->name . '---' . $product->code }}">
                                     {{ $product->name }} {{ $product->code ? '- ' . $product->code : '' }}
                                 </option>
-                            @endforeach
+                            @endforeach --}}
                         </datalist>
                     </div>
                     <div class="md:w-2/5">
@@ -67,7 +67,7 @@
                         <label class="text-gray-700" for="quantity">Sayı</label>
                         <input name="quantities[]"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                            type="number">
+                            type="number" step="any">
                     </div>
                     <div class="md:w-2/5">
                         <label class="text-gray-700">Ölçü vahidi</label>
@@ -111,7 +111,15 @@
 
 @section('script')
     <script>
-
+        const mainWarehouseId = {{$mainWarehouse->id}}
+        function debounce(func, delay) {
+            let timeout;
+            return function (...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), delay);
+            };
+        }
+        
         const identifyMeasure = document.getElementById('identifyMeasure');
         identifyMeasure.addEventListener('click', function(event){
             event.preventDefault();
@@ -132,7 +140,6 @@
                 this.innerHTML = "Ölçü vahidini eyniləşdir";
             }
         })
-
 
         const identifyCategory = document.getElementById('identifyCategory');
         identifyCategory.addEventListener('click', function(event){
@@ -155,127 +162,7 @@
             }
         })
 
-
-        const productInput = document.getElementById('product')
-        const productOptions = [...document.getElementById('products').options];
-        productInput.addEventListener('input', function(event){
-            const selectedProduct = event.target.value;
-            let foundCode = '';
-            productOptions.forEach(option => {
-                if (option.value === selectedProduct) {
-                    foundCode = option.getAttribute('data-code');
-                }
-            });
-
-            const productCodeInput = event.target.parentNode.nextElementSibling.querySelector('#product_code');
-            if (productCodeInput) {
-                productCodeInput.value = foundCode || '';
-            }
-        })
-
-        function addNewElements(number){
-            var now = new Date().toLocaleString("en-US", {
-                timeZone: "Asia/Baku"
-            });
-            var timezoneDate = new Date(now);
-            // Format the date to YYYY-MM-DDTHH:MM
-            var formattedDateTime = timezoneDate.getFullYear() + '-' +
-                String(timezoneDate.getMonth() + 1).padStart(2, '0') + '-' +
-                String(timezoneDate.getDate()).padStart(2, '0') + 'T' +
-                String(timezoneDate.getHours()).padStart(2, '0') + ':' +
-                String(timezoneDate.getMinutes()).padStart(2, '0');
-            
-
-            // Define the HTML for the elements to be added
-            const newElementsHTML = `
-                <div class="relative flex justify-between flex-col md:flex-row mt-2 pt-8">
-                    <div class="md:w-2/5">
-                        <label class="text-gray-700" for="product">Məhsul</label>
-                        <input list="products" id="product" name="products[]"
-                            class="product-input mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                            type="text" autocomplete="off">
-                        <datalist id="products">
-                            @foreach ($products as $product)
-                                <option data-code="{{ $product->code }}" value="{{ $product->name . '---' . $product->code }}">
-                                    {{ $product->name }} {{ $product->code ? '- ' . $product->code : '' }}
-                                </option>
-                            @endforeach
-                        </datalist>
-                    </div>
-                    <div class="md:w-2/5">
-                        <label class="text-gray-700" for="product_code">Məhsulun kodu</label>
-                        <input id="product_code" name="product_codes[]"
-                            class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                            type="text" autocomplete="off">
-                    </div>
-                    <div class="md:w-2/5">
-                        <label class="text-gray-700" for="quantity">Sayı</label>
-                        <input name="quantities[]"
-                            class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                            type="number">
-                    </div>
-                    <div class="md:w-2/5">
-                        <label class="text-gray-700">Ölçü vahidi</label>
-                        <input name="notes[]" id="measure"
-                            class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                            type="text" placeholder="litr/ədəd">
-                    </div>
-                    <div class="md:w-2/5">
-                        <label class="text-gray-700">Rəf</label>
-                        <input name="shelfs[]" id="shelf"
-                            class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                            type="text">
-                    </div>
-                    <div class="md:w-2/5">
-                        <label class="text-gray-700" for="category">Kateqoriya</label>
-                        <input list="categories" id="category" name="categories[]"
-                            class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                            type="text" autocomplete="off">
-                        <datalist id="categories">
-                            @foreach ($categories as $category)
-                                <option value="{{ $category->name }}"></option>
-                            @endforeach
-                        </datalist>
-                    </div>
-                    <div class="md:w-2/5">
-                        <label class="text-gray-700" for="entry_date">Giriş tarixi</label>
-                        <input name="entry_dates[]" data-datetime-local="true"
-                            class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                            type="datetime-local"  value="${formattedDateTime}">
-                    </div>
-                </div>
-            `;
-
-            const mainDiv = document.getElementById('mainDiv');
-
-            for (let i = 0; i < number; i++) {
-                const newSet = document.createElement('div');
-                newSet.className = 'space-y-4';
-                newSet.innerHTML = newElementsHTML;
-                mainDiv.appendChild(newSet);
-            }
-
-            const productInputs = [...document.querySelectorAll('.product-input')];
-
-            productInputs.forEach(productInput => {
-                productInput.addEventListener('input', function(event){
-                    const selectedProduct = event.target.value;
-                    let foundCode = '';
-                    productOptions.forEach(option => {
-                        if (option.value === selectedProduct) {
-                            foundCode = option.getAttribute('data-code');
-                        }
-                    });
-    
-                    const productCodeInput = event.target.parentNode.nextElementSibling.querySelector('#product_code');
-                    if (productCodeInput) {
-                        productCodeInput.value = foundCode || '';
-                    }
-                })
-            })
-        }
-
-        document.getElementById('warehouse').addEventListener('input', function() {
+        document.getElementById('warehouse').addEventListener('input', async function() {
             // Get the list of options from the datalist
             const options = document.getElementById('warehouses').options;
             const warehouseInput = document.getElementById('warehouse');
@@ -286,10 +173,13 @@
                 if (options[i].value === warehouseInput.value) {
                     // Set the hidden input field with the corresponding warehouse ID
                     hiddenWarehouseId.value = options[i].getAttribute('data-id');
+                    debouncedSetProductData(options[i].getAttribute('data-id'));
                     break;
                 } else {
                     // Clear the hidden input if no match is found
                     hiddenWarehouseId.value = '';
+                    // Set default quantity and category for products
+                    debouncedSetAllProductData()
                 }
             }
         });
@@ -331,13 +221,6 @@
                         <input list="products" id="product" name="products[]"
                             class="product-input mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                             type="text" autocomplete="off">
-                        <datalist id="products">
-                            @foreach ($products as $product)
-                                <option data-code="{{ $product->code }}" value="{{ $product->name . '---' . $product->code }}">
-                                    {{ $product->name }} {{ $product->code ? '- ' . $product->code : '' }}
-                                </option>
-                            @endforeach
-                        </datalist>
                     </div>
                     <div class="md:w-2/5">
                         <label class="text-gray-700" for="product_code">Məhsulun kodu</label>
@@ -349,7 +232,7 @@
                         <label class="text-gray-700" for="quantity">Sayı</label>
                         <input name="quantities[]"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                            type="number">
+                            type="number" step="any">
                     </div>
                     <div class="md:w-2/5">
                         <label class="text-gray-700">Ölçü vahidi</label>
@@ -368,11 +251,6 @@
                         <input list="categories" id="category" name="categories[]"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                             type="text" autocomplete="off">
-                        <datalist id="categories">
-                            @foreach ($categories as $category)
-                                <option value="{{ $category->name }}"></option>
-                            @endforeach
-                        </datalist>
                     </div>
                     <div class="md:w-2/5">
                         <label class="text-gray-700" for="entry_date">Giriş tarixi</label>
@@ -385,7 +263,6 @@
 
 
             const mainDiv = document.getElementById('mainDiv');
-
             for (let i = 0; i < 30; i++) {
                 const newSet = document.createElement('div');
                 newSet.className = 'space-y-4';
@@ -421,6 +298,152 @@
 
         });
 
+        function addNewElements(number){
+            var now = new Date().toLocaleString("en-US", {
+                timeZone: "Asia/Baku"
+            });
+            var timezoneDate = new Date(now);
+            // Format the date to YYYY-MM-DDTHH:MM
+            var formattedDateTime = timezoneDate.getFullYear() + '-' +
+                String(timezoneDate.getMonth() + 1).padStart(2, '0') + '-' +
+                String(timezoneDate.getDate()).padStart(2, '0') + 'T' +
+                String(timezoneDate.getHours()).padStart(2, '0') + ':' +
+                String(timezoneDate.getMinutes()).padStart(2, '0');
+            
+
+            // Define the HTML for the elements to be added
+            const newElementsHTML = `
+                <div class="relative flex justify-between flex-col md:flex-row mt-2 pt-8">
+                    <div class="md:w-2/5">
+                        <label class="text-gray-700" for="product">Məhsul</label>
+                        <input list="products" id="product" name="products[]"
+                            class="product-input mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                            type="text" autocomplete="off">
+                    </div>
+                    <div class="md:w-2/5">
+                        <label class="text-gray-700" for="product_code">Məhsulun kodu</label>
+                        <input id="product_code" name="product_codes[]"
+                            class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                            type="text" autocomplete="off">
+                    </div>
+                    <div class="md:w-2/5">
+                        <label class="text-gray-700" for="quantity">Sayı</label>
+                        <input name="quantities[]"
+                            class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                            type="number" step="any">
+                    </div>
+                    <div class="md:w-2/5">
+                        <label class="text-gray-700">Ölçü vahidi</label>
+                        <input name="notes[]" id="measure"
+                            class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                            type="text" placeholder="litr/ədəd">
+                    </div>
+                    <div class="md:w-2/5">
+                        <label class="text-gray-700">Rəf</label>
+                        <input name="shelfs[]" id="shelf"
+                            class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                            type="text">
+                    </div>
+                    <div class="md:w-2/5">
+                        <label class="text-gray-700" for="category">Kateqoriya</label>
+                        <input list="categories" id="category" name="categories[]"
+                            class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                            type="text" autocomplete="off">
+                    </div>
+                    <div class="md:w-2/5">
+                        <label class="text-gray-700" for="entry_date">Giriş tarixi</label>
+                        <input name="entry_dates[]" data-datetime-local="true"
+                            class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                            type="datetime-local"  value="${formattedDateTime}">
+                    </div>
+                </div>
+            `;
+
+            const mainDiv = document.getElementById('mainDiv');
+
+            for (let i = 0; i < number; i++) {
+                const newSet = document.createElement('div');
+                newSet.className = 'space-y-4';
+                newSet.innerHTML = newElementsHTML;
+                mainDiv.appendChild(newSet);
+            }
+        }
+        
         addNewElements(30)
+        // Set Data List options for products
+        const productDataLists = [...document.querySelectorAll('.product-data-list')];
+        let productOptions = null;
+        
+        async function setProductData(id){
+            let totalHtml = '';
+            const warehouseData = await getWarehouseData(id);
+
+            warehouseData.forEach(data => {
+                totalHtml += `
+                    <option data-code="${data.product_code}" value="${data.product_name + '---' + data.product_code}">
+                        ${data.product_name} ${data.product_code ? '- ' + data.product_code : ''} ${data.category_name} (${data.quantity})
+                    </option>
+                `
+            })
+
+            productDataLists.forEach(dataList => {
+                dataList.innerHTML = totalHtml;
+            })
+            productOptions = [...document.getElementById('products').options];
+        }
+
+        function setAllProductData(){
+            productDataLists.forEach(dataList => {
+                dataList.innerHTML = `
+                    @foreach ($products as $product)
+                        <option data-code="{{ $product->code }}" value="{{ $product->name . '---' . $product->code }}">
+                            {{ $product->name }} {{ $product->code ? '- ' . $product->code : '' }}
+                        </option>
+                    @endforeach
+                `
+            })
+            productOptions = [...document.getElementById('products').options];
+        }
+
+        const debouncedSetProductData = debounce(setProductData, 1500);
+        const debouncedSetAllProductData = debounce(setAllProductData, 1500);
+
+        async function getWarehouseData(id){
+            let result = null;
+            if(id){
+                await fetch(`/get-products/${id}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        result = data
+                    })
+                    .catch(error => console.error('Error fetching products:', error));
+            }
+            return result;
+        }
+        
+        async function setDatalist(){
+            await setProductData(mainWarehouseId);
+            // Set auto code functionality
+            productOptions = [...document.getElementById('products').options];
+            const productInputs = [...document.querySelectorAll('.product-input')];
+            productInputs.forEach(productInput => {
+                productInput.addEventListener('input', function(event){
+                    const selectedProduct = event.target.value;
+                    let foundCode = '';
+                    productOptions.forEach(option => {
+                        if (option.value === selectedProduct) {
+                            foundCode = option.getAttribute('data-code');
+                        }
+                    });
+    
+                    const productCodeInput = event.target.parentNode.nextElementSibling.querySelector('#product_code');
+                    if (productCodeInput) {
+                        productCodeInput.value = foundCode || '';
+                    }
+                })
+            })
+        }
+        
+        setDatalist()
     </script>
 @endsection

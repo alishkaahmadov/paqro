@@ -118,7 +118,8 @@
                 <td>{{ $product->product->name }}</td>
                 <td>{{ $product->entry_total ?? 0 }}</td>
                 <td>{{ $product->exit_total ?? 0 }}</td>
-                <td>{{ $product->quantity }}</td>
+                {{-- <td>{{ $product->quantity }}</td> --}}
+                <td>{{ ($product->entry_total - $product->exit_total) ?? 0 }}</td>
                 <td>{{ $product->subcategory_name }}</td>
             </tr>
             @endforeach

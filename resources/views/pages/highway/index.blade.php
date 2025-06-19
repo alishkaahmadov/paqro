@@ -19,7 +19,15 @@
                     <div class="grid grid-cols-3 mt-4 gap-3 mb-4">
                         <div>
                             <label class="text-gray-700" for="warehouse">Şassi nömrəsi</label>
-                            <input value="{{ $highway_code ? $highway_code : '' }}" name="highway_code" id="highway_code" class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" type="text">
+                            <select id="highway_code" name="highway_code"
+                                class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                                <option selected value="">Şassi nömrəsi seçin</option>
+                                @foreach ($codes as $code)
+                                    <option
+                                        value="{{ $code->code }}">{{ $code->code }}</option>
+                                @endforeach
+                            </select>
+                            {{-- <input value="{{ $highway_code ? $highway_code : '' }}" name="highway_code" id="highway_code" class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" type="text"> --}}
                         </div>
                         <div>
                             <label class="text-gray-700" for="from_warehouse">Anbardan</label>
@@ -93,7 +101,7 @@
                                     <a href="{{ route('highways.show', ['highway' => $highway->id]) }}">Ətraflı</a>
                                 </td>
                                 <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
-                                    <a href="{{ route('highways.changeWarehousePage', ['highway' => $highway->id]) }}">Yerdəyişmə et</a>
+                                    <a href="{{ route('highways.changeWarehousePage', ['highway' => $highway->id]) }}">Düzəliş et</a>
                                 </td>
                                 {{-- <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
                                     {{$highway->product_name}} {{ $highway->product_code ? '- ' . $highway->product_code : '' }}
@@ -124,6 +132,18 @@
             </div>
         </div>
     </div>
+@endsection
+
+@section('script')
+    <script>
+
+    $(document).ready(function() {
+        $('#highway_code').select2();
+        const selectedHighways = @json($highway_codes);
+        $('#highway_code').val(selectedHighways).trigger('change');
+    });
+
+    </script>
 @endsection
 
 @if (session('success'))

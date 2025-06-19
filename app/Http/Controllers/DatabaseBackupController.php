@@ -12,6 +12,7 @@ class DatabaseBackupController extends Controller
 {
     public function backupDatabase()
     {
+        // *** 6 Backup
         set_time_limit(600);
 
         $dbName = env('DB_DATABASE');
@@ -41,6 +42,7 @@ class DatabaseBackupController extends Controller
         ]);
 
         $processDb->setEnv(['PGPASSWORD' => $dbPassword]);
+        $processDb->setTimeout(600);
 
         // Backup the public directory (tar.gz format)
         $processFiles = new Process([
@@ -49,6 +51,8 @@ class DatabaseBackupController extends Controller
             '-C', storage_path('app'),
             'public',
         ]);
+
+        $processFiles->setTimeout(600);
 
         try {
             // Run the backup processes

@@ -78,7 +78,7 @@
                         <label class="text-gray-700" for="quantity">Sayı</label>
                         <input name="quantities[]"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                            type="number">
+                            type="number" step="any">
                     </div>
 
                     <div class="md:w-2/5">
@@ -131,7 +131,7 @@
                 const element = products[i];
                 if(element.value && quantites[i].value){
                     const selectedProductQunatity = allProductsData.find(item => item.id == element.value)?.quantity;
-                    if(selectedProductQunatity < quantites[i].value){
+                    if(parseFloat(selectedProductQunatity) < parseFloat(quantites[i].value)){
                         quantites[i].classList.add('quantity_error');
                         isValid = false;
                         break;
@@ -205,7 +205,7 @@
                         <label class="text-gray-700" for="quantity">Sayı</label>
                         <input name="quantities[]"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                            type="number">
+                            type="number" step="any">
                     </div>
 
                     <div class="md:w-2/5">
@@ -296,7 +296,7 @@
                         <label class="text-gray-700" for="quantity">Sayı</label>
                         <input name="quantities[]"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                            type="number">
+                            type="number" step="any">
                     </div>
 
                     <div class="md:w-2/5">

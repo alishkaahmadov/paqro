@@ -32,7 +32,7 @@ class HighwayController extends Controller
         // code, product_name, quantity, exit_date, pdf
         // $products = Product::all();
         $warehouses = Warehouse::all();
-
+        $codes = Highway::all();
         $query = Highway::query();
 
         // if ($request->product_id) {
@@ -65,6 +65,8 @@ class HighwayController extends Controller
 
             return view('pages.highway.index', [
             'highways' => $highways,
+            'codes' => $codes,
+            'highway_codes' => $request->highway_code ?? null,
             'warehouses' => $warehouses,
             'from_warehouse_id' => $request->from_warehouse_id ?? null,
             'highway_code' => $request->highway_code ?? null,
@@ -100,7 +102,7 @@ class HighwayController extends Controller
                 'products.*' => 'nullable',
 
                 'quantities' => 'required|array|min:1',
-                'quantities.*' => 'nullable|integer',
+                'quantities.*' => 'nullable|numeric',
 
                 'notes' => 'required|array|min:1',
                 'notes.*' => 'nullable|string',
@@ -108,7 +110,7 @@ class HighwayController extends Controller
                 'moto_saats' => 'required|array|min:1',
                 'moto_saats.*' => 'nullable|string',
 
-                'pdfs' => 'required|array|min:1',
+                'pdfs' => 'array|min:1',
                 'pdfs.*' => 'nullable|mimes:pdf|max:51200',
 
                 'dates' => 'required|array|min:1',
@@ -127,7 +129,7 @@ class HighwayController extends Controller
             for ($i = 0; $i < $loopLength; $i++) {
                 if(!($request->products[$i] && $request->quantities[$i] && $request->notes[$i])) continue;
                 $currentProductEntry = $request->products[$i];
-                $currentQuantity = (int)$request->quantities[$i];
+                $currentQuantity = (float)$request->quantities[$i];
                 $currentMeasure = $request->notes[$i];
                 $currentMoto = $request->moto_saats[$i];
                 $currentPdf = $request->pdfs[$i] ?? null;
@@ -245,13 +247,14 @@ class HighwayController extends Controller
         return view('pages.highway.change', [
             'warehouses' => $warehouses,
             'highwayId' => $highway->id,
-            'current_warehouse' => $highway->belong_to_warehouse_id
+            'current_warehouse' => $highway->belong_to_warehouse_id,
+            'code' => $highway->code
         ]);
     }
 
     public function changeWarehouse(Highway $highway, Request $request){
         $oldBelongWarehouse = $highway->belongWarehouse?->name;
-        $highway->update(['belong_to_warehouse_id' => $request->current_warehouse]);
+        $highway->update(['belong_to_warehouse_id' => $request->current_warehouse, 'code' => $request->code]);
         $highway->refresh();
         Log::create([
             'user_id' => auth()->id(),

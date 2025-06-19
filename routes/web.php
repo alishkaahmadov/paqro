@@ -7,6 +7,7 @@ use App\Http\Controllers\DatabaseBackupController;
 use App\Http\Controllers\DnnController;
 use App\Http\Controllers\HighwayController;
 use App\Http\Controllers\ImportExcelController;
+use App\Http\Controllers\LimitController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SubcategoryController;
@@ -251,12 +252,16 @@ Route::group(['middleware' => 'auth'], function(){
         Route::get('import-excel', [ImportExcelController::class, 'create'])->name('import-excel-page');
         Route::post('import-excel', [ImportExcelController::class, 'store'])->name('import-excel');
         Route::post('/backup-database', [DatabaseBackupController::class, 'backupDatabase'])->name('backup.database');
+        Route::get('/limits', [LimitController::class, 'index'])->name('limit.index');
+        Route::get('/limits/{entry}', [LimitController::class, 'edit'])->name('limit.edit');
+        Route::put('/limits/{entry}', [LimitController::class, 'update'])->name('limit.update');
     });
 
 
     Route::get('/get-products/{warehouseId}', [DashboardController::class, 'getProducts']);
 
     Route::get('/export-main-excel', [DashboardController::class, 'exportMainProductsExcel'])->name('export.mainExcel');
+    Route::get('/export-limit-excel', [LimitController::class, 'exportLimitProductsExcel'])->name('export.limitExcel');
     Route::get('/export-entry-excel', [DashboardController::class, 'exportEntryProductsExcel'])->name('export.entryExcel');
     Route::get('/export-exit-excel', [DashboardController::class, 'exportExitProductsExcel'])->name('export.exitExcel');
     Route::get('/export-overall-excel', [DashboardController::class, 'exportOverallProductsExcel'])->name('export.overallExcel');
