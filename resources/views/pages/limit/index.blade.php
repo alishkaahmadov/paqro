@@ -43,6 +43,25 @@
                                 @endforeach
                             </select>
                         </div>
+                        <div>
+                            <label class="text-gray-700" for="except_category">Kateqoriyadan savayı</label>
+                            <select id="except_category" name="except_category_ids[]" multiple
+                                class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                                @foreach ($categories as $category)
+                                    <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-gray-700" for="color">Rəng</label>
+                            <select id="color" name="color"
+                                class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                                <option value="" selected>Rəng seçin</option>
+                                    <option {{ $color && $color == 'red' ? 'selected' : '' }} value="red">Qırmızı</option>
+                                    <option {{ $color && $color == 'yellow' ? 'selected' : '' }} value="yellow">Sarı</option>
+                                    <option {{ $color && $color == 'white' ? 'selected' : '' }} value="white">Ağ</option>
+                            </select>
+                        </div>
                         <div class="self-end">
                             <button type="submit"
                                 class="w-full px-4 py-2 bg-green-500 border-2 border-green-500 text-white rounded-md hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-green-400">Axtar</button>
@@ -177,6 +196,10 @@
             $('#product').select2();
             const selectedProductIds = @json($product_ids);
             $('#product').val(selectedProductIds).trigger('change');
+
+            $('#except_category').select2();
+            const selectedExceptCategoryIds = @json($except_category_ids);
+            $('#except_category').val(selectedExceptCategoryIds).trigger('change');
         });
 
         function printToExcel(event) {

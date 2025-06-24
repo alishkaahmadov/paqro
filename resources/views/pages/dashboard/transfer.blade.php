@@ -70,7 +70,7 @@
                             class="product-input mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                             @isset($products)
                                 @foreach ($products as $product)
-                                    <option value="{{ $product->id }}">{{ $product->name }}</option>
+                                    <option data-measure="{{ $product->measure }}" value="{{ $product->id }}">{{ $product->name }}</option>
                                 @endforeach
                             @endisset
                         </select>
@@ -252,9 +252,10 @@
                                 html = '<option value="" selected></option>';
                                 data.forEach(function(product) {
                                     if(product.quantity){
-                                        html += `<option value="${product.id}">${product.product_name} ${product.product_code ? `- ${product.product_code}` : ''} - ${product.category_name} (${product.quantity})</option>`
+                                        html += `<option data-measure="${product.measure}" value="${product.id}">${product.product_name} ${product.product_code ? `- ${product.product_code}` : ''} - ${product.category_name} (${product.quantity})</option>`
                                         var option = document.createElement('option');
                                         option.value = product.id;
+                                        option.setAttribute('data-measure', product.measure);
                                         option.textContent = `${product.product_name} ${product.product_code ? `- ${product.product_code}` : ''} - ${product.category_name} (${product.quantity})`;
                                         products.appendChild(option);
                                     }
@@ -326,6 +327,13 @@
                 newSet.children[0].children[0].children[1].id = `alishka-${i + addingLoop}`
                 $(`#alishka-${i + addingLoop}`).select2();
             }
+            $('.product-input').on('select2:select', function (e) {
+                const selectedId = e.params.data.id;
+                const optionEl = this.querySelector(`option[value="${selectedId}"]`);
+                const measure = optionEl.getAttribute('data-measure');
+                const productMeasure = e.target.parentNode.nextElementSibling.nextElementSibling.querySelector('input[name="notes[]"]');
+                if (productMeasure) productMeasure.value = measure && measure != "null" ? measure : '';
+            });
         });
 
         document.getElementById('from_warehouse').addEventListener('change', function() {
@@ -341,9 +349,10 @@
                             products.innerHTML = '<option value="" selected></option>';
                             html = '<option value="" selected></option>';
                             data.forEach(function(product) {
-                                html += `<option value="${product.id}">${product.product_name} ${product.product_code ? `- ${product.product_code}` : ''} - ${product.category_name} (${product.quantity})</option>`
+                                html += `<option data-measure="${product.measure}" value="${product.id}">${product.product_name} ${product.product_code ? `- ${product.product_code}` : ''} - ${product.category_name} (${product.quantity})</option>`
                                 var option = document.createElement('option');
                                 option.value = product.id;
+                                option.setAttribute('data-measure', product.measure);
                                 option.textContent = `${product.product_name} ${product.product_code ? `- ${product.product_code}` : ''} - ${product.category_name} (${product.quantity})`;
                                 products.appendChild(option);
                             });
@@ -359,5 +368,14 @@
 
         addNewElements(30);
         setDefaultWarehouse();
+
+        $('.product-input').on('select2:select', function (e) {
+            const selectedId = e.params.data.id;
+            const optionEl = this.querySelector(`option[value="${selectedId}"]`);
+            const measure = optionEl.getAttribute('data-measure');
+            const productMeasure = e.target.parentNode.nextElementSibling.nextElementSibling.querySelector('input[name="notes[]"]');
+            if (productMeasure) productMeasure.value = measure && measure != "null" ? measure : '';
+        });
+
     </script>
 @endsection

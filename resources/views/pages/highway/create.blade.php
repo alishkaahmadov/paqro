@@ -192,7 +192,7 @@
                 const element = products[i];
                 if(element.value && quantites[i].value){
                     const selectedProductQunatity = allProductsData.find(item => item.id == element.value)?.quantity;
-                    if(selectedProductQunatity < quantites[i].value){
+                    if(parseFloat(selectedProductQunatity) < parseFloat(quantites[i].value)){
                         quantites[i].classList.add('quantity_error');
                         isValid = false;
                         break;

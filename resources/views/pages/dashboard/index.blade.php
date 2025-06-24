@@ -203,13 +203,13 @@
                 </table>
                 @if ($totalQuantities > 0)
                     <div class="py-2 px-4 flex justify-end font-bold">
-                        Ümumi giriş sayı: {{ $totalEntryCount }}
+                        Giriş cəm: {{ $totalEntryCount }}
                     </div>
                     <div class="py-2 px-4 flex justify-end font-bold">
-                        Ümumi çıxış sayı: {{ $totalExitCount }}
+                        Çıxış cəm: {{ $totalExitCount }}
                     </div>
                     <div class="py-2 px-4 flex justify-end font-bold">
-                        Ümumi qalıq sayı: {{ $totalQuantities }}
+                        Qalıq cəm: {{ $totalQuantities }}
                     </div>
                 @endif
                 <div class="grid my-2">

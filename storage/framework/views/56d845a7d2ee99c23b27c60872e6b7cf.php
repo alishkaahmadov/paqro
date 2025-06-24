@@ -209,15 +209,15 @@
                 </table>
                 <?php if($totalQuantities > 0): ?>
                     <div class="py-2 px-4 flex justify-end font-bold">
-                        Ümumi giriş sayı: <?php echo e($totalEntryCount); ?>
+                        Giriş cəm: <?php echo e($totalEntryCount); ?>
 
                     </div>
                     <div class="py-2 px-4 flex justify-end font-bold">
-                        Ümumi çıxış sayı: <?php echo e($totalExitCount); ?>
+                        Çıxış cəm: <?php echo e($totalExitCount); ?>
 
                     </div>
                     <div class="py-2 px-4 flex justify-end font-bold">
-                        Ümumi qalıq sayı: <?php echo e($totalQuantities); ?>
+                        Qalıq cəm: <?php echo e($totalQuantities); ?>
 
                     </div>
                 <?php endif; ?>

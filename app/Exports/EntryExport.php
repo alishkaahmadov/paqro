@@ -21,6 +21,7 @@ class EntryExport implements FromArray, WithHeadings
                 'Kod' => $product->product_code,
                 'Məhsul' => $product->product_name,
                 'Sayı' => $product->quantity,
+                'Ölçü vahidi' => $product->measure,
                 'Daxilolma' => $product->from_warehouse ? $product->from_warehouse : ($product->company_name ?? "-"),
                 'Kateqoriya' => $product->subcategory_name,
                 'Giriş tarixi' => $product->entry_date
@@ -34,6 +35,7 @@ class EntryExport implements FromArray, WithHeadings
             'Kod',
             'Məhsul',
             'Sayı',
+            'Ölçü vahidi',
             'Daxilolma',
             'Kateqoriya',
             'Giriş tarixi'

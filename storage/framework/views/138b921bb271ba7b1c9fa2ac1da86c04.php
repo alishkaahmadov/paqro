@@ -81,6 +81,7 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // set default time
         var datetimeInput = document.querySelectorAll('[data-datetime-local="true"]');
         if (datetimeInput.length) {
             var now = new Date().toLocaleString("en-US", {
@@ -98,6 +99,55 @@
             for (let i = 0; i < datetimeInput.length; i++) {
                 datetimeInput[i].value = formattedDateTime;
             }
+        }
+
+        // set time to 00:01 and 23:59 (not current time)
+        const startDate = document.getElementById('start_date');
+        if(startDate){
+            startDate.addEventListener('change', function () {
+                const selected = new Date(this.value);
+                if (!isNaN(selected.getTime())) {
+                    // Set time to 00:01
+                    selected.setHours(0);
+                    selected.setMinutes(1);
+                    selected.setSeconds(0);
+                    selected.setMilliseconds(0);
+    
+                    // Format to 'YYYY-MM-DDTHH:MM'
+                    const year = selected.getFullYear();
+                    const month = String(selected.getMonth() + 1).padStart(2, '0');
+                    const day = String(selected.getDate()).padStart(2, '0');
+                    const hours = String(selected.getHours()).padStart(2, '0');
+                    const minutes = String(selected.getMinutes()).padStart(2, '0');
+    
+                    const formatted = `${year}-${month}-${day}T${hours}:${minutes}`;
+                    startDate.value = formatted;
+                }
+            });
+        }
+
+        const endDate = document.getElementById('end_date');
+        if(endDate){
+            endDate.addEventListener('change', function () {
+                const selected = new Date(this.value);
+                if (!isNaN(selected.getTime())) {
+                    // Set time to 23:59
+                    selected.setHours(23);
+                    selected.setMinutes(59);
+                    selected.setSeconds(0);
+                    selected.setMilliseconds(0);
+    
+                    // Format to 'YYYY-MM-DDTHH:MM'
+                    const year = selected.getFullYear();
+                    const month = String(selected.getMonth() + 1).padStart(2, '0');
+                    const day = String(selected.getDate()).padStart(2, '0');
+                    const hours = String(selected.getHours()).padStart(2, '0');
+                    const minutes = String(selected.getMinutes()).padStart(2, '0');
+    
+                    const formatted = `${year}-${month}-${day}T${hours}:${minutes}`;
+                    endDate.value = formatted;
+                }
+            });
         }
     });
 </script>

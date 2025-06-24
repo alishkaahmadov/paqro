@@ -40,6 +40,24 @@ class LimitController extends Controller
             $query->where('product_entries.subcategory_id', $request->category_id);
         }
 
+        if ($request->except_category_ids && count($request->except_category_ids) > 0) {
+            $query->whereNotIn('product_entries.subcategory_id', $request->except_category_ids);
+        }
+
+        switch ($request->color){
+            case 'red':
+                $query->whereColumn('product_entries.quantity', '<', 'product_entries.limit')->where('product_entries.is_ordered', false);
+                break;
+            case 'yellow':
+                $query->where('product_entries.is_ordered', true);
+                break;
+            case 'white':
+                $query->whereColumn('product_entries.quantity', '>', 'product_entries.limit')->where('product_entries.is_ordered', false);
+                break;
+            default:
+                break;
+        }
+
         $groupedEntries = $query->select([
                 'product_entries.id',
                 'product_entries.product_id',
@@ -69,6 +87,8 @@ class LimitController extends Controller
             'warehouse_id' => $request->warehouse_id ?? null,
             'product_ids' => $request->product_ids ?? null,
             'categories' => $categories,
+            'except_category_ids' => $request->except_category_ids ?? null,
+            'color' => $request->color ?? null,
             'category_id' => $request->category_id ?? null,
         ]);
     }
@@ -157,6 +177,25 @@ class LimitController extends Controller
             $query->where('product_entries.subcategory_id', $request->category_id);
         }
 
+        if ($request->except_category_ids && count($request->except_category_ids) > 0) {
+            $query->whereNotIn('product_entries.subcategory_id', $request->except_category_ids);
+        }
+
+        switch ($request->color){
+            case 'red':
+                $query->whereColumn('product_entries.quantity', '<', 'product_entries.limit')->where('product_entries.is_ordered', false);
+                break;
+            case 'yellow':
+                $query->where('product_entries.is_ordered', true);
+                break;
+            case 'white':
+                $query->whereColumn('product_entries.quantity', '>', 'product_entries.limit')->where('product_entries.is_ordered', false);
+                break;
+            default:
+                break;
+        }
+
+
         $products = $query->select([
                 'product_entries.measure',
                 'product_entries.limit',
@@ -175,8 +214,7 @@ class LimitController extends Controller
             ->orderByRaw('product_entries.quantity < product_entries.limit AND product_entries.is_ordered = false DESC')
             ->orderBy('is_ordered', 'desc')
             ->orderBy('p.name')
-            ->paginate(50)
-            ->appends($request->query());
+            ->get();
 
         return Excel::download(new LimitExport($products), 'anbar_limit.xlsx');
     }

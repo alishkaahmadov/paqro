@@ -807,7 +807,8 @@ class DashboardController extends Controller
             "p.name as product_name",
             "s.name as category_name",
             "p.code as product_code",
-            "product_entries.quantity"
+            "product_entries.quantity",
+            "product_entries.measure",
         )
             ->leftJoin('products as p', 'p.id', '=', 'product_entries.product_id')
             ->leftJoin('subcategories as s', 's.id', '=', 'product_entries.subcategory_id')
@@ -1042,7 +1043,7 @@ class DashboardController extends Controller
                 $productEntry = ProductEntry::where(['warehouse_id' => $warehouseId, 'product_id' => $productId, 'subcategory_id' => $categoryId])->first();
                 if ($productEntry) {
                     // increase
-                    $productEntry->update(['quantity' => $productEntry->quantity + $request->quantities[$i]]);
+                    $productEntry->update(['quantity' => $productEntry->quantity + $request->quantities[$i], 'is_ordered' => false]);
                 } else {
                     // create
                     ProductEntry::create([
@@ -1566,6 +1567,15 @@ class DashboardController extends Controller
                 'p.code as product_code',
                 DB::raw('COALESCE(entry.entry_total, 0) as entry_total'),
                 DB::raw('COALESCE(exit.exit_total, 0) as exit_total'),
+                $startDate ? DB::raw("(
+                    SELECT SUM(CASE WHEN wh2.to_warehouse_id = product_entries.warehouse_id THEN wh2.quantity ELSE -wh2.quantity END)
+                    FROM warehouse_logs wh2
+                    WHERE 
+                        wh2.product_id = product_entries.product_id
+                        AND wh2.subcategory_id = product_entries.subcategory_id
+                        AND (wh2.to_warehouse_id = product_entries.warehouse_id OR wh2.from_warehouse_id = product_entries.warehouse_id)
+                        AND wh2.entry_date <= '{$startDate}'
+                ) as total_before_start_date") : DB::raw('0 as total_before_start_date')
             ])
             ->leftJoinSub($entrySub, 'entry', function ($join) {
                 $join->on('entry.product_id', '=', 'product_entries.product_id')
@@ -1634,6 +1644,7 @@ class DashboardController extends Controller
                 "p.code as product_code",
                 "sc.name as subcategory_name",
                 "warehouse_logs.quantity",
+                "warehouse_logs.measure",
                 "warehouse_logs.entry_date as entry_date"
             )
             ->leftJoin('products as p', 'p.id', '=', 'warehouse_logs.product_id')
@@ -1688,6 +1699,7 @@ class DashboardController extends Controller
                 "p.name as product_name",
                 "sc.name as subcategory_name",
                 "warehouse_logs.quantity",
+                "warehouse_logs.measure",
                 "h.code as highway_code",
                 "warehouse_logs.entry_date as exit_date"
             )
@@ -1767,6 +1779,7 @@ class DashboardController extends Controller
                 "c.name as company_name",
                 "sc.name as subcategory_name",
                 "warehouse_logs.quantity",
+                "warehouse_logs.measure",
                 "warehouse_logs.to_warehouse_id",
                 "warehouse_logs.entry_date as entry_date"
             )
