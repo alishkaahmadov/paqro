@@ -563,10 +563,11 @@ class DashboardController extends Controller
             $currentProduct = $request->product;
             $currentQuantity = (float)$request->quantity;
             $currentEntryDate = $request->transfer_date;
-            $fromWarehouse = ProductEntry::where(['warehouse_id' => $request->from_warehouse, 'product_id' => $currentProduct])->first();
+
+            $fromWarehouse = ProductEntry::where(['warehouse_id' => $request->from_warehouse, 'product_id' => $currentProduct, 'subcategory_id' => $exit->subcategory_id])->first();
             if ($fromWarehouse->quantity + $exit->quantity >= $currentQuantity) {
                 $fromWarehouse->update(['quantity' => $fromWarehouse->quantity - $currentQuantity]);
-                $toWarehouse = ProductEntry::where(['warehouse_id' => $request->to_warehouse, 'product_id' => $currentProduct])->first();
+                $toWarehouse = ProductEntry::where(['warehouse_id' => $request->to_warehouse, 'product_id' => $currentProduct, 'subcategory_id' => $exit->subcategory_id])->first();
                 if ($toWarehouse) {
                     // increase
                     $toWarehouse->update(['quantity' => $toWarehouse->quantity + $currentQuantity]);
@@ -813,7 +814,7 @@ class DashboardController extends Controller
             ->leftJoin('products as p', 'p.id', '=', 'product_entries.product_id')
             ->leftJoin('subcategories as s', 's.id', '=', 'product_entries.subcategory_id')
             ->where('product_entries.warehouse_id', $warehouseId)
-            ->where('product_entries.quantity', '>', 0)
+            // ->where('product_entries.quantity', '>', 0)
             ->get();
 
         return response()->json($products);

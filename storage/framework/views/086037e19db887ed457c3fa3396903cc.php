@@ -67,7 +67,7 @@
     function setDefaultWarehouse(){
         const mainWarehouseId = <?php echo e($exit->from_warehouse_id); ?>
 
-
+        
         if(mainWarehouseId){
             fetch(`/get-products/${mainWarehouseId}`)
                     .then(response => response.json())
@@ -76,12 +76,12 @@
                         productsSelect.forEach(products => {
                             products.innerHTML = '';
                             data.forEach(function(product) {
-                                if(product.quantity){
+                                // if(product.quantity){
                                     var option = document.createElement('option');
                                     option.value = product.product_id;
                                     option.textContent = `${product.product_name} ${product.product_code ? `- ${product.product_code}` : ''} - ${product.category_name} (${product.quantity})`;
                                     products.appendChild(option);
-                                }
+                                // }
                             });
                             let selectedProductValue = <?php echo e($exit->product_id); ?>;
                             products.value = selectedProductValue;
