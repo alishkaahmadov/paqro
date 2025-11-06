@@ -257,7 +257,27 @@
             toastr.error("<?php echo e(session('error')); ?>", "Xəta!");
         <?php endif; ?>
         $(document).ready(function() {
-            $('#product').select2();
+            $('#product').select2({
+                placeholder: "Axtar...",
+                minimumInputLength: 2,
+                ajax: {
+                    url: function () {
+                        return `/get-products-by-query/${document.getElementById('warehouse').value}`;
+                    },
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            q: params.term
+                        };
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data
+                        };
+                    }
+                }
+            });
             const selectedProductIds = <?php echo json_encode($product_ids, 15, 512) ?>;
             $('#product').val(selectedProductIds).trigger('change');
 

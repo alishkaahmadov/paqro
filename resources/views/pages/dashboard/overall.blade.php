@@ -285,7 +285,27 @@
 @section('script')
     <script>
         $(document).ready(function() {
-            $('#product').select2();
+            $('#product').select2({
+                placeholder: "Axtar...",
+                minimumInputLength: 2,
+                ajax: {
+                    url: function () {
+                        return `/get-products-by-query/${document.getElementById('warehouse').value}`;
+                    },
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            q: params.term
+                        };
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data
+                        };
+                    }
+                }
+            });
             const selectedProductIds = @json($product_ids);
             $('#product').val(selectedProductIds).trigger('change');
         });

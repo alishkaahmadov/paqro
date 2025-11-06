@@ -91,6 +91,18 @@
                                             </button>
                                         </form>
                                     @endif
+                                    @if (Auth::user()->is_admin)
+                                        @if ($user->email != "admin@gmail.com")
+                                            <form action="{{ route('users.destroy', $user->id) }}" method="POST" class="inline-block">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" onclick="return confirm('Silmək istədiyinizdən əminsiniz?')" 
+                                                        class="text-red-500 hover:text-red-700">
+                                                    / Sil
+                                                </button>
+                                            </form>
+                                        @endif
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach

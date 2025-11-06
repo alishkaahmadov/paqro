@@ -124,6 +124,11 @@
                         @endforeach
                     </tbody>
                 </table>
+                <div class="mt-2 flex w-1/3 justify-self-end">
+                    <button class="mr-2 w-full px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-md shadow-lg hover:from-blue-600 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500" type="button" onclick="printToExcel(event)">
+                        Çap et (Excel)
+                    </button>
+                </div>
                 <div class="flex items-center justify-center my-2">
                     @include('components.pagination', ['paginator' => $highways])
                 </div>
@@ -132,25 +137,32 @@
     </div>
 @endsection
 
-@if (session('success'))
-    @section('script')
-        <script>
+@section('script')
+    <script>
+        @if (session('success'))
             toastr.options = {
                 "progressBar": true,
                 "closeButton": true
             }
             toastr.success("{{session('success')}}", "Uğurlu!");
-        </script>
-    @endsection
-@endif
-@if (session('error'))
-    @section('script')
-        <script>
+        @endif
+        @if (session('error'))
             toastr.options = {
                 "progressBar": true,
                 "closeButton": true
             }
             toastr.error("{{session('error')}}", "Xəta!");
-        </script>
-    @endsection
-@endif
+        @endif
+
+        function printToExcel(event) {
+            event.preventDefault();
+            const url = window.location.href; 
+            const highwayId = url.split("/").pop();
+            const params = new URLSearchParams(window.location.search);
+            const baseUrl = `{{ route('export.highwayExcel', ':id') }}`.replace(':id', highwayId);
+            const actionUrl = `${baseUrl}?${params.toString()}`;;
+            window.location.href = actionUrl;
+        }
+    </script>
+@endsection
+

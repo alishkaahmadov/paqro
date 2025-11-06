@@ -107,6 +107,10 @@
                             </th>
                             <th
                                 class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                İllik təlabat
+                            </th>
+                            <th
+                                class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
                                 Təyinetmə
                             </th>
                         </tr>
@@ -114,7 +118,7 @@
 
                     <tbody class="bg-white">
                         @foreach ($productEntries as $product)
-                            <tr class="{{ $product->is_ordered ? 'bg-yellow-400' : ($product->limit > $product->quantity ? 'bg-red-400' : '') }}">
+                            <tr class="{{ $product->is_ordered ? 'bg-yellow-400' : ($product->limit >= $product->quantity && $product->limit != 0 ? 'bg-red-400' : '') }}">
                                 <td
                                     class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
                                     {{ ($productEntries->currentPage() - 1) * 50 + 1 + $loop->index }}
@@ -146,6 +150,10 @@
                                 <td
                                     class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
                                     {{ $product->limit ?? 0 }}
+                                </td>
+                                <td
+                                    class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
+                                    {{ $product->demand ?? 0 }}
                                 </td>
                                 <td
                                     class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">

@@ -5,7 +5,7 @@
     <h3 class="text-gray-700 text-3xl font-medium">Anbara çıxışın düzəlişi</h3>
 
     <div class="flex flex-col mt-8">
-        <form action="<?php echo e(route('dashboard.exits.update', $exit->id)); ?>" method="post">
+        <form action="<?php echo e(route('dashboard.exits.update', $exit->id)); ?>" method="post" id="myForm" onsubmit="submitForm(event)">
             <?php echo csrf_field(); ?>
             <?php echo method_field('PUT'); ?>
             <div id="mainDiv" class="grid grid-cols-1 mt-4">
@@ -64,6 +64,20 @@
 
 <?php $__env->startSection('script'); ?>
 <script>
+    function submitForm(event) {
+        event.preventDefault();
+        const myForm = document.getElementById('myForm');
+        const mySelect = document.querySelector('.product-input');
+        const selectedOption = mySelect.options[mySelect.selectedIndex];
+        const categoryName = selectedOption.dataset.categoryName;
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'category_name';
+        hiddenInput.value = categoryName;
+
+        myForm.appendChild(hiddenInput);
+        myForm.submit();
+    }
     function setDefaultWarehouse(){
         const mainWarehouseId = <?php echo e($exit->from_warehouse_id); ?>
 
@@ -79,6 +93,7 @@
                                 // if(product.quantity){
                                     var option = document.createElement('option');
                                     option.value = product.product_id;
+                                    option.dataset.categoryName = product.category_name;
                                     option.textContent = `${product.product_name} ${product.product_code ? `- ${product.product_code}` : ''} - ${product.category_name} (${product.quantity})`;
                                     products.appendChild(option);
                                 // }
@@ -112,6 +127,7 @@
                             // html += `<option value="${product.product_id}">${product.product_name} ${product.product_code ? `- ${product.product_code}` : ''} - ${product.category_name} (${product.quantity})</option>`
                             var option = document.createElement('option');
                             option.value = product.product_id;
+                            option.dataset.categoryName = product.category_name;
                             option.textContent = `${product.product_name} ${product.product_code ? `- ${product.product_code}` : ''} - ${product.category_name} (${product.quantity})`;
                             products.appendChild(option);
                         });

@@ -17,6 +17,14 @@
             @enderror
         </div>
         <div class="mb-4">
+            <label for="demand" class="block text-sm font-medium text-gray-700">İllik təlabat</label>
+            <input type="text" id="demand" name="demand" value="{{ old('demand', $demand) }}"
+                   class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+            @error('demand')
+                <span class="text-red-500 text-sm">{{ $message }}</span>
+            @enderror
+        </div>
+        <div class="mb-4">
             <label for="is_ordered" class="block text-sm font-medium text-gray-700">Sifariş olunub?</label>
             <input type="checkbox" id="is_ordered" name="is_ordered" value="true" {{ old('is_ordered', $is_ordered) ? 'checked' : '' }}>
         </div>

@@ -20,7 +20,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::orderBy('id', 'desc')->paginate(10);
+        $users = User::where('is_deleted', false)->orderBy('id', 'desc')->paginate(10);
         return view('pages.user.index', ['users' => $users]);
     }
 
@@ -108,5 +108,11 @@ class UserController extends Controller
         $user->is_active = false;
         $user->save();
         return redirect()->route('users.index')->with('success', 'Uğurla deaktiv edildi.');
+    }
+    public function destroy(User $user)
+    {
+        $user->is_deleted = true;
+        $user->save();
+        return redirect()->route('users.index')->with('success', 'Uğurla silindi.');
     }
 }

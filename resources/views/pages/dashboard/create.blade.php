@@ -34,6 +34,7 @@
                 <div class="flex justify-end mt-2">
                     <button id="identifyCategory" class="px-4 py-2 bg-indigo-500 text-white rounded-md mr-2">Kateqoriyanı eyniləşdir</button>
                     <button id="identifyMeasure" class="px-4 py-2 bg-indigo-500 text-white rounded-md mr-2">Ölçü vahidini eyniləşdir</button>
+                    <button id="identifyDate" class="px-4 py-2 bg-indigo-500 text-white rounded-md mr-2">Tarixi eyniləşdir</button>
                 </div>
                 <div class="relative flex justify-between flex-col md:flex-row mt-2 pt-8">
                     <button id="addMore"
@@ -94,7 +95,7 @@
                     </div>
                     <div class="md:w-2/5">
                         <label class="text-gray-700" for="entry_date">Giriş tarixi</label>
-                        <input name="entry_dates[]" data-datetime-local="true"
+                        <input name="entry_dates[]" id="entry_date" data-datetime-local="true"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                             type="datetime-local">
                     </div>
@@ -159,6 +160,18 @@
                         item.value = '';
                     });
                 this.innerHTML = "Kateqoriyanı eyniləşdir";
+            }
+        })
+
+        const identifyDate = document.getElementById('identifyDate');
+        identifyDate.addEventListener('click', function(event){
+            event.preventDefault();
+            const mainEntryDate = document.getElementById('entry_date');
+            if(mainEntryDate.value){
+                const allDates = [...document.querySelectorAll('input[name="entry_dates[]"]')];
+                allDates.forEach(item => {
+                    item.value = mainEntryDate.value;
+                });
             }
         })
 

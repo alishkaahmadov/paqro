@@ -19,9 +19,13 @@
                 </div>
                 <div>
                     <label class="text-gray-700" for="code">Şassi nömrəsi</label>
-                    <input name="code"
+                    <input name="code" id="highway_code"
                         class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                         type="text">
+                </div>
+                <span id="showModal" class="text-blue-500 cursor-pointer hidden" onclick="document.getElementById('myModal').classList.remove('hidden')">Göstər</span>
+                <div class="flex justify-end mt-2">
+                    <button id="identifyDate" class="px-4 py-2 bg-indigo-500 text-white rounded-md mr-2">Tarixi eyniləşdir</button>
                 </div>
                 <div class="relative flex justify-between flex-col md:flex-row mt-2 pt-8">
                     <button id="addMore"
@@ -75,7 +79,7 @@
 
                     <div class="md:w-2/5">
                         <label class="text-gray-700" for="date">Tarix</label>
-                        <input name="dates[]" data-datetime-local="true"
+                        <input name="dates[]" id="entry_date" data-datetime-local="true"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                             type="datetime-local">
                     </div>
@@ -88,6 +92,47 @@
             </div>
         </form>
     </div>
+
+    <div id="myModal" class="fixed inset-0 bg-gray-800 bg-opacity-50 hidden flex items-center justify-center">
+        <!-- Modal Box -->
+        <div class="bg-white rounded-2xl shadow-lg max-h-[80vh] flex flex-col min-w-[800px] max-w-lg">
+          <!-- Modal Header -->
+          <div class="flex justify-between items-center border-b px-4 py-2">
+            <h2 class="text-lg font-semibold">Məhsulun digər şassi məlumatları</h2>
+            <button 
+              class="text-gray-500 hover:text-gray-700"
+              onclick="document.getElementById('myModal').classList.add('hidden')"
+            >
+              ✕
+            </button>
+          </div>
+      
+          <!-- Modal Content -->
+          <div class="p-4 overflow-y-auto flex-1">
+            <table class="w-full border border-gray-200 text-sm text-left">
+              <thead class="bg-gray-100">
+                <tr>
+                  <th class="px-3 py-2 border">Şassi nömrəsi</th>
+                  <th class="px-3 py-2 border">Sayı</th>
+                  <th class="px-3 py-2 border">Tarixi</th>
+                </tr>
+              </thead>
+              <tbody id="highway-data">
+              </tbody>
+            </table>
+          </div>
+      
+          <!-- Modal Footer -->
+          <div class="flex justify-end border-t px-4 py-2">
+            <button 
+              class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400"
+              onclick="document.getElementById('myModal').classList.add('hidden')"
+            >
+              Bağla
+            </button>
+          </div>
+        </div>
+      </div>
 
     @if ($errors->any())
         <div class="alert alert-danger">
@@ -106,6 +151,18 @@
         let addingLoop = 0;
         let allProductsData = [];
         $('#products').select2();
+
+        const identifyDate = document.getElementById('identifyDate');
+        identifyDate.addEventListener('click', function(event){
+            event.preventDefault();
+            const mainEntryDate = document.getElementById('entry_date');
+            if(mainEntryDate.value){
+                const allDates = [...document.querySelectorAll('input[name="dates[]"]')];
+                allDates.forEach(item => {
+                    item.value = mainEntryDate.value;
+                });
+            }
+        })
 
         function addNewElements(number = 30) {
             var now = new Date().toLocaleString("en-US", {
@@ -309,5 +366,43 @@
             }
         });
         addNewElements(30);
+
+        $('.product-input').on('select2:select', async function (e) {
+            const highwayCode = document.getElementById('highway_code').value;
+            if(highwayCode){
+                const selectedId = e.params.data.id;
+                const optionEl = this.querySelector(`option[value="${selectedId}"]`);
+                const currentProductEntryId = optionEl.value;
+    
+                const data = await getProductHighwayData(currentProductEntryId, highwayCode);
+                if(data.length){
+                    document.getElementById('showModal').classList.remove('hidden')
+                    const highwayTbody = document.getElementById('highway-data');
+                    let tableData = '';
+                    data.forEach(e => {
+                        tableData += `
+                            <tr>
+                                <td class="px-3 py-2 border">${e.highway_code}</td>
+                                <td class="px-3 py-2 border">${e.quantity}</td>
+                                <td class="px-3 py-2 border">${e.entry_date}</td>
+                            </tr>
+                        `;
+                    })
+                    highwayTbody.innerHTML = tableData;
+                }else{
+                    document.getElementById('showModal').classList.add('hidden')
+                }
+            }
+        });
+
+        async function getProductHighwayData(id, highwayCode){
+            return await fetch(`/get-product-highway-data/${id}/${highwayCode}`)
+                .then(response => response.json())
+                .then(data => {
+                    return data
+                })
+                .catch(error => console.error('Error fetching products:', error));
+        }
+        
     </script>
 @endsection

@@ -208,14 +208,16 @@
                                             class="text-blue-500 hover:text-blue-700 mr-2">
                                             Düzəliş et
                                         </a>
-                                        <form action="{{ route('dashboard.exits.delete', $product->id) }}" method="POST" class="inline-block">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" onclick="return confirm('Silmək istədiyinizdən əminsiniz?')" 
-                                                    class="text-red-500 hover:text-red-700">
-                                                Sil
-                                            </button>
-                                        </form>
+                                        @if (!isset($product->highway_code))
+                                            <form action="{{ route('dashboard.exits.delete', $product->id) }}" method="POST" class="inline-block">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" onclick="return confirm('Silmək istədiyinizdən əminsiniz?')" 
+                                                        class="text-red-500 hover:text-red-700">
+                                                    Sil
+                                                </button>
+                                            </form>
+                                        @endif
                                     </td>
                                 @endif
                             </tr>
@@ -252,7 +254,27 @@
 @section('script')
     <script>
         $(document).ready(function() {
-            $('#product').select2();
+            $('#product').select2({
+                placeholder: "Axtar...",
+                minimumInputLength: 2,
+                ajax: {
+                    url: function () {
+                        return `/get-products-by-query/${document.getElementById('warehouse').value}`;
+                    },
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            q: params.term
+                        };
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data
+                        };
+                    }
+                }
+            });
             const selectedProductIds = @json($product_ids);
             $('#product').val(selectedProductIds).trigger('change');
         });

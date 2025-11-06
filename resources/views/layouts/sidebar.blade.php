@@ -30,7 +30,7 @@
             </svg>
             <span class="mx-3">Əsas səhifə</span>
         </a>
-        @if (Auth::user()->is_admin)
+        {{-- @if (Auth::user()->is_admin) --}}
             <a class="flex items-center px-6 py-2 mt-4 text-gray-100 bg-opacity-25 {{ Route::current()->uri() == 'warehouses' ? 'bg-gray-700' : '' }}"
                 href="/warehouses">
                 <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
@@ -41,8 +41,8 @@
 
                 <span class="mx-3">Anbarlar</span>
             </a>
-        @endif
-        @if (Auth::user()->is_admin)
+        {{-- @endif --}}
+        {{-- @if (Auth::user()->is_admin) --}}
             <a class="flex items-center px-6 py-2 mt-4 text-gray-100 bg-opacity-25 {{ Route::current()->uri() == 'users' ? 'bg-gray-700' : '' }}"
                 href="/users">
                 <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
@@ -53,7 +53,7 @@
 
                 <span class="mx-3">İstifadəçilər</span>
             </a>
-        @endif
+        {{-- @endif --}}
         @if (Auth::user()->is_admin)
             <a class="flex items-center px-6 py-2 mt-4 text-gray-100 bg-opacity-25 {{ Route::current()->uri() == 'logs' ? 'bg-gray-700' : '' }}"
                 href="/logs">
@@ -66,7 +66,7 @@
                 <span class="mx-3">Loglar</span>
             </a>
         @endif
-        @if (Auth::user()->is_admin)
+        {{-- @if (Auth::user()->is_admin) --}}
             <a class="flex items-center px-6 py-2 mt-4 text-gray-100 bg-opacity-25 {{ Route::current()->uri() == 'products' ? 'bg-gray-700' : '' }}"
                 href="/products">
                 <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
@@ -77,7 +77,7 @@
 
                 <span class="mx-3">Məhsullar</span>
             </a>
-        @endif
+        {{-- @endif --}}
         {{-- <a class="flex items-center px-6 py-2 mt-4 text-gray-100 bg-opacity-25 {{ Route::current()->uri() == 'warehouses' ? 'bg-gray-700' : '' }}"
             href="/warehouses">
             <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
@@ -144,18 +144,28 @@
             </svg>
             <span class="mx-3">Visual Cədvəl</span>
         </a>
+        <a class="flex items-center px-6 py-2 mt-4 text-gray-100 bg-opacity-25 {{ Route::current()->uri() == 'limits' ? 'bg-gray-700' : '' }}"
+            href="/limits">
+            <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="3" y1="9" x2="21" y2="9"></line>
+                <line x1="3" y1="15" x2="21" y2="15"></line>
+                <line x1="9" y1="3" x2="9" y2="21"></line>
+                <line x1="15" y1="3" x2="15" y2="21"></line>
+            </svg>
+            <span class="mx-3">Limitlər</span>
+        </a>
         @if (Auth::user()->is_admin)
-            <a class="flex items-center px-6 py-2 mt-4 text-gray-100 bg-opacity-25 {{ Route::current()->uri() == 'limits' ? 'bg-gray-700' : '' }}"
-                href="/limits">
+            <a class="flex items-center px-6 py-2 mt-4 text-gray-100 bg-opacity-25 {{ Route::current()->uri() == 'product-categories' ? 'bg-gray-700' : '' }}"
+                href="/product-categories">
                 <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                    <line x1="3" y1="9" x2="21" y2="9"></line>
-                    <line x1="3" y1="15" x2="21" y2="15"></line>
-                    <line x1="9" y1="3" x2="9" y2="21"></line>
-                    <line x1="15" y1="3" x2="15" y2="21"></line>
+                    <path d="M3 9.5L12 4l9 5.5v9.5a2 2 0 0 1-2 2h-14a2 2 0 0 1-2-2v-9.5z"></path>
+                    <path d="M9 22v-6h6v6"></path>
                 </svg>
-                <span class="mx-3">Limitlər</span>
+
+                <span class="mx-3">Kateqoriyanı dəyiş</span>
             </a>
             <a class="flex items-center px-6 py-2 mt-4 text-gray-100 bg-opacity-25 {{ Route::current()->uri() == 'import-excel' ? 'bg-gray-700' : '' }}"
                 href="/import-excel">

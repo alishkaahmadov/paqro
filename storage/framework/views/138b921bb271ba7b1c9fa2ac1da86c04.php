@@ -50,6 +50,9 @@
         .quantity_error{
             border: 2px solid red !important;
         }
+        .note_error{
+            border: 2px solid red !important;
+        }
     </style>
 </head>
 

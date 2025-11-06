@@ -14,6 +14,8 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Throwable;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\HighwayExport;
 
 class HighwayController extends Controller
 {
@@ -318,6 +320,55 @@ class HighwayController extends Controller
             }
         }
         return redirect()->route('highways.index')->with('success', 'Uğurlu oldu.');
+    }
+
+    public function exportHighwayExcel(Request $request, $highwayId)
+    {
+        $startDate = $request->start_date ?? null;
+        $endDate = $request->end_date ?? null;
+        if($startDate && !$endDate){
+            $currentStartDate = Carbon::parse($startDate);
+            $startDate = $currentStartDate->startOfDay()->addMinute()->toDateTimeString();
+            $endDate = $currentStartDate->endOfDay()->subMinute()->toDateTimeString();
+        }
+
+        $query = HighwayProduct::query();
+
+        if ($request->product_id) {
+            $query->where('pe.product_id', $request->product_id);
+        }
+
+        if ($request->category_id) {
+            $query->where('pe.subcategory_id', $request->category_id);
+        }
+
+        if ($startDate && $endDate) {
+            $query->whereBetween('highway_products.entry_date', [$startDate, $endDate]);
+        }
+
+        $highways = $query->select(
+            "highway_products.id as id",
+            "h.code as code",
+            "p.name as product_name",
+            "p.code as product_code",
+            "c.name as category_name",
+            "w.name as from_warehouse",
+            "highway_products.quantity",
+            "highway_products.measure",
+            "highway_products.moto_saat",
+            "highway_products.entry_date",
+            "highway_products.pdf_file"
+        )
+            ->leftJoin('product_entries as pe', 'pe.id', '=', 'highway_products.product_entry_id')
+            ->leftJoin('products as p', 'p.id', '=', 'pe.product_id')
+            ->leftJoin('highways as h', 'h.id', '=', 'highway_products.highway_id')
+            ->leftJoin('warehouses as w', 'w.id', '=', 'highway_products.from_warehouse_id')
+            ->leftJoin('subcategories as c', 'c.id', '=', 'pe.subcategory_id')
+            ->where('highway_products.highway_id', $highwayId)
+            ->orderBy('highway_products.id', 'desc')
+            ->get();
+
+        return Excel::download(new HighwayExport($highways), 'sassi.xlsx');
     }
 
     /**

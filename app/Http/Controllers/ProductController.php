@@ -12,10 +12,23 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function __construct()
     {
-        $products = Product::orderBy('id', 'desc')->paginate(10);
-        return view('pages.product.index', ['products' => $products]);
+        $this->middleware('isAdmin')->only(['create', 'edit', 'update', 'destroy']);
+    }
+    public function index(Request $request)
+    {
+        $products = Product::all();
+        $query = Product::query();
+        if ($request->product_ids && count($request->product_ids) > 0) {
+            $query->whereIn('products.id', $request->product_ids);
+        }
+        $productsList = $query->orderBy('id', 'desc')->paginate(10);
+        return view('pages.product.index', [
+            'productsList' => $productsList,
+            'products' => $products,
+            'product_ids' => $request->product_ids ?? null,
+        ]);
     }
 
     /**
@@ -79,7 +92,7 @@ class ProductController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'required|string|max:255'
+            'code' => 'nullable|max:255'
         ]);
 
         $warehouse = Product::findOrFail($id);

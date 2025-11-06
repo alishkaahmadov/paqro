@@ -50,6 +50,7 @@
 
                 <div class="flex justify-end mt-2">
                     <button id="identifyMeasure" class="px-4 py-2 bg-indigo-500 text-white rounded-md mr-2">Ölçü vahidini eyniləşdir</button>
+                    <button id="identifyDate" class="px-4 py-2 bg-indigo-500 text-white rounded-md mr-2">Tarixi eyniləşdir</button>
                 </div>
                 
                 <div class="relative flex justify-between flex-col md:flex-row mt-2 pt-8">
@@ -90,7 +91,7 @@
     
                     <div class="md:w-2/5">
                         <label class="text-gray-700" for="transfer_date">Transfer tarixi</label>
-                        <input name="transfer_dates[]" data-datetime-local="true"
+                        <input name="transfer_dates[]" id="transfer_date" data-datetime-local="true"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                             type="datetime-local">
                     </div>
@@ -126,6 +127,7 @@
 
             const products = [...document.querySelectorAll('select[name="products[]"]')]
             const quantites = [...document.querySelectorAll('input[name="quantities[]"]')]
+            const notes = [...document.querySelectorAll('input[name="notes[]"]')]
             let isValid = true;
             for (let i = 0; i < products.length; i++) {
                 const element = products[i];
@@ -138,6 +140,12 @@
                     }else{
                         if(quantites[i].classList.contains('quantity_error')) quantites[i].classList.remove('quantity_error');
                     }
+                }
+                if(!notes[i].value && element.value ){
+                    notes[i].classList.add('note_error');
+                    isValid = false;
+                }else{
+                    if(notes[i].classList.contains('note_error')) notes[i].classList.remove('note_error');
                 }
             }
             if(isValid) document.getElementById('myForm').submit();
@@ -173,6 +181,18 @@
                         item.value = '';
                     });
                 this.innerHTML = "Ölçü vahidini eyniləşdir";
+            }
+        })
+
+        const identifyDate = document.getElementById('identifyDate');
+        identifyDate.addEventListener('click', function(event){
+            event.preventDefault();
+            const mainTransferDate = document.getElementById('transfer_date');
+            if(mainTransferDate.value){
+                const allDates = [...document.querySelectorAll('input[name="transfer_dates[]"]')];
+                allDates.forEach(item => {
+                    item.value = mainTransferDate.value;
+                });
             }
         })
 

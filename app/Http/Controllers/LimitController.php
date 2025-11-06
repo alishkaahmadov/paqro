@@ -63,6 +63,7 @@ class LimitController extends Controller
                 'product_entries.product_id',
                 'product_entries.measure',
                 'product_entries.limit',
+                'product_entries.demand',
                 'product_entries.is_ordered',
                 'product_entries.subcategory_id',
                 'product_entries.warehouse_id',
@@ -74,7 +75,7 @@ class LimitController extends Controller
             ->when($warehouseId !== "all", function($query) use ($warehouseId){
                 $query->where('product_entries.warehouse_id', $warehouseId);
             })
-            ->orderByRaw('product_entries.quantity < product_entries.limit AND product_entries.is_ordered = false DESC')
+            ->orderByRaw('product_entries.limit != 0 AND product_entries.quantity <= product_entries.limit AND product_entries.is_ordered = false DESC')
             ->orderBy('is_ordered', 'desc')
             ->orderBy('p.name')
             ->paginate(50)
@@ -125,6 +126,7 @@ class LimitController extends Controller
         return view('pages.limit.edit', [
             'id' => $entry->id,
             'limit' => $entry->limit,
+            'demand' => $entry->demand,
             'is_ordered' => $entry->is_ordered ? true : false
         ]);
     }
@@ -143,6 +145,7 @@ class LimitController extends Controller
         }
         $entry->update([
             'limit' => $request->limit,
+            'demand' => $request->demand,
             'is_ordered' => $request->is_ordered ? true : false
         ]);
         return redirect()->route('limit.index', $params)
@@ -199,6 +202,8 @@ class LimitController extends Controller
         $products = $query->select([
                 'product_entries.measure',
                 'product_entries.limit',
+                'product_entries.demand',
+                'product_entries.is_ordered',
                 'w.name as warehouse_name',
                 'product_entries.quantity',
                 'p.name as product_name', 
@@ -211,7 +216,7 @@ class LimitController extends Controller
             ->when($warehouseId !== "all", function($query) use ($warehouseId){
                 $query->where('product_entries.warehouse_id', $warehouseId);
             })
-            ->orderByRaw('product_entries.quantity < product_entries.limit AND product_entries.is_ordered = false DESC')
+            ->orderByRaw('product_entries.limit != 0 AND product_entries.quantity <= product_entries.limit AND product_entries.is_ordered = false DESC')
             ->orderBy('is_ordered', 'desc')
             ->orderBy('p.name')
             ->get();

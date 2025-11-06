@@ -41,7 +41,7 @@ class LogController extends Controller
             $query->where('changes', 'LIKE', '%' . $request->product_ids . '%');
         }
 
-        $logs = $query->orderBy('id', 'desc')->paginate(10);
+        $logs = $query->orderBy('id', 'desc')->paginate(10)->appends($request->query());
 
         return view('pages.log.index', [
             'logs' => $logs,

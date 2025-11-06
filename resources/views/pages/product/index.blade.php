@@ -14,6 +14,27 @@
     </div>
     <div class="flex flex-col mt-8">
         <div class="-my-2 py-2 overflow-x-auto sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+            <div>
+                <form action="{{ route('products.index') }}" method="get">
+                    <div class="grid grid-cols-3 mt-4 gap-3 mb-4">
+                        <div class="col-span-2">
+                            <label class="text-gray-700" for="product">Məhsul</label>
+                            <select id="product" name="product_ids[]" multiple
+                                class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                                @foreach ($products as $product)
+                                    <option
+                                        value="{{ $product->id }}">{{ $product->name }}
+                                        {{ $product->code ? '- ' . $product->code : '' }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="self-end">
+                            <button type="submit"
+                                class="w-full px-4 py-2 bg-green-500 border-2 border-green-500 text-white rounded-md hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-green-400">Axtar</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
             <div class="align-middle inline-block min-w-full shadow overflow-hidden sm:rounded-lg border-b border-gray-200">
                 <table class="min-w-full text-center">
                     <thead>
@@ -35,7 +56,7 @@
                     </thead>
 
                     <tbody class="bg-white">
-                        @foreach ($products as $product)
+                        @foreach ($productsList as $product)
                             <tr>
                                 <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 font-bold">
                                     {{$product->name}}
@@ -57,32 +78,36 @@
                     </tbody>
                 </table>
                 <div class="flex items-center justify-center my-2">
-                    @include('components.pagination', ['paginator' => $products])
+                    @include('components.pagination', ['paginator' => $productsList])
                 </div>
             </div>
         </div>
     </div>
 @endsection
 
-@if (session('success'))
-    @section('script')
-        <script>
+@section('script')
+    <script>
+        @if (session('success'))
             toastr.options = {
                 "progressBar": true,
                 "closeButton": true
             }
             toastr.success("{{session('success')}}", "Uğurlu!");
-        </script>
-    @endsection
-@endif
-@if (session('error'))
-    @section('script')
-        <script>
+        @endif
+        @if (session('error'))
             toastr.options = {
                 "progressBar": true,
                 "closeButton": true
             }
             toastr.error("{{session('error')}}", "Xəta!");
-        </script>
-    @endsection
-@endif
+        @endif
+
+        $(document).ready(function() {
+            $('#product').select2();
+            const selectedProductIds = @json($product_ids);
+            $('#product').val(selectedProductIds).trigger('change');
+        });
+    </script>
+@endsection
+
+
