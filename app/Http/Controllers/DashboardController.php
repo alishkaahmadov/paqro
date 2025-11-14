@@ -317,7 +317,7 @@ class DashboardController extends Controller
                 'company_name' => 'required|string',
                 'product' => 'required|string',
                 'product_code' => 'required|string',
-                'quantity' => 'required|integer',
+                'quantity' => 'required|numeric',
                 'category' => 'required|string',
                 'entry_date' => 'required|date',
             ]);
@@ -368,6 +368,7 @@ class DashboardController extends Controller
                 // create new one
                 ProductEntry::create([
                     'warehouse_id' => $warehouseId,
+                    'measure' => $request->measure,
                     'product_id' => $productId,
                     'company_id' => $companyId,
                     'quantity' => $request->quantity,
@@ -421,7 +422,10 @@ class DashboardController extends Controller
     public function deleteEntry(WarehouseLog $entry){
 
         $toWarehouse = ProductEntry::where(['warehouse_id' => $entry->to_warehouse_id, 'product_id' => $entry->product_id, 'subcategory_id' => $entry->subcategory_id])->first();
-        if($toWarehouse) $toWarehouse->update(['quantity' => $toWarehouse->quantity - $entry->quantity]);
+        if($toWarehouse) {
+            if($toWarehouse->quantity - $entry->quantity < 0) return redirect()->route('dashboard.index')->with('error', 'Məhsul sayı mənfiyə düşür.');
+            $toWarehouse->update(['quantity' => $toWarehouse->quantity - $entry->quantity]);
+        }
         if($entry->from_warehouse_id){
             $fromWarehouse = ProductEntry::where(['warehouse_id' => $entry->from_warehouse_id, 'product_id' => $entry->product_id, 'subcategory_id' => $entry->subcategory_id])->first();
             if($fromWarehouse) $fromWarehouse->update(['quantity' => $fromWarehouse->quantity + $entry->quantity]);
@@ -560,7 +564,7 @@ class DashboardController extends Controller
                 'from_warehouse' => 'nullable|exists:warehouses,id',
                 'to_warehouse' => 'nullable|exists:warehouses,id',
                 'product' => 'required|exists:products,id',
-                'quantity' => 'required|integer',
+                'quantity' => 'required|numeric',
                 'transfer_date' => 'required|date',
             ]);
             
@@ -590,6 +594,7 @@ class DashboardController extends Controller
                 // create
                 ProductEntry::create([
                     'warehouse_id' => $request->to_warehouse,
+                    'measure' => $fromWarehouse->measure,
                     'product_id' => $currentProduct,
                     'company_id' => $fromWarehouse->company_id,
                     'quantity' => $currentQuantity,
@@ -600,10 +605,10 @@ class DashboardController extends Controller
 
             // decrease older product entry
             $olderToProductEntry = ProductEntry::where(['warehouse_id' => $exit->to_warehouse_id, 'product_id' => $exit->product_id, 'subcategory_id' => $exit->subcategory_id])->first();
-            $olderToProductEntry->update(['quantity' => $olderToProductEntry->quantity - $exit->quantity]);
+            if($olderToProductEntry) $olderToProductEntry->update(['quantity' => $olderToProductEntry->quantity - $exit->quantity]);
 
             $olderFromProductEntry = ProductEntry::where(['warehouse_id' => $exit->from_warehouse_id, 'product_id' => $exit->product_id, 'subcategory_id' => $exit->subcategory_id])->first();
-            $olderFromProductEntry->update(['quantity' => $olderFromProductEntry->quantity + $exit->quantity]);
+            if($olderFromProductEntry) $olderFromProductEntry->update(['quantity' => $olderFromProductEntry->quantity + $exit->quantity]);
 
 
             $oldExitData = [
@@ -652,14 +657,18 @@ class DashboardController extends Controller
     }
 
     public function deleteExit(WarehouseLog $exit){
-        $fromWarehouse = ProductEntry::where(['warehouse_id' => $exit->from_warehouse_id, 'product_id' => $exit->product_id])->first();
-        if($fromWarehouse) $fromWarehouse->update(['quantity' => $fromWarehouse->quantity + $exit->quantity]);
         if($exit->to_warehouse_id){
-            $toWarehouse = ProductEntry::where(['warehouse_id' => $exit->to_warehouse_id, 'product_id' => $exit->product_id])->first();
-            if($toWarehouse) $toWarehouse->update(['quantity' => $toWarehouse->quantity - $exit->quantity]);
+            $toWarehouse = ProductEntry::where(['warehouse_id' => $exit->to_warehouse_id, 'product_id' => $exit->product_id, 'subcategory_id' => $exit->subcategory_id])->first();
+            if($toWarehouse){
+                if($toWarehouse->quantity - $exit->quantity < 0) return redirect()->route('dashboard.index')->with('error', 'Məhsul sayı mənfiyə düşür.');
+                $toWarehouse->update(['quantity' => $toWarehouse->quantity - $exit->quantity]);
+            }
         }
+        $fromWarehouse = ProductEntry::where(['warehouse_id' => $exit->from_warehouse_id, 'product_id' => $exit->product_id, 'subcategory_id' => $exit->subcategory_id])->first();
+        if($fromWarehouse) $fromWarehouse->update(['quantity' => $fromWarehouse->quantity + $exit->quantity]);
         // highway
         if($exit->highway_id){
+            return;
             $highway = Highway::where('id', $exit->highway_id)->first();
             if($highway) $highway->delete();
         }

@@ -58,7 +58,7 @@
                         <label class="text-gray-700" for="quantity">Sayı</label>
                         <input name="quantity"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                            type="number" value="{{ old('quantity', $entry->quantity) }}">
+                            type="number" step="any" value="{{ old('quantity', $entry->quantity) }}">
                     </div>
                     <div class="md:w-2/5">
                         <label class="text-gray-700" for="measure">Ölçü vahidi</label>
