@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Product;
 use App\Models\ProductEntry;
 use App\Models\Subcategory;
 use App\Models\Warehouse;
 use App\Models\WarehouseLog;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -116,39 +118,99 @@ class SubcategoryController extends Controller
         if(!($request->warehouse_id && $request->subcategory_id && $request->product_id && $request->new_subcategory_id)){
             return redirect()->route('dashboard.index')->with('error', 'Lazımi xanalar doldurulmayıb.');
         }
-        // Girish ve chixishlar
-        WarehouseLog::where(function ($q) use ($request) {
-            $q->where('from_warehouse_id', $request->warehouse_id)
-              ->orWhere('to_warehouse_id', $request->warehouse_id);
-        })
-        ->where('subcategory_id', $request->subcategory_id)
-        ->where('product_id', $request->product_id)
-        ->update(['subcategory_id' => $request->new_subcategory_id]);
+        try {
+            DB::beginTransaction();
+            $entries = WarehouseLog::where('to_warehouse_id', $request->warehouse_id)
+                ->where('subcategory_id', $request->subcategory_id)
+                ->where('product_id', $request->product_id)
+                ->get();
+            $exits = WarehouseLog::where('from_warehouse_id', $request->warehouse_id)
+                ->where('subcategory_id', $request->subcategory_id)
+                ->where('product_id', $request->product_id)
+                ->get();
 
-        // old Entry
-        $oldEntry = ProductEntry::where([
-            ['warehouse_id', $request->warehouse_id],
-            ['subcategory_id', $request->subcategory_id],
-            ['product_id', $request->product_id]
-        ])->first();
-
-        // new entry exits?
-        $entryExits = ProductEntry::where([
-            ['warehouse_id', $request->warehouse_id],
-            ['subcategory_id', $request->new_subcategory_id],
-            ['product_id', $request->product_id]
-        ])->first();
-
-        if($entryExits){
-            $entryExits->increment('quantity', $oldEntry->quantity);
-            $oldEntry->update(['quantity' => 0]);
-        }else{
-            ProductEntry::where([
+            foreach ($entries as $entry) {
+                if($entry->from_warehouse_id){
+                    $newCategoryEntry = ProductEntry::where([
+                        ['warehouse_id', $entry->from_warehouse_id],
+                        ['subcategory_id', $request->new_subcategory_id],
+                        ['product_id', $request->product_id]
+                    ])->first();
+                    if($newCategoryEntry && $newCategoryEntry->quantity >= $entry->quantity){
+                        $newCategoryEntry->decrement('quantity', $entry->quantity);
+                        $oldCategoryEntry = ProductEntry::where([
+                            ['warehouse_id', $entry->from_warehouse_id],
+                            ['subcategory_id', $request->subcategory_id],
+                            ['product_id', $request->product_id]
+                        ])->increment('quantity', $entry->quantity);
+                    }else{
+                        throw new Exception("Kateqoriyanı dəyişmək mümkün deyil1");
+                    }
+                }
+                $entry->update(['subcategory_id' => $request->new_subcategory_id]);
+            }
+            $updatedExits = [];
+            foreach ($exits as $exit) {
+                if(!in_array($exit->to_warehouse_id, $updatedExits)){
+                    if($exit->to_warehouse_id){
+                        $oldCategoryEntry = ProductEntry::where([
+                            ['warehouse_id', $exit->to_warehouse_id],
+                            ['subcategory_id', $request->subcategory_id],
+                            ['product_id', $request->product_id]
+                        ])->first();
+                        $newCategoryEntry = ProductEntry::where([
+                            ['warehouse_id', $exit->to_warehouse_id],
+                            ['subcategory_id', $request->new_subcategory_id],
+                            ['product_id', $request->product_id]
+                        ])->first();
+                        if($newCategoryEntry){
+                            $newCategoryEntry->update(['quantity' => $oldCategoryEntry->quantity]);
+                        }else{
+                            ProductEntry::create([
+                                'warehouse_id' => $oldCategoryEntry->warehouse_id,
+                                'product_id' => $oldCategoryEntry->product_id,
+                                'company_id' => $oldCategoryEntry->company_id ?? null,
+                                'quantity' => $oldCategoryEntry->quantity,
+                                'measure' => $oldCategoryEntry->measure ?? null,
+                                'shelf' => $oldCategoryEntry->shelf ?? null,
+                                'subcategory_id' => $request->new_subcategory_id,
+                                'entry_date' => $oldCategoryEntry->entry_date ?? null,
+                            ]);
+                        }
+                        $oldCategoryEntry->update(['quantity' => 0]);
+                        $updatedExits[] = $exit->to_warehouse_id;
+                        WarehouseLog::where([
+                            ['from_warehouse_id', $exit->to_warehouse_id],
+                            ['subcategory_id', $exit->subcategory_id],
+                            ['product_id', $exit->product_id]
+                        ])->whereNotNull('highway_id')->update([
+                            'subcategory_id' => $request->new_subcategory_id
+                        ]);
+                    }
+                }
+                $exit->update(['subcategory_id' => $request->new_subcategory_id]);
+            }
+            $oldEntry = ProductEntry::where([
                 ['warehouse_id', $request->warehouse_id],
                 ['subcategory_id', $request->subcategory_id],
                 ['product_id', $request->product_id]
-            ])->update(['subcategory_id' => $request->new_subcategory_id]);
+            ])->first();
+            $newEntryExits = ProductEntry::where([
+                ['warehouse_id', $request->warehouse_id],
+                ['subcategory_id', $request->new_subcategory_id],
+                ['product_id', $request->product_id]
+            ])->first();
+            if($newEntryExits){
+                $newEntryExits->increment('quantity', $oldEntry->quantity);
+                $oldEntry->update(['quantity' => 0]);
+            }else{
+                $oldEntry->update(['subcategory_id' => $request->new_subcategory_id]);
+            }
+            DB::commit();
+            return redirect()->route('dashboard.index')->with('success', 'Məhsulun kateqoriyasi uğurla dəyişildi.');
+        } catch (Throwable $th) {
+            DB::rollBack();
+            return redirect()->route('dashboard.index')->with('error', $th->getMessage());
         }
-        return redirect()->route('dashboard.index')->with('success', 'Məhsulun kateqoriyasi uğurla dəyişildi.');
     }
 }

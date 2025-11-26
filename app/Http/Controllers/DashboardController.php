@@ -17,6 +17,7 @@ use App\Models\Warehouse;
 use App\Models\WarehouseLog;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -567,7 +568,7 @@ class DashboardController extends Controller
                 'quantity' => 'required|numeric',
                 'transfer_date' => 'required|date',
             ]);
-            
+            DB::beginTransaction();
             $currentProduct = $request->product;
             $currentQuantity = (float)$request->quantity;
             $currentEntryDate = $request->transfer_date;
@@ -575,22 +576,38 @@ class DashboardController extends Controller
             $currentSubcategoryId = $currentSubcategory->id;
 
             $fromWarehouse = ProductEntry::where(['warehouse_id' => $request->from_warehouse, 'product_id' => $currentProduct, 'subcategory_id' => $currentSubcategoryId])->first();
-            if($fromWarehouse->warehouse_id === $exit->from_warehouse_id && $fromWarehouse->product_id === $exit->product_id && $exit->from_warehouse_id && $fromWarehouse->subcategory_id === $exit->subcategory_id){
+            if($fromWarehouse->warehouse_id === $exit->from_warehouse_id && $fromWarehouse->product_id === $exit->product_id && $fromWarehouse->subcategory_id === $exit->subcategory_id){
                 // Eyni mehsul, eyni kateqoriya
                 if($fromWarehouse->quantity + $exit->quantity < $currentQuantity){
-                    return redirect()->route('dashboard.index')->with('error', 'Anbarda kifayət qədər məhsul yoxdur.');
+                    throw new Exception("Anbarda kifayət qədər məhsul yoxdur.");
                 }
+                $fromWarehouse->update(['quantity' => $fromWarehouse->quantity + $exit->quantity - $currentQuantity]);
             }else{
                 if($fromWarehouse->quantity < $currentQuantity){
-                    return redirect()->route('dashboard.index')->with('error', 'Anbarda kifayət qədər məhsul yoxdur.');
+                    throw new Exception("Anbarda kifayət qədər məhsul yoxdur.");
                 }
+                $fromWarehouse->update(['quantity' => $fromWarehouse->quantity - $currentQuantity]);
+                $olderFromProductEntry = ProductEntry::where(['warehouse_id' => $exit->from_warehouse_id, 'product_id' => $exit->product_id, 'subcategory_id' => $exit->subcategory_id])->first();
+                $olderFromProductEntry->update(['quantity' => $olderFromProductEntry->quantity + $exit->quantity]);
             }
-            $fromWarehouse->update(['quantity' => $fromWarehouse->quantity - $currentQuantity]);
+
             $toWarehouse = ProductEntry::where(['warehouse_id' => $request->to_warehouse, 'product_id' => $currentProduct, 'subcategory_id' => $currentSubcategoryId])->first();
-            if ($toWarehouse) {
-                // increase
-                $toWarehouse->update(['quantity' => $toWarehouse->quantity + $currentQuantity]);
-            } else {
+            
+            if($toWarehouse){
+                if($toWarehouse->warehouse_id === $exit->to_warehouse_id && $toWarehouse->product_id === $exit->product_id && $toWarehouse->subcategory_id === $exit->subcategory_id){
+                    // Eyni mehsul, eyni kateqoriya
+                    if($toWarehouse->quantity + $currentQuantity - $exit->quantity < 0){
+                        throw new Exception("Anbarda kifayət qədər məhsul yoxdur2.");
+                    }
+                    $toWarehouse->update(['quantity' => $toWarehouse->quantity + $currentQuantity - $exit->quantity]);
+                }else{
+                    $toWarehouse->update(['quantity' => $toWarehouse->quantity + $currentQuantity]);
+
+                    $olderToProductEntry = ProductEntry::where(['warehouse_id' => $exit->to_warehouse_id, 'product_id' => $exit->product_id, 'subcategory_id' => $exit->subcategory_id])->first();
+                    if($olderToProductEntry->quantity - $exit->quantity < 0) throw new Exception("Anbarda kifayət qədər məhsul yoxdur3.");;
+                    $olderToProductEntry->update(['quantity' => $olderToProductEntry->quantity - $exit->quantity]);
+                }
+            }else{
                 // create
                 ProductEntry::create([
                     'warehouse_id' => $request->to_warehouse,
@@ -601,15 +618,10 @@ class DashboardController extends Controller
                     'subcategory_id' => $currentSubcategoryId,
                     'entry_date' => $currentEntryDate
                 ]);
+                $olderToProductEntry = ProductEntry::where(['warehouse_id' => $exit->to_warehouse_id, 'product_id' => $exit->product_id, 'subcategory_id' => $exit->subcategory_id])->first();
+                if($olderToProductEntry->quantity - $exit->quantity < 0) throw new Exception("Anbarda kifayət qədər məhsul yoxdur3.");;
+                $olderToProductEntry->update(['quantity' => $olderToProductEntry->quantity - $exit->quantity]);
             }
-
-            // decrease older product entry
-            $olderToProductEntry = ProductEntry::where(['warehouse_id' => $exit->to_warehouse_id, 'product_id' => $exit->product_id, 'subcategory_id' => $exit->subcategory_id])->first();
-            if($olderToProductEntry) $olderToProductEntry->update(['quantity' => $olderToProductEntry->quantity - $exit->quantity]);
-
-            $olderFromProductEntry = ProductEntry::where(['warehouse_id' => $exit->from_warehouse_id, 'product_id' => $exit->product_id, 'subcategory_id' => $exit->subcategory_id])->first();
-            if($olderFromProductEntry) $olderFromProductEntry->update(['quantity' => $olderFromProductEntry->quantity + $exit->quantity]);
-
 
             $oldExitData = [
                 'quantity' => $exit->quantity,
@@ -648,11 +660,11 @@ class DashboardController extends Controller
                     "Tarix" => $oldExitData["date"] . " ===> " . $exit->entry_date,
                     ]], JSON_UNESCAPED_UNICODE)
             ]);
+            DB::commit();
             return redirect()->route('dashboard.index')->with('success', 'Məhsul uğurla dəyişildi.');
-            
         } catch (Throwable $th) {
-            return redirect()->route('dashboard.index')
-                ->with('error', 'Xəta baş verdi.');
+            DB::rollBack();
+            return redirect()->route('dashboard.index')->with('error', $th->getMessage());
         }
     }
 
