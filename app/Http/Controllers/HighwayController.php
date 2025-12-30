@@ -311,9 +311,8 @@ class HighwayController extends Controller
                         'code' => $request->code,
                         'belong_to_warehouse_id' => $highway->highway?->belong_to_warehouse_id
                     ]);
-                    $newHighway->products()->create([
-                        'product_entry_id' => $highway->product_entry_id,
-                        'pdf_file' => $highway->pdf_file,
+                    $highway->update([
+                        'highway_id' => $newHighway->id,
                         'quantity' => $request->quantity,
                         'entry_date' => $request->entry_date
                     ]);

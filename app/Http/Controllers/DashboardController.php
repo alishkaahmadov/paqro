@@ -317,7 +317,7 @@ class DashboardController extends Controller
                 'company_id' => 'nullable|exists:companies,id',
                 'company_name' => 'required|string',
                 'product' => 'required|string',
-                'product_code' => 'required|string',
+                'product_code' => 'nullable|string',
                 'quantity' => 'required|numeric',
                 'category' => 'required|string',
                 'entry_date' => 'required|date',
@@ -346,7 +346,7 @@ class DashboardController extends Controller
             }
 
             $currentProduct = $request->product;
-            $currentProductCode = $request->product_code;
+            $currentProductCode = $request->product_code ?? null;
             if ($productExits = Product::where(['name' => $currentProduct, 'code' => $currentProductCode])->first()) {
                 $productId = $productExits->id;
             } else {
@@ -669,6 +669,7 @@ class DashboardController extends Controller
     }
 
     public function deleteExit(WarehouseLog $exit){
+        if($exit->highway_id) return;
         if($exit->to_warehouse_id){
             $toWarehouse = ProductEntry::where(['warehouse_id' => $exit->to_warehouse_id, 'product_id' => $exit->product_id, 'subcategory_id' => $exit->subcategory_id])->first();
             if($toWarehouse){
@@ -678,12 +679,6 @@ class DashboardController extends Controller
         }
         $fromWarehouse = ProductEntry::where(['warehouse_id' => $exit->from_warehouse_id, 'product_id' => $exit->product_id, 'subcategory_id' => $exit->subcategory_id])->first();
         if($fromWarehouse) $fromWarehouse->update(['quantity' => $fromWarehouse->quantity + $exit->quantity]);
-        // highway
-        if($exit->highway_id){
-            return;
-            $highway = Highway::where('id', $exit->highway_id)->first();
-            if($highway) $highway->delete();
-        }
         Log::create([
             'user_id' => auth()->id(),
             'action' => 'Sildi',
