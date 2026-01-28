@@ -291,7 +291,7 @@ class HighwayController extends Controller
         if($productEntry && $warehouseLog){
             if($productEntry->quantity + ($highway->quantity - $request->quantity) < 0) return redirect()->route('dashboard.index')->with('error', 'Məhsul sayı mənfiyə düşür.');
             $productEntry->update(['quantity' => $productEntry->quantity + ($highway->quantity - $request->quantity)]);
-            $warehouseLog->update(['quantity' => $request->quantity]);
+            $warehouseLog->update(['quantity' => $request->quantity, 'entry_date' => $request->entry_date]);
 
             if($highway->highway?->code == $request->code){
                 $highway->update([
