@@ -209,7 +209,7 @@
                         Çıxış cəm: {{ $totalExitCount }}
                     </div>
                     <div class="py-2 px-4 flex justify-end font-bold">
-                        Qalıq cəm: {{ $totalQuantities }}
+                        Qalıq cəm: {{ $totalEntryCount - $totalExitCount }}
                     </div>
                 @endif
                 <div class="grid my-2">

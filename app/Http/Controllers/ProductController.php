@@ -96,8 +96,11 @@ class ProductController extends Controller
         ]);
 
         $warehouse = Product::findOrFail($id);
-        $warehouse->name = $request->name;
-        $warehouse->code = $request->code;
+        if($productExists = Product::where(['name' => trim($request->name), 'code' => trim($request->code)])->first()){
+            return redirect()->route('products.index')->with('error', 'Məhsul artıq mövcuddur. Başqa ad qoyun.');
+        }
+        $warehouse->name = trim($request->name);
+        $warehouse->code = trim($request->code);
         $warehouse->save();
 
         return redirect()->route('products.index')->with('success', 'Uğurla düzəliş olundu.');

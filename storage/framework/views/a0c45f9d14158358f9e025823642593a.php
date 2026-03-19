@@ -37,7 +37,7 @@
                         <label class="text-gray-700" for="pdf_date">Tarix (PDF üçün)</label>
                         <input name="pdf_date" data-datetime-local="true"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                            type="datetime-local">
+                            type="datetime-local" min="2025-01-01T00:00">
                     </div>
     
                     <div class="md:w-1/2">
@@ -93,7 +93,7 @@
                         <label class="text-gray-700" for="transfer_date">Transfer tarixi</label>
                         <input name="transfer_dates[]" id="transfer_date" data-datetime-local="true"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                            type="datetime-local">
+                            type="datetime-local" min="2025-01-01T00:00">
                     </div>
                 </div>
 
@@ -239,7 +239,7 @@
                         <label class="text-gray-700" for="transfer_date">Transfer tarixi</label>
                         <input name="transfer_dates[]" data-datetime-local="true"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                            type="datetime-local" value="${formattedDateTime}">
+                            type="datetime-local" value="${formattedDateTime}" min="2025-01-01T00:00">
                     </div>
                 </div>
             `;
@@ -331,7 +331,7 @@
                         <label class="text-gray-700" for="transfer_date">Transfer tarixi</label>
                         <input name="transfer_dates[]" data-datetime-local="true"
                             class="mt-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                            type="datetime-local" value="${formattedDateTime}">
+                            type="datetime-local" value="${formattedDateTime}" min="2025-01-01T00:00">
                     </div>
                 </div>
             `;

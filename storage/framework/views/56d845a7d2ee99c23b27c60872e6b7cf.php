@@ -217,7 +217,7 @@
 
                     </div>
                     <div class="py-2 px-4 flex justify-end font-bold">
-                        Qalıq cəm: <?php echo e($totalQuantities); ?>
+                        Qalıq cəm: <?php echo e($totalEntryCount - $totalExitCount); ?>
 
                     </div>
                 <?php endif; ?>

@@ -345,8 +345,8 @@ class DashboardController extends Controller
                 $categoryId = $newCategory->id;
             }
 
-            $currentProduct = $request->product;
-            $currentProductCode = $request->product_code ?? null;
+            $currentProduct = trim($request->product);
+            $currentProductCode = $request->product_code ? trim($request->product_code) : null;
             if ($productExits = Product::where(['name' => $currentProduct, 'code' => $currentProductCode])->first()) {
                 $productId = $productExits->id;
             } else {
@@ -355,8 +355,8 @@ class DashboardController extends Controller
             }
             // update older one
             $olderProductEntry = ProductEntry::where(['warehouse_id' => $entry->to_warehouse_id, 'product_id' => $entry->product_id, 'subcategory_id' => $entry->subcategory_id])->first();
-            if($olderProductEntry->quantity - $entry->quantity >= 0){
-                $olderProductEntry->update(['quantity' => $olderProductEntry->quantity - $entry->quantity, 'shelf' => $request->shelf]);
+            if($olderProductEntry->quantity - ($entry->quantity - $request->quantity) >= 0){
+                $olderProductEntry->update(['quantity' => $olderProductEntry->quantity - ($entry->quantity - $request->quantity), 'shelf' => $request->shelf]);
             }else{
                 return redirect()->route('dashboard.index')->with('error', 'Məhsul sayı mənfiyə düşür.');
             }
@@ -364,7 +364,7 @@ class DashboardController extends Controller
             $productEntry = ProductEntry::where(['warehouse_id' => $warehouseId, 'product_id' => $productId, 'subcategory_id' => $categoryId])->first();
             if ($productEntry) {
                 // increase
-                $productEntry->update(['quantity' => $productEntry->quantity + $request->quantity]);
+                // $productEntry->update(['quantity' => $productEntry->quantity + $request->quantity]);
             } else {
                 // create new one
                 ProductEntry::create([
@@ -1104,8 +1104,8 @@ class DashboardController extends Controller
                 }
                 // check if product exits else create new one with new product code
                 $currentProductWithCode = explode('---', $request->products[$i]);
-                $currentProduct = $currentProductWithCode[0];
-                $currentProductCode = $request->product_codes[$i];
+                $currentProduct = trim($currentProductWithCode[0]);
+                $currentProductCode = trim($request->product_codes[$i]);
                 if ($productExits = Product::where(['name' => $currentProduct, 'code' => $currentProductCode])->first()) {
                     $productId = $productExits->id;
                     // if product exits check if warehouse has current product => if has increase quantity if not create one
