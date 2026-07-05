@@ -346,7 +346,7 @@ class DashboardController extends Controller
             }
 
             $currentProduct = trim($request->product);
-            $currentProductCode = $request->product_code ? trim($request->product_code) : null;
+            $currentProductCode = $request->product_code ? trim($request->product_code) : '';
             if ($productExits = Product::where(['name' => $currentProduct, 'code' => $currentProductCode])->first()) {
                 $productId = $productExits->id;
             } else {
@@ -355,27 +355,36 @@ class DashboardController extends Controller
             }
             // update older one
             $olderProductEntry = ProductEntry::where(['warehouse_id' => $entry->to_warehouse_id, 'product_id' => $entry->product_id, 'subcategory_id' => $entry->subcategory_id])->first();
-            if($olderProductEntry->quantity - ($entry->quantity - $request->quantity) >= 0){
-                $olderProductEntry->update(['quantity' => $olderProductEntry->quantity - ($entry->quantity - $request->quantity), 'shelf' => $request->shelf]);
+            if($olderProductEntry->warehouse_id === $warehouseId && $olderProductEntry->product_id === $productId && $olderProductEntry->subcategory_id === $categoryId){
+                // eyni anbar, product, subcategory
+                if($olderProductEntry->quantity < $entry->quantity - $request->quantity){
+                    throw new Exception("Anbarda kifayət qədər məhsul yoxdur.");
+                }
+                $olderProductEntry->update(['quantity' => $olderProductEntry->quantity - ($entry->quantity - $request->quantity)]);
             }else{
-                return redirect()->route('dashboard.index')->with('error', 'Məhsul sayı mənfiyə düşür.');
-            }
-            //check if warehouse has current product => if has increase quantity if not create one
-            $productEntry = ProductEntry::where(['warehouse_id' => $warehouseId, 'product_id' => $productId, 'subcategory_id' => $categoryId])->first();
-            if ($productEntry) {
-                // increase
-                // $productEntry->update(['quantity' => $productEntry->quantity + $request->quantity]);
-            } else {
-                // create new one
-                ProductEntry::create([
-                    'warehouse_id' => $warehouseId,
-                    'measure' => $request->measure,
-                    'product_id' => $productId,
-                    'company_id' => $companyId,
-                    'quantity' => $request->quantity,
-                    'subcategory_id' => $categoryId,
-                    'entry_date' => $request->entry_date
-                ]);
+                if($olderProductEntry->quantity - $entry->quantity >= 0){
+                    $olderProductEntry->update(['quantity' => $olderProductEntry->quantity - $entry->quantity, 'shelf' => $request->shelf]);
+                }else{
+                    return redirect()->route('dashboard.index')->with('error', 'Məhsul sayı mənfiyə düşür.');
+                }
+                //check if warehouse has current product => if has increase quantity if not create one
+                $productEntry = ProductEntry::where(['warehouse_id' => $warehouseId, 'product_id' => $productId, 'subcategory_id' => $categoryId])->first();
+                if ($productEntry) {
+                    // increase
+                    $productEntry->update(['quantity' => $productEntry->quantity + $request->quantity]);
+                } else {
+                    // create new one
+                    ProductEntry::create([
+                        'warehouse_id' => $warehouseId,
+                        'measure' => $request->measure,
+                        'product_id' => $productId,
+                        'company_id' => $companyId,
+                        'quantity' => $request->quantity,
+                        'subcategory_id' => $categoryId,
+                        'entry_date' => $request->entry_date,
+                        'shelf' => $request->shelf
+                    ]);
+                }
             }
 
             $oldEntryData = [
@@ -416,7 +425,7 @@ class DashboardController extends Controller
                 ->with('success', 'Məhsul uğurla dəyişildi.');
         } catch (Throwable $th) {
             return redirect()->route('dashboard.index')
-                ->with('error', 'Xəta baş verdi.');
+                ->with('error', $th->getMessage());
         }
     }
 
